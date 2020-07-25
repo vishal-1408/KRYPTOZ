@@ -5,6 +5,7 @@ import socket
 
 
 def accept():
+    i=0
     while 1:                                                             #threads are just created for making blocks of code execute parallely! like accepting the connections and handling clients all these work in parallel
         client_socket,client_addr = server_socket.accept()
         print("A client has been connected to the server")
@@ -14,6 +15,9 @@ def accept():
         message=message.decode('ASCII')
         client_name[client_socket]=message
         Thread(target=handling_the_client,args=(client_socket,)).start()
+        print(len(client_name))
+        i+=1
+        
 
 def handling_the_client(client):
     message=client_name[client]+" has joined the chat app!"
@@ -27,12 +31,15 @@ def handling_the_client(client):
         if not received=="QUIT":
             broadcast(received,client_name[client])
         else:
-            print(address[client]+" has quit the app")
+            print(client_name[client]+" has quit the app")
             m="Bye! Hope you come back soon..."
             m=m.encode("ASCII")
             client.send(m)
+            name=client_name[client]
+            del client_name[client]
+            del address[client]
+            broadcast(name+" has left the room","ChatBot")
             client.close()
-            broadcast(client_name[client]+" has left the room","ChatBot")
             break
         
 def broadcast(message,name="",client=""):
