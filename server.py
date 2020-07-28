@@ -13,7 +13,7 @@ def accept():
         clientinfo[client_socket]=[message]
         d=1
         while(d):
-           client_socket.send("Type 1 for creating a group and 2 for joinign a group and click enter".encode("ASCII"))
+           client_socket.send("Type 1 for creating a group and 2 for joining a group and click enter".encode("ASCII"))
            c=client_socket.recv(1024).decode("ASCII")
            if c=="1":
                d=create(client_socket)
@@ -23,7 +23,7 @@ def accept():
 def create(c):
     print("create")
     if(len(groupinfo)!=0):
-        m="The foll. group names are not available"
+        m="The foll. group names are not available:\n"
         for x in groupinfo:
             m+=(str(x)+"\n")
         c.send(m.encode("ASCII"))
@@ -39,27 +39,28 @@ def create(c):
 def join(c):
     e=1
     while e:
-        m="The foll. groups are available:"
-        for x in groupinfo:
-            m+=(str(x)+"\n")
-        m+="Please enter the group name, you want to join: "
-        c.send(m.encode("ASCII"))
-        name=c.recv(1024).decode("ASCII")
-        if name not in groupinfo:
-            m="Group doesn't exist, Enter 1 to try again and 0 to go to main menu: "
+        if not len(groupinfo)==0:
+            m="The foll. groups are available:"
+            for x in groupinfo:
+                m+=(str(x)+"\n")
+            m+="Please enter the group name, you want to join: "
             c.send(m.encode("ASCII"))
-            res=c.recv(1024).decode("ASCII")
-            if res=="1":
+            name=c.recv(1024).decode("ASCII")
+            if name not in groupinfo:
+               m="Group doesn't exist, Enter 1 to try again and 0 to go to main menu: "
+               c.send(m.encode("ASCII"))
+               res=c.recv(1024).decode("ASCII")
+               if res=="1":
                 continue
-            elif res=="0":
+               elif res=="0":
                 return 1
-        else:
-            m="Enter the password of the group: "
-            c.send(m.encode("ASCII"))
-            p=c.recv(1024).decode("ASCII")
-            cpass=groupinfo[name][0]
-            if p==cpass:
-                if len(groupinfo[name][1])<2:
+            else:
+               m="Enter the password of the group: "
+               c.send(m.encode("ASCII"))
+               p=c.recv(1024).decode("ASCII")
+               cpass=groupinfo[name][0]
+               if p==cpass:
+                 if len(groupinfo[name][1])<2:
                     m="Welcome to "+name
                     c.send(m.encode("ASCII"))
                     groupinfo[name][1].append(c)
@@ -67,7 +68,7 @@ def join(c):
                     Thread(target=handling_the_client,args=(c,)).start()
                     return 0
 
-                else:
+                 else:
                   m="Group is full, Enter 1 to try again and 0 for the main menu"
                   c.send(m.encode("ASCII"))
                   res=c.recv(1024)
@@ -75,7 +76,7 @@ def join(c):
                     return 1
                   else:
                     continue
-            elif p!=cpass:
+               elif p!=cpass:
                 m="Entered password is incorrect,Enter 1 to try again and 0 for the main menu"
                 c.send(m.encode("ASCII"))
                 res=c.recv(1024).decode("ASCII")
@@ -83,6 +84,11 @@ def join(c):
                     return 1
                 else:
                     continue
+        else:
+            m="No groups are available , Redirecting you to the main menu...".encode("ASCII")
+            c.send(m)
+            return 1
+            
 
     
         
@@ -101,11 +107,8 @@ def handling_the_client(client):
         else:
             print(clientinfo[client][0]+" has quit the app")
             if len(groupinfo[clientinfo[client][1]][1])==1:
-                 m="If you want to delete the group enter 1 else enter 0".encode("ASCII")
-                 client.send(m)
-                 res=clent.recv(1024)
-                 if res=="1":
-                    del groupinfo[clientinfo[client][1]][1]
+                 groupinfo.pop(clientinfo[client][1])
+                 print(groupinfo)
                  m="Bye! Hope you come back soon..."
                  m=m.encode("ASCII")
                  client.send(m)
