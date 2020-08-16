@@ -65,8 +65,10 @@ window.protocol("WM_DELETE_WINDOW",close)
 
 
 client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-Host=input("Enter the host name: ")
-Port=int(input("Enter the port number: "))
+#Host=input("Enter the host name: ")
+#Port=int(input("Enter the port number: "))
+Host="34.227.91.249"
+Port=8080
 client.connect((Host,Port))  
 rthread=Thread(target=receive)
 rthread.start()
