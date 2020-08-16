@@ -162,11 +162,12 @@ def broadcast(message,name,client="",group=""):
 clientinfo={}
 groupinfo={}
 
-Host="127.0.0.1"
-port=3000
+Host=""
+port=8080
 server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
 server_socket.bind((Host,port))
+print(Host)
 
 
 if __name__ == "__main__":
