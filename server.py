@@ -7,34 +7,64 @@ def accept():
     while 1:
         client_socket,client_addr = server_socket.accept()        #threads are just created for making blocks of code execute parallely! like accepting the connections and handling clients all these work in parallel
         print("A client has been connected to the server")
-        client_socket.send("Please enter your name and click enter".encode("ASCII"))
-        message = client_socket.recv(1024)
-        message=message.decode('ASCII')
-        clientinfo[client_socket]=[message]
-        d=1
-        while(d):
+        Thread(target=initialize,args=(client_socket,)).start()
+        
+        
+
+def initialize(client_socket):
+        try:
+         client_socket.send("Please enter your name and click enter".encode("ASCII"))
+         message = client_socket.recv(1024)
+         message=message.decode('ASCII')
+         print(message)
+         if message=="QUIT":
+            m="Bye! Hope you come back soon..."
+            m=m.encode("ASCII")
+            client_socket.send(m)
+            client_socket.close()
+            return 0
+         clientinfo[client_socket]=[message]
+         d=1
+         while(d):
            client_socket.send("Type 1 for creating a group and 2 for joining a group and click enter".encode("ASCII"))
            c=client_socket.recv(1024).decode("ASCII")
+           if c=="QUIT":
+               m="Bye! Hope you come back soon..."
+               m=m.encode("ASCII")
+               client_socket.send(m)
+               client_socket.close()
+               return 0
            if c=="1":
                d=create(client_socket)
            elif c=="2":
                d=join(client_socket)
+        except Exception as e:
+            print("client socket closed")
+            client_socket.close()
+
+
 
 def create(c):
-    print("create")
-    if(len(groupinfo)!=0):
+    try:
+     print("create")
+     if(len(groupinfo)!=0):
         m="The foll. group names are not available:\n"
         for x in groupinfo:
             m+=(str(x)+"\n")
         c.send(m.encode("ASCII"))
-    c.send("Enter the name for your group".encode("ASCII"))
-    name=c.recv(1024).decode("ASCII")
-    c.send("Enter a password for the group".encode("ASCII"))
-    p=c.recv(1024).decode("ASCII")
-    groupinfo[name]=[p,[c]]
-    clientinfo[c].append(name)
-    Thread(target=handling_the_client,args=(c,)).start()
-    return 0
+     c.send("Enter the name for your group".encode("ASCII"))
+     name=c.recv(1024).decode("ASCII")
+     c.send("Enter a password for the group".encode("ASCII"))
+     p=c.recv(1024).decode("ASCII")
+     groupinfo[name]=[p,[c]]
+     clientinfo[c].append(name)
+     Thread(target=handling_the_client,args=(c,)).start()
+     return 0
+    except Exception as e:
+        print("client socket closed")
+        clientinfo.remove(clientinfo[client_socket])
+        return 0
+        
 
 def join(c):
     e=1
