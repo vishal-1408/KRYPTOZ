@@ -4,15 +4,73 @@ Screen_Manager:
     SelectGroup:
     ChatWindow:
 
+<CustomTextInput@TextInput>: 
+    background_normal: ""
+    background_color:(34/255,43/255,46/255,1)
+    multiline: False
+    foreground_color:(95/255,93/255,98/255,1)
+    write_tab: False
+    hint_text_color:(65/255,73/255,78/255,1)
+<Custom_Button@Button>: 
+    background_normal: ""
+    background_down: ""
+    foreground_color:(95/255,93/255,98/255,1)
+    background_color:  (16/255,112/255,93/255,1) if self.state == 'down' else (22/255,160/255,133/255,1)
+<CustomPopup@Popup>:
+    separator_color:(22/255,160/255,133/255,1)
+    size:(400, 400)
+    sze_hint: (None, None)
 <Login>:
     name: 'login'
     BoxLayout:
-        Button:
-            text: "login"
-            on_release:
-                root.authenticate()
+        orientation: "vertical"
+        spacing:30
+        padding:(100,200)
+        CustomTextInput:
+            hint_text: "Username"
+            size_hint_x:0.7
+            pos_hint:{'center_x':0.5}
+        CustomTextInput:
+            hint_text: "Password"
+            size_hint_x:0.7
+            pos_hint:{'center_x':0.5}
+        BoxLayout:
+            orientation:"horizontal"
+            spacing:10
+            size_hint_x:0.7
+            pos_hint: {'center_x':0.5}
+            Custom_Button:
+                id:login_btn
+                text:"Log-in"
+                pos_hint:{'right':0.85}
+            Custom_Button:
+                id:signup_btn
+                text:"Sign-Up"
+                pos_hint:{'left':0}
+                on_release:
+                    root.Sign_Up()
+<SignUp_pop>:
+    BoxLayout:
+        orientation:'vertical'
+        CustomTextInput:
+            hint_text: "Username"
+            size_hint_x:0.7
+            pos_hint:{'center_x':0.5}
+        CustomTextInput:
+            hint_text: "Password"
+            size_hint_x:0.7
+            pos_hint:{'center_x':0.5}
+        CustomTextInput:
+            hint_text: "Confirm Password"
+            size_hint_x:0.7
+            pos_hint:{'center_x':0.5}
+        Custom_Button:
+            id:btn
+            text:"Sign-Up"
+            
+            pos_hint:{'center_x':0.5}
 <ChatWindow>:
-    name:'main'
+    name:'chatwin'
     BoxLayout:
         Button:
-            text: "Main"
+            text: "Chatwin"
