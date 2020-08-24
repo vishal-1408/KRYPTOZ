@@ -4,22 +4,19 @@ Screen_Manager:
     SelectGroup:
     ChatWindow:
 
-<CustomTextInput@TextInput>: 
+<CustomTextInput@TextInput>:
+    on_parent: self._refresh_text(self.text)
     background_normal: ""
     background_color:(34/255,43/255,46/255,1)
     multiline: False
-    foreground_color:(95/255,93/255,98/255,1)
+    foreground_color:(150/255,150/255,150/255,1)
     write_tab: False
-    hint_text_color:(65/255,73/255,78/255,1)
+    hint_text_color:(95/255,93/255,98/255,1)
 <Custom_Button@Button>: 
     background_normal: ""
     background_down: ""
     foreground_color:(95/255,93/255,98/255,1)
     background_color:  (16/255,112/255,93/255,1) if self.state == 'down' else (22/255,160/255,133/255,1)
-<CustomPopup@Popup>:
-    separator_color:(22/255,160/255,133/255,1)
-    size:(400, 400)
-    sze_hint: (None, None)
 <Login>:
     name: 'login'
     BoxLayout:
@@ -32,6 +29,7 @@ Screen_Manager:
             pos_hint:{'center_x':0.5}
         CustomTextInput:
             hint_text: "Password"
+            password: True
             size_hint_x:0.7
             pos_hint:{'center_x':0.5}
         BoxLayout:
@@ -40,35 +38,72 @@ Screen_Manager:
             size_hint_x:0.7
             pos_hint: {'center_x':0.5}
             Custom_Button:
-                id:login_btn
-                text:"Log-in"
-                pos_hint:{'right':0.85}
-            Custom_Button:
                 id:signup_btn
                 text:"Sign-Up"
                 pos_hint:{'left':0}
                 on_release:
                     root.Sign_Up()
+            Custom_Button:
+                id:login_btn
+                text:"Log-in"
+                pos_hint:{'right':0.85}
+            
+<SizeWidget10@Widget>:
+    size_hint: None, None
+    size: 20, 50
 <SignUp_pop>:
     BoxLayout:
-        orientation:'vertical'
-        CustomTextInput:
-            hint_text: "Username"
-            size_hint_x:0.7
-            pos_hint:{'center_x':0.5}
-        CustomTextInput:
-            hint_text: "Password"
-            size_hint_x:0.7
-            pos_hint:{'center_x':0.5}
-        CustomTextInput:
-            hint_text: "Confirm Password"
-            size_hint_x:0.7
-            pos_hint:{'center_x':0.5}
-        Custom_Button:
-            id:btn
-            text:"Sign-Up"
-            
-            pos_hint:{'center_x':0.5}
+        orientation:"vertical"
+        BoxLayout:
+            padding:[40,80]
+            spacing: 20
+            orientation:'vertical'
+            size_hint_y: 0.9
+            CustomTextInput:
+                id: username
+                hint_text: "Username"
+                background_color:(40/255,50/255,54/255,1)
+                size_hint_x:0.7
+                pos_hint:{'center_x':0.5}
+            CustomTextInput:
+                id:password
+                hint_text: "Password"
+                size_hint_x:0.7
+                pos_hint:{'center_x':0.5}
+                background_color:(40/255,50/255,54/255,1)
+            CustomTextInput:
+                id: c_password
+                hint_text: "Confirm Password"
+                size_hint_x:0.7
+                pos_hint:{'center_x':0.5}
+                background_color:(40/255,50/255,54/255,1)
+        BoxLayout:
+            size_hint_y: 0.1
+            spacing:dp(8)
+            padding:1
+            Custom_Button:
+                id:btn_signup
+                text:"Sign-Up"
+                pos_hint:{'center_x':0.5}
+                on_release:
+                    root.authenticate_signup_and_hash()
+            Custom_Button:
+                id:btn_back
+                text:"Back"
+                pos_hint:{'center_x':0.5}
+<QuickMessage_pop>:
+    BoxLayout:
+        orientation:"vertical"
+        Label:
+            id: message
+            text:""
+        BoxLayout:
+            padding: [100,15,10,10]
+            orientation:"vertical"
+            Custom_Button:
+                text:"Okay"
+                size_hint_x: 0.5
+                pos_hint:{"x":0.5}
 <ChatWindow>:
     name:'chatwin'
     BoxLayout:
