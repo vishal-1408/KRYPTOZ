@@ -9,10 +9,14 @@ def Return_App_Path(filename): #This returns app directory
     else:
         os.makedirs(homedir)
         return homedir + filename
-def User_Check(username_hash, password_hash):
+def return_credentials():
     file = open(Return_App_Path("UserCredentials.txt"), 'r')
     Credential_List = ReadFile(file)
     file.close()
+    return Credential_List
+    
+def User_Check(username_hash, password_hash):
+    Credential_List=return_credentials()
     i = 1
     for entry in Credential_List:
         if i%2==1:

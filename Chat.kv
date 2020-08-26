@@ -1,5 +1,6 @@
 Screen_Manager:
     Login:
+    JoinOrCreate:
     CreateGroup:
     SelectGroup:
     ChatWindow:
@@ -24,10 +25,14 @@ Screen_Manager:
         spacing:30
         padding:(100,200)
         CustomTextInput:
+            id: username
+            #text:"arjun" #REMOVEE THIS SHIT
             hint_text: "Username"
             size_hint_x:0.7
             pos_hint:{'center_x':0.5}
         CustomTextInput:
+            id: password
+            #text:"arjun2000"  #REMOVEE THIS SHIT
             hint_text: "Password"
             password: True
             size_hint_x:0.7
@@ -47,7 +52,9 @@ Screen_Manager:
                 id:login_btn
                 text:"Log-in"
                 pos_hint:{'right':0.85}
-            
+                on_release:
+                    app.root.current='join_or_create' if root.login() else 'login'
+                    root.login_error()          
 <SizeWidget10@Widget>:
     size_hint: None, None
     size: 20, 50
@@ -61,22 +68,24 @@ Screen_Manager:
             size_hint_y: 0.9
             CustomTextInput:
                 id: username
-                hint_text: "Username"
+                hint_text: "Username [*]"
                 background_color:(40/255,50/255,54/255,1)
                 size_hint_x:0.7
                 pos_hint:{'center_x':0.5}
             CustomTextInput:
                 id:password
-                hint_text: "Password"
+                hint_text: "Password [8 characters]"
                 size_hint_x:0.7
                 pos_hint:{'center_x':0.5}
                 background_color:(40/255,50/255,54/255,1)
+                password: True
             CustomTextInput:
                 id: c_password
                 hint_text: "Confirm Password"
                 size_hint_x:0.7
                 pos_hint:{'center_x':0.5}
                 background_color:(40/255,50/255,54/255,1)
+                password: True
         BoxLayout:
             size_hint_y: 0.1
             spacing:dp(8)
@@ -96,16 +105,45 @@ Screen_Manager:
         orientation:"vertical"
         Label:
             id: message
+            pos_hint:{'center_x': 0.5}
             text:""
+            size_hint_x: None
+            width:350
+            text_size:(self.width,None)
         BoxLayout:
             padding: [100,15,10,10]
             orientation:"vertical"
             Custom_Button:
+                id: okay
                 text:"Okay"
                 size_hint_x: 0.5
                 pos_hint:{"x":0.5}
+<JoinOrCreate>:
+    name: "join_or_create"
+    BoxLayout:
+        orientation: "vertical"
+        spacing:dp(40)
+        BoxLayout:
+            size_hint_y: 0.9
+            padding: dp(40)
+            spacing:dp(40)
+            Custom_Button:
+                text: "Join a Chamber"
+            Custom_Button:
+                text: "Create a Chamber"
+        FloatLayout:
+            size_hint_y: 0.1
+            Custom_Button:
+                size_hint: (0.2, 0.75)
+                pos_hint:{"center_x":0.5, "top":1}
+                text: "Log-Out"
+                on_release:
+                    app.root.current="login"
+
 <ChatWindow>:
     name:'chatwin'
     BoxLayout:
         Button:
             text: "Chatwin"
+            on_release:
+                app.root.current='login'
