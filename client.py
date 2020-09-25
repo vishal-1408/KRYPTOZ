@@ -4,6 +4,7 @@ import socket
 
 def receive():
     global client
+    global details
     i=1
     print('Function Started!!!!')
     while 1:
@@ -11,11 +12,18 @@ def receive():
             m=client.recv(1024)
             m=m.decode("ASCII")
             print(m)
-            if(m[0:3]=="Bye"):
+            if m[0:3]=="Bye":
                 client.close()
                 print("Connection got disconnected.............")
                 break
-                
+            if m[0:7]=="details":
+                x=m.split(";")
+                y=[]
+                if not len(x[1:])== len(details):
+                    for i in range(1,len(x)):
+                        y.append(x[i].split(","))
+                    details=y.copy() 
+                    
         except OSError:
            print("Connection got disconnected")
            break
@@ -25,17 +33,19 @@ def sendName(username):
     print("sendname")
     client.send(username.encode('ASCII'))
     
-def sendGroups(c):
+def sendGroups():
     global client
     client.send("groups".encode('ASCII')) 
 
-def sendCreate(s):
+def sendCreate():
     global client
     client.send("create".encode('ASCII'))
     client.send(s.encode("ASCII"))
     print('sent')
     
         
+
+
 
 def close():
     global client
@@ -75,6 +85,7 @@ window.protocol("WM_DELETE_WINDOW",close)
 '''
 
 client=None
+details=None
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
