@@ -29,7 +29,6 @@ def receive():
            break
 def return_details():
     global details
-    print(details)
     return details
 def sendName(username):
     global client

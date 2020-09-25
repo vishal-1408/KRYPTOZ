@@ -198,12 +198,12 @@ Screen_Manager:
             spacing: dp(30)
             CustomTextInput:
                 id: name
-                hint_text: "Chamber Name"
+                hint_text: "Chamber Name [atleast 3 characters]"
             BoxLayout:
                 spacing: 640*0.1
                 CustomTextInput:
                     id: password
-                    hint_text: "Chamber Password"
+                    hint_text: "Chamber Password [atleast 5 characters]"
                     password: True
                     disabled: not root.allow_password
                     size_hint_x: 0.45
@@ -220,7 +220,7 @@ Screen_Manager:
                 disabled: not root.allow_password
             CustomTextInput:
                 id: members
-                hint_text: "Number of members"
+                hint_text: "Number of members [atleast two members]"
                 size_hint_x: 0.45
         FloatLayout:
             size_hint_y: 0.1
@@ -244,6 +244,7 @@ Screen_Manager:
     spacing: 20
     Custom_Button:
         text: root.group_name
+        font_size: 18
         size_hint_x: 0.8
     H2:
         text: root.group_code
@@ -297,8 +298,9 @@ Screen_Manager:
                 size_hint_x:0.25
                 pos_hint: {'left':1}
                 on_release:
-                    app.root.transition= SlideTransition(direction='down')
+                    app.root.transition= SlideTransition(direction='up')
                     app.root.current= 'join_or_create'
+                    root.clear_recycleview()
             Custom_Button:
                 id: submit
                 text:"Submit"
@@ -309,10 +311,4 @@ Screen_Manager:
 
 <ChatWindow>:
     name:'chatwin'
-    BoxLayout:
-        Button:
-            text: "Chatwin"
-            on_release:
-                app.root.transition = SlideTransition(direction='left')
-                app.root.current='login'
                 
