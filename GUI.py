@@ -28,7 +28,7 @@ def color_fix(textinput):
 	textinput.text=''
 	textinput.hint_text_color=(95/255,93/255,98/255,1)
 	textinput.foreground_color=(150/255,150/255,150/255,1)
-def quick_message(self, title, multiple_allow, message ):
+def quick_message(title, multiple_allow, message ):
 		design=QuickMessage_pop()
 		app=App.get_running_app()
 		app.popup_200(design, title, multiple_allow, message)
@@ -69,10 +69,13 @@ class Login(Screen):
 			quick_message("Login Error", True, "You have entered the wrong credentials. Try again!")
 			return False
 		else:
-			self.ids.username.text=''
-			self.ids.password.text=''
 			try:
+				print('called')
 				client_initialize()
+				print(self.ids.username.text)
+				sendName(self.ids.username.text)
+				self.ids.username.text=''
+				self.ids.password.text=''
 				return True
 			except:
 				quick_message("Login Error", True, "The connection was not established with the server. Try again!")
@@ -106,8 +109,9 @@ class CreateGroup(Screen):
 			group_code=''
 			for i in range (4):
 				group_code+=randlist[randint(0,randomlen-1)]
-				
-			group_string = self.ids.name.text + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
+
+			group_string = self.ids.name.text + group_code + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
+			sendCreate(group_string)
 
 class SelectGroup(Screen):
 	activegroups = []

@@ -2,9 +2,8 @@
 from threading import Thread
 import socket
 
-
-
 def receive():
+    global client
     i=1
     print('Function Started!!!!')
     while 1:
@@ -14,23 +13,39 @@ def receive():
             print(m)
             if(m[0:3]=="Bye"):
                 client.close()
+                print("Connection got disconnected.............")
+                break
                 
         except OSError:
            print("Connection got disconnected")
            break
 
+def sendName(username):
+    global client
+    print("sendname")
+    client.send(username.encode('ASCII'))
+    
+def sendGroups(c):
+    global client
+    client.send("groups".encode('ASCII')) 
 
-def send(event=None):
-    m= message.get()
-    message.set("")
-    m=m.encode("ASCII")
-    client.send(m)
-    print(m)
+def sendCreate(s):
+    global client
+    client.send("create".encode('ASCII'))
+    client.send(s.encode("ASCII"))
+    print('sent')
     
         
 
-
+def close():
+    global client
+    print('close')
+    m="QUIT".encode("ASCII")                  #settting the variable of text-input to QUIT
+    client.send(m)                     #this is like clicking send button automatically
     
+def close2():
+    global client
+    client.close()
 
 #############################GUI
 '''
@@ -59,19 +74,24 @@ sendbtn.pack()
 window.protocol("WM_DELETE_WINDOW",close)
 '''
 
-def close():
-    client.close()
-
-client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+client=None
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
 def client_initialize():
+    global client
+    client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    print('e')
     Host="127.0.0.1"
+    print('d')
     Port=8080
-    client.connect((Host,Port))  
+    print('c')
+    client.connect((Host,Port))
+    print('b')  
     rthread=Thread(target=receive)
+    print('a')
     rthread.start()
+    print('aaaaaaa')
 
 
     

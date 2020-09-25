@@ -85,8 +85,9 @@ Screen_Manager:
                 text:"Log-in"
                 pos_hint:{'right':0.85}
                 on_release:
+                    app.root.transition = SlideTransition(direction="left")
                     app.root.current='join_or_create' if root.login_error() else 'login'
-                    app.root.transition = SlideTransition(direction="right")
+                    
                              
 <SizeWidget10@Widget>:
     size_hint: None, None
@@ -233,7 +234,7 @@ Screen_Manager:
                 text:"Submit"
                 size_hint_x:0.25
                 pos_hint: {'right':1}
-            
+                on_release: root.submit()
                     
 
 
