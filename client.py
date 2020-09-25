@@ -22,25 +22,28 @@ def receive():
            print("Connection got disconnected")
            break
 
-
-def sendGroups(event=None):
+def sendName():
+    client.send()
+    
+def sendGroups(c):
     m= message.get()
     message.set("")
     m=m.encode("ASCII")
     client.send(m)
     client.send("groups".encode('ASCII')) 
 
-def sendCreate():
-    pass
-    
+def sendCreate(s):
+    client.send("create".encode('ASCII'))
+    client.send(s.encode("ASCII"))
     
         
 
 def close(event=None):
-    m="QUIT"
-    message.set(m)             #settting the variable of text-input to QUIT
-    send()                     #this is like clicking send button automatically
+    m="QUIT".encode("ASCII")                  #settting the variable of text-input to QUIT
+    client_socket.send(m)                     #this is like clicking send button automatically
     
+def close2():
+    client_socket.close()
 
 #############################GUI
 

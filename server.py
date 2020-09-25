@@ -6,10 +6,13 @@ import socket
 def accept():
     while 1:
         client_socket,client_addr = server_socket.accept()        #threads are just created for making blocks of code execute parallely! like accepting the connections and handling clients all these work in parallel
-        print("A client has been connected to the server")
-        Thread(target=initialize,args=(client_socket,)).start()
+        try:
+         print("A client has been connected to the server")
+         Thread(target=initialize,args=(client_socket,)).start()
        # Thread(target=details,args=(client_socket,)).start()
-
+        except Exception e:
+          client_socket.close()
+          
 def details(c):
     print("came2")
     m="details;"
@@ -68,9 +71,7 @@ def initialize(c):
              elif(m=="QUIT"):
                  c.close()
                  d=0
-             
-        
-             
+                        
         except Exception as e:
             print("client socket closed")
             c.close()
@@ -87,13 +88,14 @@ def create(c):
         c.send(m.encode("ASCII"))"""
      string=c.recv(1024).decode("ASCII")
      list1=string.split(",") 
-     groupinfo[list1[0]]=[list1[1],[c]]
+     groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[c]]
      clientinfo[c].append(name)
      Thread(target=handling_the_client,args=(c,)).start()
      return 0
     except Exception as e:
         print("client socket closed")
         clientinfo.remove(clientinfo[client_socket])
+        client_socket.close()
         return 0
         
 
@@ -121,7 +123,7 @@ def join(c):
                p=c.recv(1024).decode("ASCII")
                cpass=groupinfo[name][0]
                if p==cpass:
-                 if len(groupinfo[name][1])<2:
+                 if len(groupinfo[name][3])<(groupinfo[name][1]):
                     m="Welcome to "+name
                     c.sendall(m.encode("ASCII"))
                     groupinfo[name][1].append(c)
