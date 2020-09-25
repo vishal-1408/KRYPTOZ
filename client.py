@@ -11,6 +11,7 @@ def receive():
         try:
             m=client.recv(1024)
             m=m.decode("ASCII")
+            print(m)
             listm.insert(tkinter.END,m)
             if(m[0:3]=="Bye"):
                 client.close()
@@ -67,7 +68,8 @@ window.protocol("WM_DELETE_WINDOW",close)
 client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
-Host="34.227.91.249"
+#Host="34.227.91.249"
+Host="127.0.0.1"
 Port=8080
 client.connect((Host,Port))  
 rthread=Thread(target=receive)

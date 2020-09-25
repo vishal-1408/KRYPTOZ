@@ -8,12 +8,26 @@ def accept():
         client_socket,client_addr = server_socket.accept()        #threads are just created for making blocks of code execute parallely! like accepting the connections and handling clients all these work in parallel
         print("A client has been connected to the server")
         Thread(target=initialize,args=(client_socket,)).start()
+       # Thread(target=details,args=(client_socket,)).start()
+
+def details(c):
+    print("came2")
+    m="details;"
+    for x,y  in groupinfo.items():
+    m+=str(x)+","+str(y[0])+","+" ".join([str(x) for x in y[1]])+";"
+    m=m.encode("ASCII")
+    c.sendall(m)
+    return 1    
+"details;groupname,grouppassword,name1,name2,name3...;groupname,..."
+            
+        
         
         
 
-def initialize(client_socket):
+def initialize(c):
+        print("came")
         try:
-         client_socket.send("Please enter your name and click enter".encode("ASCII"))
+         """client_socket.send("Please enter your name and click enter".encode("ASCII"))
          message = client_socket.recv(1024)
          message=message.decode('ASCII')
          print(message)
@@ -37,7 +51,19 @@ def initialize(client_socket):
            if c=="1":
                d=create(client_socket)
            elif c=="2":
-               d=join(client_socket)
+               d=join(client_socket)"""
+         d=1
+         while(d):
+             m=c.recv(1024).decode('ASCII')
+             if(m=="groups"): #Gui part should send a message,
+                 d=details(c)
+             elif(m=="create"):
+                 d=create(c)
+             elif(m=="join"):
+                 d=join(c)
+             
+        
+             
         except Exception as e:
             print("client socket closed")
             client_socket.close()
@@ -92,7 +118,7 @@ def join(c):
                if p==cpass:
                  if len(groupinfo[name][1])<2:
                     m="Welcome to "+name
-                    c.send(m.encode("ASCII"))
+                    c.sendall(m.encode("ASCII"))
                     groupinfo[name][1].append(c)
                     clientinfo[c].append(name)
                     Thread(target=handling_the_client,args=(c,)).start()
