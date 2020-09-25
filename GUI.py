@@ -5,6 +5,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FadeTransition
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
+from kivy.properties import BooleanProperty
 #------Imports from the modules---------------------
 from EncryptionHashing import hash_str
 from FileManage import *
@@ -13,7 +14,7 @@ from FileManage import *
 Window.clearcolor = (27/255, 34/255, 36/255, 1)
 #------------------------------------------------#
 
-#---------------Global Variables and functions------------------#
+#---------------Global Variables and Global functions------------------#
 separator="*****seperator*****"
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
@@ -73,11 +74,11 @@ class JoinOrCreate(Screen):
 	pass
 
 class CreateGroup(Screen):
-	pass
+	allow_password = BooleanProperty(True)
 
 class SelectGroup(Screen):
-	pass
-
+	activegroups = []
+	#[[TAKECARES]] Call the necessary function that assigns the number of groups available to join
 class ChatWindow(Screen):
 	pass
 

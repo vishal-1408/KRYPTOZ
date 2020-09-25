@@ -1,23 +1,55 @@
+#: import SlideTransition kivy.uix.screenmanager.SlideTransition
 Screen_Manager:
     Login:
     JoinOrCreate:
     CreateGroup:
     SelectGroup:
     ChatWindow:
-
+#------------------------------------------------------------------------Custom Widgets------------------------------------
 <CustomTextInput@TextInput>:
     on_parent: self._refresh_text(self.text)
     background_normal: ""
-    background_color:(34/255,43/255,46/255,1)
+    background_disabled_normal: ""
+    background_color:(34/255,43/255,46/255,1) if not self.disabled else (30/255,39/255,42/255,0.75)
     multiline: False
     foreground_color:(150/255,150/255,150/255,1)
     write_tab: False
     hint_text_color:(95/255,93/255,98/255,1)
+    cursor_color:(22/255,160/255,133/255,1)
+    disabled_foreground_color:(60/255,60/255,60/255,0.5)
 <Custom_Button@Button>: 
     background_normal: ""
     background_down: ""
     foreground_color:(95/255,93/255,98/255,1)
     background_color:  (16/255,112/255,93/255,1) if self.state == 'down' else (22/255,160/255,133/255,1)
+<Custom_ToggleButton@ToggleButton>:
+    background_normal: ""
+    background_down: ""
+    foreground_color:(95/255,93/255,98/255,1)
+    background_color:  (16/255,112/255,93/255,1) if self.state == 'down' else (22/255,160/255,133/255,1)
+<H1@Label>:
+    font_family: "Arial"
+    markup: True
+    font_size: 40
+    color: (22/255,160/255,133/255,1)
+<H2@Label>:
+    font_family: "Arial"
+    markup: True
+    font_size: 25
+    color: (22/255,160/255,133/255,1)
+<H3@Label>:
+    font_family: "Arial"
+    markup: True
+    font_size: 18
+    color: (22/255,160/255,133/255,1)
+<P@Label>:
+    font_family: "Arial"
+    markup: True
+    font_size: 15
+    color: (22/255,160/255,133/255,1)
+<Space@Widget>:
+#-------------------------------------------------------------------------------------------------------------------------
+
 <Login>:
     name: 'login'
     BoxLayout:
@@ -26,13 +58,13 @@ Screen_Manager:
         padding:(100,200)
         CustomTextInput:
             id: username
-            #text:"arjun" #REMOVEE THIS SHIT
+            text:"arjun" #REMOVEE THIS SHIT
             hint_text: "Username"
             size_hint_x:0.7
             pos_hint:{'center_x':0.5}
         CustomTextInput:
             id: password
-            #text:"arjun2000"  #REMOVEE THIS SHIT
+            text:"arjun2000"  #REMOVEE THIS SHIT
             hint_text: "Password"
             password: True
             size_hint_x:0.7
@@ -54,6 +86,7 @@ Screen_Manager:
                 pos_hint:{'right':0.85}
                 on_release:
                     app.root.current='join_or_create' if root.login() else 'login'
+                    app.root.transition = SlideTransition(direction="right")
                     root.login_error()          
 <SizeWidget10@Widget>:
     size_hint: None, None
@@ -95,7 +128,7 @@ Screen_Manager:
                 text:"Sign-Up"
                 pos_hint:{'center_x':0.5}
                 on_release:
-                    root.authenticate_signup_and_hash()
+                    app.root.authenticate_signup_and_hash()
             Custom_Button:
                 id:btn_back
                 text:"Back"
@@ -131,6 +164,10 @@ Screen_Manager:
                 text: "Join a Chamber"
             Custom_Button:
                 text: "Create a Chamber"
+                on_release:
+                    app.root.transition = SlideTransition(direction="up")
+                    app.root.current= 'creategroup'
+                    
         FloatLayout:
             size_hint_y: 0.1
             Custom_Button:
@@ -138,7 +175,64 @@ Screen_Manager:
                 pos_hint:{"center_x":0.5, "top":1}
                 text: "Log-Out"
                 on_release:
+                    app.root.transition = SlideTransition(direction="right")
                     app.root.current="login"
+                    
+<CreateGroup>:
+    name: 'creategroup'
+    BoxLayout:
+        orientation: "vertical"
+        padding:(0,600*0.1)
+        H1:
+            text: "[b]Describe Your Chamber: [/b]"
+            size_hint_y:0.1
+        BoxLayout:
+            size_hint_y: 0.8
+            orientation: "vertical"
+            padding: 40
+            spacing: dp(30)
+            CustomTextInput:
+                id: name
+                hint_text: "Chamber Name"
+            BoxLayout:
+                spacing: 640*0.1
+                CustomTextInput:
+                    id: password
+                    hint_text: "Chamber Password"
+                    disabled: not root.allow_password
+                    size_hint_x: 0.45
+                Custom_ToggleButton:
+                    text: "Disable Password for this Chamber"
+                    state: 'normal' if root.allow_password else 'down'
+                    on_state: root.allow_password = not root.allow_password
+                    size_hint_x: 0.45
+            CustomTextInput:
+                id: c_password
+                hint_text: "Confirm Password"
+                size_hint_x: 0.45
+                disabled: not root.allow_password
+            CustomTextInput:
+                id: members
+                hint_text: "Number of members"
+                size_hint_x: 0.45
+        FloatLayout:
+            size_hint_y: 0.1
+            Custom_Button:
+                id: back 
+                text:"Back"
+                size_hint_x:0.25
+                pos_hint: {'left':1}
+                on_release:
+                    app.root.transition= SlideTransition(direction='down')
+                    app.root.current= 'join_or_create'
+            Custom_Button:
+                id: submit
+                text:"Submit"
+                size_hint_x:0.25
+                pos_hint: {'right':1}
+            
+                    
+
 
 <ChatWindow>:
     name:'chatwin'
@@ -146,4 +240,6 @@ Screen_Manager:
         Button:
             text: "Chatwin"
             on_release:
+                app.root.transition = SlideTransition(direction='left')
                 app.root.current='login'
+                
