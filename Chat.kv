@@ -252,6 +252,8 @@ Screen_Manager:
 
 <SelectGroup>:
     name: "join"
+    on_pre_enter:
+        root.add_data()
     BoxLayout:
         orientation: "vertical"
         padding: 0

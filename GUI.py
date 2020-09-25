@@ -8,10 +8,12 @@ from kivy.uix.popup import Popup
 from random import randint
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, AliasProperty, NumericProperty, DictProperty
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.clock import Clock
 #------Imports from the modules---------------------
 from EncryptionHashing import hash_str
 from FileManage import *
 from client import *
+
 #--------------------------------------------------
 #---------------App Parameters------------------#
 Window.clearcolor = (27/255, 34/255, 36/255, 1)
@@ -105,11 +107,12 @@ class CreateGroup(Screen):
 
 	def submit(self):
 		if self.requirements():
-			sep=','
+			global separator
+			sep = separator 
 			randlist=['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9']
 			randomlen=len(randlist)
 			group_code=''
-			for i in range (4):
+			for i in range (6):
 				group_code+=randlist[randint(0,randomlen-1)]
 
 			group_string = self.ids.name.text + group_code + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
@@ -123,7 +126,12 @@ class SelectGroup(Screen):
 		self.data_view()
 	def data_view(self):
 		self.activegroups = [{'group_name': 'Chamber'+str(x), 'group_code':'ABCD12', 'members': randint(2,99), 'owner': self} for x in range(20)]
-
+	def add_data(self):#Might have to change for efficiency
+		sendGroups()
+		print("these are the details")
+		Clock.schedule_once(self.schedule_details)
+	def schedule_details(self, *args):	
+		detail_list=return_details()
 class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	owner =  ObjectProperty()
 	group_name = StringProperty()

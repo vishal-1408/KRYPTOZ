@@ -13,11 +13,14 @@ def accept():
           
 def details(c):
     print("came2")
-    m="details;"
+    m="details!!!!!separator!!!!!"
+    sep='*****seperator*****'
     for x,y  in groupinfo.items():
-      m+=str(x)+","+str(y[0])+","+" ".join([str(x) for x in y[1]])+";"
-      m=m.encode("ASCII")
-      c.sendall(m)
+        m+=x+sep+y[0]+sep+str(y[1])+sep+str(y[2])+sep+" ".join([str(x) for x in y[3]])+"!!!!!separator!!!!!"
+        print(y)
+    m=m.encode("ASCII")
+    c.sendall(m)
+    print(m)
     return 1    
 #"details;groupname,grouppassword,name1,name2,name3...;groupname,..."
             
@@ -66,6 +69,8 @@ def initialize(c):
                  d=details(c)
              elif(m=="create"):
                  d=create(c)
+                 if d==0:
+                     d=1
              elif(m=="join"):
                  d=join(c)
              elif(m=="QUIT"):
@@ -89,11 +94,11 @@ def create(c):
                 m+=(str(x)+"\n")
             c.send(m.encode("ASCII"))"""
         string=c.recv(1024).decode("ASCII")
-        list1=string.split(",") 
-        groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[c]]
+        list1=string.split("*****seperator*****") 
+        groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]]]
         clientinfo[c].append(list1[0])
         print(groupinfo)
-        Thread(target=handling_the_client,args=(c,)).start()
+        #Thread(target=handling_the_client,args=(c,)).start()
         return 0
     except Exception as e:
         print("client socket closed")
