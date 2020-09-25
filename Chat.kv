@@ -163,6 +163,9 @@ Screen_Manager:
             spacing:dp(40)
             Custom_Button:
                 text: "Join a Chamber"
+                on_release:
+                    app.root.transition = SlideTransition(direction="down")
+                    app.root.current= 'join'
             Custom_Button:
                 text: "Create a Chamber"
                 on_release:
@@ -235,7 +238,71 @@ Screen_Manager:
                 size_hint_x:0.25
                 pos_hint: {'right':1}
                 on_release: root.submit()
-                    
+
+<RecycleGroups>:
+    orientation: 'horizontal'
+    spacing: 20
+    Custom_Button:
+        text: root.group_name
+        size_hint_x: 0.8
+    H2:
+        text: root.group_code
+        size_hint_x:0.15
+        halign: 'center'
+
+<SelectGroup>:
+    name: "join"
+    BoxLayout:
+        orientation: "vertical"
+        padding: 0
+        spacing: dp(20)
+        BoxLayout:
+            size_hint_y: 0.1
+            CustomTextInput:
+                hint_text: "Search for a Chamber (Chambercode)"
+                size_hint_x: 0.75
+            Custom_Button:
+                text: 'Search'
+                size_hint_x: 0.2
+        BoxLayout:
+            spacing:100
+            size_hint_y:0.1
+            padding: (240,0,0,0)
+            H2:
+                text: "[b]Chamber Names[/b]"
+                #pos_hint: {'x': 0.8}
+            H2: 
+                text: "[b]Chamber Code[/b]"
+                text_size: (None, None)
+
+        RecycleView:
+            id: rv
+            data: root.activegroups
+            viewclass: 'RecycleGroups'
+            RecycleBoxLayout:
+                spacing: 10
+                padding: (100,0)
+                default_size: None, dp(65)
+                default_size_hint: 1, None
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+        FloatLayout:
+            size_hint_y: 0.1
+            Custom_Button:
+                id: back 
+                text:"Back"
+                size_hint_x:0.25
+                pos_hint: {'left':1}
+                on_release:
+                    app.root.transition= SlideTransition(direction='down')
+                    app.root.current= 'join_or_create'
+            Custom_Button:
+                id: submit
+                text:"Submit"
+                size_hint_x:0.25
+                pos_hint: {'right':1}
+                on_release: root.submit()
 
 
 <ChatWindow>:

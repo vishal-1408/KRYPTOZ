@@ -6,7 +6,8 @@ from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FadeT
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
 from random import randint
-from kivy.properties import BooleanProperty
+from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, AliasProperty, NumericProperty, DictProperty
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
 #------Imports from the modules---------------------
 from EncryptionHashing import hash_str
 from FileManage import *
@@ -18,6 +19,7 @@ Window.clearcolor = (27/255, 34/255, 36/255, 1)
 
 #---------------Global Variables and Global functions------------------#
 separator="*****seperator*****"
+
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
 	textinput.text=''
@@ -92,7 +94,7 @@ class CreateGroup(Screen):
 				if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
 					return True
 				else:
-					quick_message("Add your friends!", True, "Add more than 2 mebers and less than 100.")
+					quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
 					return False
 			else:
 				quick_message("Login Error", True, "The passwords do not match!")
@@ -114,8 +116,25 @@ class CreateGroup(Screen):
 			sendCreate(group_string)
 
 class SelectGroup(Screen):
-	activegroups = []
+	activegroups = ListProperty()
 	#[[TAKECARES]] Call the necessary function that assigns the number of groups available to join
+	def __init__(self, **kwargs):
+		super(SelectGroup,self).__init__(**kwargs)
+		self.data_view()
+	def data_view(self):
+		self.activegroups = [{'group_name': 'Chamber'+str(x), 'group_code':'ABCD12', 'members': randint(2,99), 'owner': self} for x in range(20)]
+
+class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
+	owner =  ObjectProperty()
+	group_name = StringProperty()
+	group_code = StringProperty()
+	members = NumericProperty()
+	password = StringProperty()
+	index = NumericProperty()
+	
+	def refresh_view_attrs(self, rv, index, data):
+		self.index = index
+		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
 class ChatWindow(Screen):
 	pass
 
