@@ -12,6 +12,7 @@ def receive():
             m=client.recv(1024)
             m=m.decode("ASCII")
             print(m)
+            
             listm.insert(tkinter.END,m)
             if(m[0:3]=="Bye"):
                 client.close()
@@ -22,12 +23,16 @@ def receive():
            break
 
 
-def send(event=None):
+def sendGroups(event=None):
     m= message.get()
     message.set("")
     m=m.encode("ASCII")
     client.send(m)
-    print(m)
+    client.send("groups".encode('ASCII')) 
+
+def sendCreate():
+    pass
+    
     
         
 

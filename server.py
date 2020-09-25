@@ -14,9 +14,9 @@ def details(c):
     print("came2")
     m="details;"
     for x,y  in groupinfo.items():
-    m+=str(x)+","+str(y[0])+","+" ".join([str(x) for x in y[1]])+";"
-    m=m.encode("ASCII")
-    c.sendall(m)
+      m+=str(x)+","+str(y[0])+","+" ".join([str(x) for x in y[1]])+";"
+      m=m.encode("ASCII")
+      c.sendall(m)
     return 1    
 "details;groupname,grouppassword,name1,name2,name3...;groupname,..."
             
@@ -52,6 +52,10 @@ def initialize(c):
                d=create(client_socket)
            elif c=="2":
                d=join(client_socket)"""
+    
+
+         name=c.recv(1024).decode('ASCII')
+         clientinfo[c]=[name]
          d=1
          while(d):
              m=c.recv(1024).decode('ASCII')
@@ -61,28 +65,29 @@ def initialize(c):
                  d=create(c)
              elif(m=="join"):
                  d=join(c)
+             elif(m=="QUIT"):
+                 c.close()
+                 d=0
              
         
              
         except Exception as e:
             print("client socket closed")
-            client_socket.close()
+            c.close()
 
 
 
 def create(c):
     try:
      print("create")
-     if(len(groupinfo)!=0):
+     """if(len(groupinfo)!=0):
         m="The foll. group names are not available:\n"
         for x in groupinfo:
             m+=(str(x)+"\n")
-        c.send(m.encode("ASCII"))
-     c.send("Enter the name for your group".encode("ASCII"))
-     name=c.recv(1024).decode("ASCII")
-     c.send("Enter a password for the group".encode("ASCII"))
-     p=c.recv(1024).decode("ASCII")
-     groupinfo[name]=[p,[c]]
+        c.send(m.encode("ASCII"))"""
+     string=c.recv(1024).decode("ASCII")
+     list1=string.split(",") 
+     groupinfo[list1[0]]=[list1[1],[c]]
      clientinfo[c].append(name)
      Thread(target=handling_the_client,args=(c,)).start()
      return 0
@@ -96,11 +101,11 @@ def join(c):
     e=1
     while e:
         if not len(groupinfo)==0:
-            m="The foll. groups are available:"
+            """ m="The foll. groups are available:"
             for x in groupinfo:
                 m+=(str(x)+"\n")
             m+="Please enter the group name, you want to join: "
-            c.send(m.encode("ASCII"))
+            c.send(m.encode("ASCII"))"""
             name=c.recv(1024).decode("ASCII")
             if name not in groupinfo:
                m="Group doesn't exist, Enter 1 to try again and 0 to go to main menu: "
