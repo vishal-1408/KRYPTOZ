@@ -120,12 +120,13 @@ class CreateGroup(Screen):
 				group_code+=randlist[randint(0,randomlen-1)]
 			group_string = self.ids.name.text + group_code + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
 			sendCreate(group_string)
-			self.manager.transition=SlideTransition()
+			self.manager.transition=SlideTransition(direction="down")
 			self.manager.current = 'chatwin'
+			#clearing textinputs
 			self.ids.name.text=''
-			self.ids.password.text
-			self.ids.c_password.text
-			self.ids.members.text
+			self.ids.password.text=''
+			self.ids.c_password.text=''
+			self.ids.members.text=''
 class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency

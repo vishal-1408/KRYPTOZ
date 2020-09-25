@@ -311,4 +311,9 @@ Screen_Manager:
 
 <ChatWindow>:
     name:'chatwin'
-                
+    BoxLayout:
+        Custom_Button:
+            text: 'Back'
+            on_release:
+                app.root.transition=SlideTransition(direction='right')
+                app.root.current='join_or_create'
