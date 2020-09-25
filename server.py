@@ -14,9 +14,9 @@ def details(c):
     print("came2")
     m="details;"
     for x,y  in groupinfo.items():
-    m+=str(x)+","+str(y[0])+","+" ".join([str(x) for x in y[1]])+";"
-    m=m.encode("ASCII")
-    c.sendall(m)
+        m+=str(x)+","+str(y[0])+","+" ".join([str(x) for x in y[1]])+";"
+        m=m.encode("ASCII")
+        c.sendall(m)
     return 1    
 "details;groupname,grouppassword,name1,name2,name3...;groupname,..."
             

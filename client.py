@@ -1,21 +1,19 @@
 
 from threading import Thread
 import socket
-import tkinter
 
 
 
 def receive():
     i=1
+    print('Function Started!!!!')
     while 1:
         try:
             m=client.recv(1024)
             m=m.decode("ASCII")
             print(m)
-            listm.insert(tkinter.END,m)
             if(m[0:3]=="Bye"):
                 client.close()
-                window.destroy()                #closes even the gui window
                 
         except OSError:
            print("Connection got disconnected")
@@ -31,14 +29,11 @@ def send(event=None):
     
         
 
-def close(event=None):
-    m="QUIT"
-    message.set(m)             #settting the variable of text-input to QUIT
-    send()                     #this is like clicking send button automatically
+
     
 
 #############################GUI
-
+'''
 window=tkinter.Tk()
 window.title("chat-app")
 
@@ -62,19 +57,22 @@ sendbtn.pack()
 
 #binding the window closing event to close function
 window.protocol("WM_DELETE_WINDOW",close)
+'''
 
-
+def close():
+    client.close()
 
 client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
-Host="127.0.0.1"
-Port=8080
-client.connect((Host,Port))  
-rthread=Thread(target=receive)
-rthread.start()
-tkinter.mainloop() # starts the gui window!
+def client_initialize():
+    Host="127.0.0.1"
+    Port=8080
+    client.connect((Host,Port))  
+    rthread=Thread(target=receive)
+    rthread.start()
+
 
     
 

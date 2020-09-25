@@ -85,9 +85,9 @@ Screen_Manager:
                 text:"Log-in"
                 pos_hint:{'right':0.85}
                 on_release:
-                    app.root.current='join_or_create' if root.login() else 'login'
+                    app.root.current='join_or_create' if root.login_error() else 'login'
                     app.root.transition = SlideTransition(direction="right")
-                    root.login_error()          
+                             
 <SizeWidget10@Widget>:
     size_hint: None, None
     size: 20, 50
@@ -177,6 +177,7 @@ Screen_Manager:
                 on_release:
                     app.root.transition = SlideTransition(direction="right")
                     app.root.current="login"
+                    root.client_close()
                     
 <CreateGroup>:
     name: 'creategroup'
@@ -199,6 +200,7 @@ Screen_Manager:
                 CustomTextInput:
                     id: password
                     hint_text: "Chamber Password"
+                    password: True
                     disabled: not root.allow_password
                     size_hint_x: 0.45
                 Custom_ToggleButton:
@@ -210,6 +212,7 @@ Screen_Manager:
                 id: c_password
                 hint_text: "Confirm Password"
                 size_hint_x: 0.45
+                password: True
                 disabled: not root.allow_password
             CustomTextInput:
                 id: members

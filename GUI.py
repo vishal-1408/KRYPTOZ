@@ -5,10 +5,12 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FadeTransition
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
+from random import randint
 from kivy.properties import BooleanProperty
 #------Imports from the modules---------------------
 from EncryptionHashing import hash_str
 from FileManage import *
+from client import *
 #--------------------------------------------------
 #---------------App Parameters------------------#
 Window.clearcolor = (27/255, 34/255, 36/255, 1)
@@ -26,6 +28,11 @@ def color_fix(textinput):
 	textinput.text=''
 	textinput.hint_text_color=(95/255,93/255,98/255,1)
 	textinput.foreground_color=(150/255,150/255,150/255,1)
+def quick_message(self, title, multiple_allow, message ):
+		design=QuickMessage_pop()
+		app=App.get_running_app()
+		app.popup_200(design, title, multiple_allow, message)
+		design.ids.okay.bind(on_release=app.close_popup)
 #------------------------------------------------#
 
 #---------------Custom Widgets------------------#
@@ -33,13 +40,6 @@ def color_fix(textinput):
 #------------------------------------------------#
 
 class Login(Screen):
-	
-	def quick_message(self, title, multiple_allow, message ):
-		design=QuickMessage_pop()
-		app=App.get_running_app()
-		app.popup_200(design, title, multiple_allow, message)
-		design.ids.okay.bind(on_release=app.close_popup)
-
 	def Sign_Up(self):
 		design = SignUp_pop()
 		popup=CustomPopup(
@@ -66,15 +66,48 @@ class Login(Screen):
 		return False
 	def login_error(self):
 		if not self.login():
-			self.quick_message("Login Error", True, "You have entered the wrong credentials. Try again!")
+			quick_message("Login Error", True, "You have entered the wrong credentials. Try again!")
+			return False
 		else:
 			self.ids.username.text=''
 			self.ids.password.text=''
+			try:
+				client_initialize()
+				return True
+			except:
+				quick_message("Login Error", True, "The connection was not established with the server. Try again!")
+				return False
 class JoinOrCreate(Screen):
-	pass
+	def client_close(self):
+		close()
 
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
+	def requirements(self):
+		if len(self.ids.name.text)>3:
+			if self.ids.password.text==self.ids.c_password.text:
+				if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
+					return True
+				else:
+					quick_message("Add your friends!", True, "Add more than 2 mebers and less than 100.")
+					return False
+			else:
+				quick_message("Login Error", True, "The passwords do not match!")
+				return False
+		else:
+			quick_message("Login Error", True, "The Chamber Name should be greater than 3 characters.")
+			return False
+
+	def submit(self):
+		if self.requirements():
+			sep=','
+			randlist=['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9']
+			randomlen=len(randlist)
+			group_code=''
+			for i in range (4):
+				group_code+=randlist[randint(0,randomlen-1)]
+				
+			group_string = self.ids.name.text + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
 
 class SelectGroup(Screen):
 	activegroups = []
