@@ -17,7 +17,7 @@ Screen_Manager:
     hint_text_color:(95/255,93/255,98/255,1)
     cursor_color:(22/255,160/255,133/255,1)
     disabled_foreground_color:(60/255,60/255,60/255,0.5)
-<Custom_Button@Button>: 
+<Custom_Button@Button>:
     background_normal: ""
     background_down: ""
     foreground_color:(95/255,93/255,98/255,1)
@@ -87,8 +87,8 @@ Screen_Manager:
                 on_release:
                     app.root.transition = SlideTransition(direction="left")
                     app.root.current='join_or_create' if root.login_error() else 'login'
-                    
-                             
+
+
 <SizeWidget10@Widget>:
     size_hint: None, None
     size: 20, 50
@@ -171,7 +171,7 @@ Screen_Manager:
                 on_release:
                     app.root.transition = SlideTransition(direction="up")
                     app.root.current= 'creategroup'
-                    
+
         FloatLayout:
             size_hint_y: 0.1
             Custom_Button:
@@ -182,7 +182,7 @@ Screen_Manager:
                     app.root.transition = SlideTransition(direction="right")
                     app.root.current="login"
                     root.client_close()
-                    
+
 <CreateGroup>:
     name: 'creategroup'
     BoxLayout:
@@ -225,7 +225,7 @@ Screen_Manager:
         FloatLayout:
             size_hint_y: 0.1
             Custom_Button:
-                id: back 
+                id: back
                 text:"Back"
                 size_hint_x:0.25
                 pos_hint: {'left':1}
@@ -274,7 +274,7 @@ Screen_Manager:
             H2:
                 text: "[b]Chamber Names[/b]"
                 #pos_hint: {'x': 0.8}
-            H2: 
+            H2:
                 text: "[b]Chamber Code[/b]"
                 text_size: (None, None)
 
@@ -293,7 +293,7 @@ Screen_Manager:
         FloatLayout:
             size_hint_y: 0.1
             Custom_Button:
-                id: back 
+                id: back
                 text:"Back"
                 size_hint_x:0.25
                 pos_hint: {'left':1}
@@ -311,9 +311,12 @@ Screen_Manager:
 
 <ChatWindow>:
     name:'chatwin'
+<<<<<<< HEAD
     BoxLayout:
         Custom_Button:
             text: 'Back'
             on_release:
                 app.root.transition=SlideTransition(direction='right')
                 app.root.current='join_or_create'
+=======
+>>>>>>> 505ba49555e72cce3a84fd5631293433fa4e409f
