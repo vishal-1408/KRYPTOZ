@@ -188,7 +188,7 @@ class SignUp_pop(BoxLayout):
 class QuickMessage_pop(BoxLayout):
 	pass
 #------------------------------------------------#
-print(App)
+    
 #-------------main app loop---------#
 class ChatApp(App):
 	popups = []
