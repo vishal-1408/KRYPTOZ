@@ -15,9 +15,10 @@ def details(c):
     print("came2")
     m="details;"
     for x,y  in groupinfo.items():
-      m+=str(x)+","+str(y[0])+","+" ".join([str(x) for x in y[1]])+";"
-      m=m.encode("ASCII")
-      c.sendall(m)
+      m+=str(x)+" "+str(y[0])+" "+str(y[1])+" "+str(y[2])+";"
+    m=m.encode("ASCII")
+    c.sendall(m)
+    print(m)
     return 1    
 #"details;groupname,grouppassword,name1,name2,name3...;groupname,..."
             
@@ -82,19 +83,14 @@ def initialize(c):
 
 def create(c):
     try:
-        print("create")
-        """if(len(groupinfo)!=0):
-            m="The foll. group names are not available:\n"
-            for x in groupinfo:
-                m+=(str(x)+"\n")
-            c.send(m.encode("ASCII"))"""
-        string=c.recv(1024).decode("ASCII")
-        list1=string.split(",") 
-        groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[c]]
-        clientinfo[c].append(list1[0])
-        print(groupinfo)
-        Thread(target=handling_the_client,args=(c,)).start()
-        return 0
+      print("create")
+      string=c.recv(1024).decode("ASCII")
+      list1=string.split(",") 
+      groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[client_info[c]]]
+      clientinfo[c].append(list1[0])
+      print(groupinfo)
+      Thread(target=handling_the_client,args=(c,)).start()
+      return 0
     except Exception as e:
         print("client socket closed")
         clientinfo.remove(clientinfo[c])
