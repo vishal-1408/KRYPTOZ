@@ -94,17 +94,11 @@ details=[]
 def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    print('e')
     Host="127.0.0.1"
-    print('d')
     Port=8080
-    print('c')
     client.connect((Host,Port))
-    print('b')  
     rthread=Thread(target=receive)
-    print('a')
     rthread.start()
-    print('aaaaaaa')
 
 
     

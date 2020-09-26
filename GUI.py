@@ -92,7 +92,7 @@ class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
 	def requirements(self):
 		if len(self.ids.name.text)>=3:
-			if len(self.ids.password.text)<=5:
+			if len(self.ids.password.text)>5:
 				if self.ids.password.text==self.ids.c_password.text:
 					if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
 						return True
@@ -100,10 +100,10 @@ class CreateGroup(Screen):
 						quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
 						return False
 				else:
-					quick_message("Meh! don't you wann be secure", True, "Passwords so not match!")
+					quick_message("Meh! don't you wanna be secure", True, "Passwords so not match!")
 					return False
 			else:
-					quick_message("Meh! don't you wann be secure", True, "Passwords should be of 5 characters minimum.")
+					quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
 					return False
 		else:
 			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters.")
