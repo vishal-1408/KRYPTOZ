@@ -6,11 +6,14 @@ from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FadeT
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
 from random import randint
-from kivy.properties import BooleanProperty
+from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, AliasProperty, NumericProperty, DictProperty
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.clock import Clock
 #------Imports from the modules---------------------
 from EncryptionHashing import hash_str
 from FileManage import *
 from client import *
+
 #--------------------------------------------------
 #---------------App Parameters------------------#
 Window.clearcolor = (27/255, 34/255, 36/255, 1)
@@ -18,6 +21,7 @@ Window.clearcolor = (27/255, 34/255, 36/255, 1)
 
 #---------------Global Variables and Global functions------------------#
 separator="*****seperator*****"
+
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
 	textinput.text=''
@@ -87,35 +91,67 @@ class JoinOrCreate(Screen):
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
 	def requirements(self):
-		if len(self.ids.name.text)>3:
-			if self.ids.password.text==self.ids.c_password.text:
-				if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
-					return True
+		if len(self.ids.name.text)>=3:
+			if len(self.ids.password.text)<=5:
+				if self.ids.password.text==self.ids.c_password.text:
+					if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
+						return True
+					else:
+						quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+						return False
 				else:
-					quick_message("Add your friends!", True, "Add more than 2 mebers and less than 100.")
+					quick_message("Meh! don't you wann be secure", True, "Passwords so not match!")
 					return False
 			else:
-				quick_message("Login Error", True, "The passwords do not match!")
-				return False
+					quick_message("Meh! don't you wann be secure", True, "Passwords should be of 5 characters minimum.")
+					return False
 		else:
-			quick_message("Login Error", True, "The Chamber Name should be greater than 3 characters.")
+			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters.")
 			return False
 
 	def submit(self):
 		if self.requirements():
-			sep=','
+			global separator
+			sep = separator 
 			randlist=['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9']
 			randomlen=len(randlist)
 			group_code=''
-			for i in range (4):
+			for i in range (6):
 				group_code+=randlist[randint(0,randomlen-1)]
-
 			group_string = self.ids.name.text + group_code + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
 			sendCreate(group_string)
-
+			self.manager.transition=SlideTransition()
+			self.manager.current = 'chatwin'
+			self.ids.name.text=''
+			self.ids.password.text
+			self.ids.c_password.text
+			self.ids.members.text
 class SelectGroup(Screen):
-	activegroups = []
-	#[[TAKECARES]] Call the necessary function that assigns the number of groups available to join
+	activegroups = ListProperty()
+	def add_data(self):#Might have to change for efficiency
+		sendGroups()
+		print("these are the details")
+		Clock.schedule_once(self.schedule_details)
+	def schedule_details(self, *args):	
+		self.detail_list=return_details()
+		for group in self.detail_list:
+			group_data = {'group_name': group[0][:-6], 'password': group[1], 'members': group[2], 'group_code': group[3], 'owner': self}
+			self.activegroups.append(group_data)
+	def clear_recycleview(self):
+		self.activegroups=[]
+
+
+class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
+	owner =  ObjectProperty()
+	group_name = StringProperty()
+	group_code = StringProperty()
+	members = NumericProperty()
+	password = StringProperty()
+	index = NumericProperty()
+	
+	def refresh_view_attrs(self, rv, index, data):
+		self.index = index
+		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
 class ChatWindow(Screen):
 	pass
 
@@ -161,22 +197,22 @@ class SignUp_pop(BoxLayout):
 					self.win.open()
 					design.ids.okay.bind(on_release=self.win.dismiss)
 				else:
-					self.quick_message("Warning", True, "A user with the same username exists on this PC. Try a new useraname.")
+					quick_message("Warning", True, "A user with the same username exists on this PC. Try a new useraname.")
 					error_color(self.ids.username)
 			else:
-				self.quick_message("Warning", True, "The passwords do not match. Try again!")
+				quick_message("Warning", True, "The passwords do not match. Try again!")
 				error_color(self.ids.password)
 				error_color(self.ids.c_password)
 		else:
 			if len(self.username)==0 and len(self.password)<8:
-				self.quick_message("Warning", True, "\u2022The username must be given\n\u2022The password must be 8 characters long.")
+				quick_message("Warning", True, "\u2022The username must be given\n\u2022The password must be 8 characters long.")
 				error_color(self.ids.username)
 				error_color(self.ids.password)
 			elif len(self.ids.password.text)<8:
-				self.quick_message("Warning", True, "The password must be 8 characters long.")
+				quick_message("Warning", True, "The password must be 8 characters long.")
 				error_color(self.ids.password)
 			elif len(self.ids.username.text)==0:
-				self.quick_message("Warning", True, "The username must be given.")
+				quick_message("Warning", True, "The username must be given.")
 				error_color(self.ids.username)
 
 	def quick_message(self, title, multiple_allow, message ):
@@ -188,7 +224,7 @@ class SignUp_pop(BoxLayout):
 class QuickMessage_pop(BoxLayout):
 	pass
 #------------------------------------------------#
-print(App)
+
 #-------------main app loop---------#
 class ChatApp(App):
 	popups = []

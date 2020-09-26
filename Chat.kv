@@ -129,7 +129,7 @@ Screen_Manager:
                 text:"Sign-Up"
                 pos_hint:{'center_x':0.5}
                 on_release:
-                    root.authenticate_signup_and_hash()
+                    app.root.authenticate_signup_and_hash()
             Custom_Button:
                 id:btn_back
                 text:"Back"
@@ -163,6 +163,9 @@ Screen_Manager:
             spacing:dp(40)
             Custom_Button:
                 text: "Join a Chamber"
+                on_release:
+                    app.root.transition = SlideTransition(direction="down")
+                    app.root.current= 'join'
             Custom_Button:
                 text: "Create a Chamber"
                 on_release:
@@ -195,12 +198,12 @@ Screen_Manager:
             spacing: dp(30)
             CustomTextInput:
                 id: name
-                hint_text: "Chamber Name"
+                hint_text: "Chamber Name [atleast 3 characters]"
             BoxLayout:
                 spacing: 640*0.1
                 CustomTextInput:
                     id: password
-                    hint_text: "Chamber Password"
+                    hint_text: "Chamber Password [atleast 5 characters]"
                     password: True
                     disabled: not root.allow_password
                     size_hint_x: 0.45
@@ -217,7 +220,7 @@ Screen_Manager:
                 disabled: not root.allow_password
             CustomTextInput:
                 id: members
-                hint_text: "Number of members"
+                hint_text: "Number of members [atleast two members]"
                 size_hint_x: 0.45
         FloatLayout:
             size_hint_y: 0.1
@@ -236,13 +239,75 @@ Screen_Manager:
                 pos_hint: {'right':1}
                 on_release: root.submit()
 
+<RecycleGroups>:
+    orientation: 'horizontal'
+    spacing: 20
+    Custom_Button:
+        text: root.group_name
+        font_size: 18
+        size_hint_x: 0.8
+    H2:
+        text: root.group_code
+        size_hint_x:0.15
+        halign: 'center'
+
+<SelectGroup>:
+    name: "join"
+    on_pre_enter:
+        root.add_data()
+    BoxLayout:
+        orientation: "vertical"
+        padding: 0
+        spacing: dp(20)
+        BoxLayout:
+            size_hint_y: 0.1
+            CustomTextInput:
+                hint_text: "Search for a Chamber (Chambercode)"
+                size_hint_x: 0.75
+            Custom_Button:
+                text: 'Search'
+                size_hint_x: 0.2
+        BoxLayout:
+            spacing:100
+            size_hint_y:0.1
+            padding: (240,0,0,0)
+            H2:
+                text: "[b]Chamber Names[/b]"
+                #pos_hint: {'x': 0.8}
+            H2:
+                text: "[b]Chamber Code[/b]"
+                text_size: (None, None)
+
+        RecycleView:
+            id: rv
+            data: root.activegroups
+            viewclass: 'RecycleGroups'
+            RecycleBoxLayout:
+                spacing: 10
+                padding: (100,0)
+                default_size: None, dp(65)
+                default_size_hint: 1, None
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+        FloatLayout:
+            size_hint_y: 0.1
+            Custom_Button:
+                id: back
+                text:"Back"
+                size_hint_x:0.25
+                pos_hint: {'left':1}
+                on_release:
+                    app.root.transition= SlideTransition(direction='up')
+                    app.root.current= 'join_or_create'
+                    root.clear_recycleview()
+            Custom_Button:
+                id: submit
+                text:"Submit"
+                size_hint_x:0.25
+                pos_hint: {'right':1}
+                on_release: root.submit()
 
 
 <ChatWindow>:
     name:'chatwin'
-    BoxLayout:
-        Button:
-            text: "Chatwin"
-            on_release:
-                app.root.transition = SlideTransition(direction='left')
-                app.root.current='login'

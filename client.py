@@ -1,33 +1,35 @@
 
 from threading import Thread
 import socket
-
+sep1='!!!!!separator!!!!!'
+sep2='*****seperator*****'
 def receive():
     global client
-    global details
+    global details, sep1, sep2
     i=1
     print('Function Started!!!!')
     while 1:
         try:
             m=client.recv(1024)
             m=m.decode("ASCII")
-            print(m)
             if m[0:3]=="Bye":
                 client.close()
                 print("Connection got disconnected.............")
                 break
             if m[0:7]=="details":
-                x=m.split(";")
+                x=m.split(sep1)
                 y=[]
-                if not len(x[1:])== len(details):
-                    for i in range(1,len(x)):
-                        y.append(x[i].split(","))
-                    details=y.copy() 
+                for i in range(1,len(x)-1):
+                    y.append(x[i].split(sep2))
+                details=y
+                
                     
         except OSError:
            print("Connection got disconnected")
            break
-
+def return_details():
+    global details
+    return details
 def sendName(username):
     global client
     print("sendname")
@@ -35,9 +37,9 @@ def sendName(username):
     
 def sendGroups():
     global client
-    client.send("groups".encode('ASCII')) 
+    client.sendall("groups".encode('ASCII')) 
 
-def sendCreate():
+def sendCreate(s):
     global client
     client.send("create".encode('ASCII'))
     client.send(s.encode("ASCII"))
@@ -85,7 +87,7 @@ window.protocol("WM_DELETE_WINDOW",close)
 '''
 
 client=None
-details=None
+details=[]
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"

@@ -13,9 +13,11 @@ def accept():
           
 def details(c):
     print("came2")
-    m="details;"
+    m="details!!!!!separator!!!!!"
+    sep='*****seperator*****'
     for x,y  in groupinfo.items():
-      m+=str(x)+" "+str(y[0])+" "+str(y[1])+" "+str(y[2])+";"
+        m+=x+sep+y[0]+sep+str(y[1])+sep+str(y[2])+sep+" ".join([str(x) for x in y[3]])+"!!!!!separator!!!!!"
+        print(y)
     m=m.encode("ASCII")
     c.sendall(m)
     print(m)
@@ -67,6 +69,8 @@ def initialize(c):
                  d=details(c)
              elif(m=="create"):
                  d=create(c)
+                 if d==0:
+                     d=1
              elif(m=="join"):
                  d=join(c)
              elif(m=="QUIT"):
@@ -83,14 +87,19 @@ def initialize(c):
 
 def create(c):
     try:
-      print("create")
-      string=c.recv(1024).decode("ASCII")
-      list1=string.split(",") 
-      groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[client_info[c]]]
-      clientinfo[c].append(list1[0])
-      print(groupinfo)
-      Thread(target=handling_the_client,args=(c,)).start()
-      return 0
+        print("create")
+        """if(len(groupinfo)!=0):
+            m="The foll. group names are not available:\n"
+            for x in groupinfo:
+                m+=(str(x)+"\n")
+            c.send(m.encode("ASCII"))"""
+        string=c.recv(1024).decode("ASCII")
+        list1=string.split("*****seperator*****") 
+        groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]]]
+        clientinfo[c].append(list1[0])
+        print(groupinfo)
+        #Thread(target=handling_the_client,args=(c,)).start()
+        return 0
     except Exception as e:
         print("client socket closed")
         clientinfo.remove(clientinfo[c])
