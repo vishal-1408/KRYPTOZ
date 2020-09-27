@@ -234,7 +234,7 @@ clientinfo={}
 groupinfo={}
 
 Host=""
-port=8080
+port=8000
 server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
 server_socket.bind((Host,port))

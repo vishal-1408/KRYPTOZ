@@ -95,7 +95,7 @@ def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     Host="127.0.0.1"
-    Port=8080
+    Port=8000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()

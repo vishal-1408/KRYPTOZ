@@ -241,7 +241,7 @@ Screen_Manager:
 
 <RecycleGroups>:
     orientation: 'horizontal'
-    spacing: 20
+    spacing: 70
     Custom_Button:
         text: root.group_name
         font_size: 18
@@ -268,15 +268,17 @@ Screen_Manager:
                 text: 'Search'
                 size_hint_x: 0.2
         BoxLayout:
-            spacing:100
+            spacing:50
             size_hint_y:0.1
-            padding: (240,0,0,0)
+            padding: (200,0,0,0)
             H2:
-                text: "[b]Chamber Names[/b]"
+                text: "Chamber Names"
+                color:(110/255,110/255,110/255,1)
                 #pos_hint: {'x': 0.8}
             H2:
-                text: "[b]Chamber Code[/b]"
+                text: "Chamber Code"
                 text_size: (None, None)
+                color:(110/255,110/255,110/255,1)
 
         RecycleView:
             id: rv
@@ -308,15 +310,11 @@ Screen_Manager:
                 pos_hint: {'right':1}
                 on_release: root.submit()
 
-
 <ChatWindow>:
     name:'chatwin'
-<<<<<<< HEAD
     BoxLayout:
         Custom_Button:
-            text: 'Back'
+            text: "back to join or create"
             on_release:
-                app.root.transition=SlideTransition(direction='right')
+                app.root.transition=SlideTransition(direction="right")
                 app.root.current='join_or_create'
-=======
->>>>>>> 505ba49555e72cce3a84fd5631293433fa4e409f
