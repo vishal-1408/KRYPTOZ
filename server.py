@@ -6,7 +6,6 @@ from kivy.clock import Clock
 
 def accept():
     while 1:
-        print ('listening')
         client_socket,client_addr = server_socket.accept()        #threads are just created for making blocks of code execute parallely! like accepting the connections and handling clients all these work in parallel
         print("A client has been connected to the server")
         Thread(target=initialize,args=(client_socket,)).start()
@@ -14,54 +13,27 @@ def accept():
 
 
 def details(c):
-    print("came2")
+
     m="details!!!!!separator!!!!!"
     sep='*****seperator*****'
     for x,y  in groupinfo.items():
         m+=x+sep+y[0]+sep+str(y[1])+sep+str(y[2])+sep+" ".join([str(x) for x in y[3]])+"!!!!!separator!!!!!"
-        print(y)
+        #print(y)
     m=m.encode("ASCII")
     c.sendall(m)
-    print(m)
+    #print(m)
     return 1    
 #"details;groupname,grouppassword,name1,name2,name3...;groupname,..."
 
 
 def initialize(c):
-        print("came")
         try:
-         """client_socket.send("Please enter your name and click enter".encode("ASCII"))
-         message = client_socket.recv(1024)
-         message=message.decode('ASCII')
-         print(message)
-         if message=="QUIT":
-            m="Bye! Hope you come back soon..."
-            m=m.encode("ASCII")
-            client_socket.send(m)
-            client_socket.close()
-            return 0
-         clientinfo[client_socket]=[message]
-         d=1
-         while(d):
-           client_socket.send("Type 1 for creating a group and 2 for joining a group and click enter".encode("ASCII"))
-           c=client_socket.recv(1024).decode("ASCII")
-           if c=="QUIT":
-               m="Bye! Hope you come back soon..."
-               m=m.encode("ASCII")
-               client_socket.send(m)
-               client_socket.close()
-               return 0
-           if c=="1":
-               d=create(client_socket)
-           elif c=="2":
-               d=join(client_socket)"""
-    
-
          name=c.recv(1024).decode('ASCII')
-         print(name)
+         #print(name)
          clientinfo[c]=[name]
          d=1
          while(d):
+             print('while loop')
              m=c.recv(1024).decode('ASCII')
              print(m)
              if(m=="groups"): #Gui part should send a message,
@@ -72,10 +44,10 @@ def initialize(c):
                  d=join(c)
              elif(m=="QUIT"):
                  c.send("Bye".encode("ASCII"))
-                 print("aaaaaaaaaaaa")
                  c.close()
                  break
         except Exception as e:
+            print(e)
             print("client socket closed")
             c.close()
 
@@ -83,17 +55,12 @@ def initialize(c):
 
 def create(c):
     try:
-        print("create")
-        """if(len(groupinfo)!=0):
-            m="The foll. group names are not available:\n"
-            for x in groupinfo:
-                m+=(str(x)+"\n")
-            c.send(m.encode("ASCII"))"""
+        #print("create")
         string=c.recv(1024).decode("ASCII")
         list1=string.split("*****seperator*****")
         groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]]]            #groupinfo=[password,limit,groupcode,[]]
         clientinfo[c].append(list1[0])
-        print(clientinfo)
+        #print(clientinfo)
         print(groupinfo)
         #Thread(target=handling_the_client,args=(c,)).start()
         return 1      #return 0 once handling clients is done!
@@ -110,16 +77,17 @@ def join(c):
             sep='*****seperator*****'
             string=c.recv(1024).decode("ASCII")
             name=string.split(sep)[0]
-            print(name)
+            #print(name)
             password=string.split(sep)[1]
-            print(password)
+            #print(password)
             grouppassword=groupinfo[name][0]
-            if len(groupinfo[name][4])<(groupinfo[name][2]):
+            print(grouppassword + "\t" + password)
+            if len(groupinfo[name][3])<(groupinfo[name][1]):
                 if grouppassword==password:
                     c.sendall("$$auth$$t".encode("ASCII"))
                     groupinfo[name][1].append(clientinfo[c][0])
                     clientinfo[c].append(name)
-                    Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
+                    #Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
                     return 1
                 elif password!=grouppassword:
                     c.send("$$auth$$f".encode("ASCII"))

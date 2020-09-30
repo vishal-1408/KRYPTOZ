@@ -186,16 +186,35 @@ Screen_Manager:
 <GroupVerifyAndJoin>:
     BoxLayout:
         orientation: 'vertical'
-        H2:
-            id:name
-            text: ""
-        H3:
-            id:members
-            text: ""
-        CustomTextInput:
-            id: password
-            hint_text: "Enter the password"
         BoxLayout:
+            orientation: 'vertical'
+            padding: (0,40)
+            spacing: dp(20)
+            H3:
+                id:title
+                text: ""
+                size_hint:(0,0.1)
+                pos_hint: {'center_x':0.5}
+            H2:
+                id:name
+                text: ""
+                size_hint:(0,0.1)
+                text_size:(None, None)
+                width:350
+                pos_hint: {'center_x':0.5}
+            
+            H3:
+                size_hint_y:0.2
+                id:members
+                text: ""
+            CustomTextInput:
+                id: password
+                hint_text: "Enter the password"
+                background_color:(40/255,50/255,54/255,1)
+                size_hint: (0.8,0.18)
+                pos_hint: {'center_x':0.5}
+        BoxLayout:
+            size_hint_y:0.15
             orientation: "horizontal"
             spacing: dp(200)
             Custom_Button:
@@ -210,7 +229,7 @@ Screen_Manager:
                 pos_hint: {'right':1}
                 on_release: 
                     root.Authenticate_Client_Gui()
- #------------------------------------------------------------------------------------------           
+    #------------------------------------------------------------------------------------------           
 
 
 
@@ -229,11 +248,13 @@ Screen_Manager:
             spacing: dp(30)
             CustomTextInput:
                 id: name
+                text: 'hey'
                 hint_text: "Chamber Name [atleast 3 characters]"
             BoxLayout:
                 spacing: 640*0.1
                 CustomTextInput:
                     id: password
+                    text: "arjun"
                     hint_text: "Chamber Password [atleast 5 characters]"
                     password: True
                     disabled: not root.allow_password
@@ -245,12 +266,14 @@ Screen_Manager:
                     size_hint_x: 0.45
             CustomTextInput:
                 id: c_password
+                text: "arjun"
                 hint_text: "Confirm Password"
                 size_hint_x: 0.45
                 password: True
                 disabled: not root.allow_password
             CustomTextInput:
                 id: members
+                text: "4"
                 hint_text: "Number of members [atleast two members]"
                 size_hint_x: 0.45
         FloatLayout:

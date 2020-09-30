@@ -91,7 +91,7 @@ class JoinOrCreate(Screen):
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
 	def requirements(self):
-		if len(self.ids.name.text)>=3:
+		if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=26:
 			if len(self.ids.password.text)>=5:
 				if self.ids.password.text==self.ids.c_password.text:
 					if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
@@ -106,7 +106,7 @@ class CreateGroup(Screen):
 					quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
 					return False
 		else:
-			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters.")
+			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 26.")
 			return False
 
 	def submit(self):
@@ -118,7 +118,8 @@ class CreateGroup(Screen):
 			group_code=''
 			for i in range (6):
 				group_code+=randlist[randint(0,randomlen-1)]
-			group_string = self.ids.name.text + group_code + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
+			group_string = self.ids.name.text + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
+			#print(group_string)
 			sendCreate(group_string)
 			self.manager.transition=SlideTransition(direction="down")
 			self.manager.current = 'chatwin'
@@ -137,7 +138,7 @@ class SelectGroup(Screen):
 	def schedule_details(self, *args):	
 		self.detail_list=return_details()
 		for group in self.detail_list:
-			group_data = {'group_name': group[0][:-6], 'password': group[1], 'members': group[2], 'group_code': group[3], 'owner': self}
+			group_data = {'group_name': group[0], 'password': group[1], 'members': group[2], 'group_code': group[3], 'owner': self}
 			self.activegroups.append(group_data)
 	def clear_recycleview(self):
 		self.activegroups=[]
@@ -153,12 +154,23 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 
 	def AuthenticateAndJoin(self):
 		design = GroupVerifyAndJoin()
-		app=App.get_running_app()
-		design.ids.name.text = "Enter the password of " + str(self.group_name)
-		design.ids.members.text = "Members Online: " + str(int(self.members))
-		app.popup_400(design, "Chamber Authentication", True)
-		design.ids.back.bind(on_release= app.close_popup)
-
+		design.chambername = self.group_name
+		design.ids.title.text = "Enter the password of: "
+		design.ids.name.text = "[color=#E0744C]" +  str(design.chambername) + "[color=#E0744C]"
+		design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(int(self.members)) + "[color=#E0744C]"
+		authwin = CustomPopup(
+								title='', 
+								background="img/authentication.png",
+								title_align="center", 
+								separator_height=0,
+								title_color=[110/255,110/255,110/255,1], 
+								content=design, 
+								size_hint=(None, None), 
+								size=(400,400),
+								auto_dismiss=False
+							)
+		authwin.open()
+		design.ids.back.bind(on_release=authwin.dismiss)
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
@@ -244,26 +256,27 @@ class SignUp_pop(BoxLayout):
 		app=App.get_running_app()
 		app.popup_200(design, title, multiple_allow, message)
 		design.ids.okay.bind(on_release=app.close_popup)
-
+		
 class QuickMessage_pop(BoxLayout):
 	pass
 
 class GroupVerifyAndJoin(BoxLayout):
-	chambername=''
-	members=''
-
+	chambername = StringProperty()
+	authenticate = BooleanProperty(False)
 	def Authenticate_Client_Gui(self):
 		global separator
 		join_string = self.chambername + separator + str(hash_str(self.ids.password.text))
+		print(join_string)
 		sendJoin(join_string)
-		auth = return_result()
+		auth = return_authenticate()
 		full = return_groupfull()
 		if auth and not full:
-			quick_message("Success", False, "Press okay to enter chamber.")
+			quick_message("Success", True, "Press okay to enter chamber.")
+			self.authenticate = True
 		elif not auth:
-			quick_message("Oops!", False, "Wrong password was entered.")
+			quick_message("Oops!", True, "Wrong password was entered.")
 		elif full:
-			quick_message("Ah! You are late", False, "The chamber is currently full.")
+			quick_message("Ah! You are late", True, "The chamber is currently full.")
 #------------------------------------------------#
 
 #-------------main app loop---------#
