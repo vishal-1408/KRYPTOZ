@@ -162,13 +162,15 @@ Screen_Manager:
             size_hint_y: 0.9
             padding: dp(40)
             spacing:dp(40)
-            Custom_Button:
-                text: "Join a Chamber"
+            Button:
+                background_normal: "img/join_normal.png"
+                background_down: "img/join_down.png"
                 on_release:
                     app.root.transition = SlideTransition(direction="down")
                     app.root.current= 'join'
-            Custom_Button:
-                text: "Create a Chamber"
+            Button:
+                background_normal: "img/create_normal.png"
+                background_down: "img/create_down.png"
                 on_release:
                     app.root.transition = SlideTransition(direction="up")
                     app.root.current= 'creategroup'
