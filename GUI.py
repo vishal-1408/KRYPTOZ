@@ -154,6 +154,14 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
+
+class RecycleMessage(RecycleDataViewBehavior):
+	message = StringProperty()
+	sendername = StringProperty()
+	color = StringProperty()
+	right = BooleanProperty()
+	owner = ObjectProperty()
+
 class ChatWindow(Screen):
 	pass
 
