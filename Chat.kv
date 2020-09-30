@@ -92,6 +92,7 @@ Screen_Manager:
 <SizeWidget10@Widget>:
     size_hint: None, None
     size: 20, 50
+#---------------------------------------------------Popups--------------------------------------------
 <SignUp_pop>:
     BoxLayout:
         orientation:"vertical"
@@ -182,6 +183,36 @@ Screen_Manager:
                     app.root.transition = SlideTransition(direction="right")
                     app.root.current="login"
                     root.client_close()
+<GroupVerifyAndJoin>:
+    BoxLayout:
+        orientation: 'vertical'
+        H2:
+            id:name
+            text: ""
+        H3:
+            id:members
+            text: ""
+        CustomTextInput:
+            id: password
+            hint_text: "Enter the password"
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: dp(200)
+            Custom_Button:
+                id: back
+                text:"Back"
+                size_hint_x:0.25
+                pos_hint: {'left':1}
+            Custom_Button:
+                id: submit
+                text:"Submit"
+                size_hint_x:0.25
+                pos_hint: {'right':1}
+                on_release: 
+                    root.Authenticate_Client_Gui()
+ #------------------------------------------------------------------------------------------           
+
+
 
 <CreateGroup>:
     name: 'creategroup'
@@ -246,6 +277,8 @@ Screen_Manager:
         text: root.group_name
         font_size: 18
         size_hint_x: 0.8
+        on_release:
+            root.AuthenticateAndJoin()
     H2:
         text: root.group_code
         size_hint_x:0.15

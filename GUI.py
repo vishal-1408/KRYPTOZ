@@ -150,7 +150,15 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	members = NumericProperty()
 	password = StringProperty()
 	index = NumericProperty()
-	
+
+	def AuthenticateAndJoin(self):
+		design = GroupVerifyAndJoin()
+		app=App.get_running_app()
+		design.ids.name.text = "Enter the password of " + str(self.group_name)
+		design.ids.members.text = "Members Online: " + str(int(self.members))
+		app.popup_400(design, "Chamber Authentication", True)
+		design.ids.back.bind(on_release= app.close_popup)
+
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
@@ -168,9 +176,15 @@ class ChatWindow(Screen):
 class Screen_Manager(ScreenManager):
 	pass
 
-#---------------Popups---------------------------#
+
+
+
+
+#---------------------------------------------------------------------Popups--------------------------------------------------------------------------#
+
 class CustomPopup(Popup):
 	pass
+
 class SignUp_pop(BoxLayout):
 	win = CustomPopup(                                  #Sucess Signup popup defined as data member for on_dismiss callback
 						title='Success!',
@@ -233,6 +247,23 @@ class SignUp_pop(BoxLayout):
 
 class QuickMessage_pop(BoxLayout):
 	pass
+
+class GroupVerifyAndJoin(BoxLayout):
+	chambername=''
+	members=''
+
+	def Authenticate_Client_Gui(self):
+		global separator
+		join_string = self.chambername + separator + str(hash_str(self.ids.password.text))
+		sendJoin(join_string)
+		auth = return_result()
+		full = return_groupfull()
+		if auth and not full:
+			quick_message("Success", False, "Press okay to enter chamber.")
+		elif not auth:
+			quick_message("Oops!", False, "Wrong password was entered.")
+		elif full:
+			quick_message("Ah! You are late", False, "The chamber is currently full.")
 #------------------------------------------------#
 
 #-------------main app loop---------#
@@ -250,7 +281,6 @@ class ChatApp(App):
 		popup = CustomPopup(
 								title=title, 
 								title_align="center", 
-								background= "img/popup400.png",
     							separator_color=(22/255,160/255,133/255,1),
 								content=content, 
 								size_hint=(None, None), 
