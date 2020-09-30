@@ -5,7 +5,7 @@ sep1='!!!!!separator!!!!!'
 sep2='*****seperator*****'
 def receive():
     global client
-    global details, sep1, sep2
+    global details, sep1, sep2,result,groupfull
     i=1
     print('Function Started!!!!')
     while 1:
@@ -22,30 +22,54 @@ def receive():
                 for i in range(1,len(x)-1):
                     y.append(x[i].split(sep2))
                 details=y
-                
-                    
+            if m[0:8]=="$$auth$$":
+                if m[8]=="t":
+                    result=True
+                    groupfull=False
+                elif m[8]=="f":
+                    result=False
+                    groupfull=False
+                elif m[8]=="g":
+                    result=False
+                    groupfull=True
+
         except OSError:
            print("Connection got disconnected")
            break
 def return_details():
     global details
     return details
+
+def return_authenticate():
+    global result
+    return result
+
+def return_groupfull():
+    global groupfull
+    return groupfull
+
+
 def sendName(username):
     global client
     print("sendname")
     client.send(username.encode('ASCII'))
-    
+
 def sendGroups():
     global client
-    client.sendall("groups".encode('ASCII')) 
+    client.sendall("groups".encode('ASCII'))
 
 def sendCreate(s):
     global client
     client.send("create".encode('ASCII'))
     client.send(s.encode("ASCII"))
-    print('sent')
-    
-        
+    print('sent-create-request')
+
+def sendJoin(s):
+    global client
+    client.send("join".encode('ASCII'))
+    client.send(s.encode('ASCII'))
+    print('sent-join-request')
+
 
 
 
@@ -88,6 +112,9 @@ window.protocol("WM_DELETE_WINDOW",close)
 
 client=None
 details=[]
+result=None
+groupfull=None
+
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
