@@ -94,8 +94,8 @@ def join(c):
                     groupinfo[name][3].append(clientinfo[c][0])
                     print(groupinfo)
                     clientinfo[c].append(name)
-                    #Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
-                    return 1
+                    Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
+                    return 0
                 elif password!=grouppassword:
                     c.send("$$auth$$f".encode("ASCII"))
                     return 1                                                     #return 0 once handling clients is done!
@@ -143,7 +143,7 @@ def scheduling():
     print(groupinfo)
     global scheduler
     scheduler = sched.scheduler(time. time, time.sleep)
-    e1 = scheduler.enter(3, 1, checkgroup)
+    e1 = scheduler.enter(9, 1, checkgroup)
     scheduler.run()
     print('after clock')
 

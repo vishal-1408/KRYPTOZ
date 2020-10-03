@@ -359,12 +359,6 @@ Screen_Manager:
                     app.root.transition= SlideTransition(direction='up')
                     app.root.current= 'join_or_create'
                     root.unschedule()
-            Custom_Button:
-                id: submit
-                text:"Submit"
-                size_hint_x:0.25
-                pos_hint: {'right':1}
-                on_release: root.submit()
 
 <ChatWindow>:
     name:'chatwin'

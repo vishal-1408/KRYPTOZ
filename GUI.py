@@ -165,10 +165,12 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 
 	def update_online_members(self, *args):
 		sendGroups()
-		self.group_details=return_details	
+		self.group_details=return_details()	
 		print(self.group_details)
-		self.design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(len(self.group_details[self.index])-4)  + "[color=#E0744C]"
-	
+		try:
+			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(len(self.group_details[self.index])-4)  + "[color=#E0744C]"
+		except:
+			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]0[color=#E0744C]"
 	def AuthenticateAndJoin(self):
 		self.design = GroupVerifyAndJoin()
 		self.design.chambername = self.group_name
@@ -197,28 +199,42 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		Clock.schedule_once(self.auth_and_full)
 		Clock.schedule_once(self.conditions)
 
-	def conditions(self, *args):		
+	def conditions(self, *args):
+		group_deleted = False		
 		print(str(self.auth)+'\t'+str(self.full)+' 2')
-		if self.auth and not self.full:
-			auth_design = QuickMessage_pop()
-			auth_design.ids.message.text = 'The password was verified press okay to continue.'
-			self.success_auth = CustomPopup(title='Success',
-									title_align='center',
-									separator_color=(22/255,160/255,133/255,1), 
-									content=auth_design,
-									size_hint=(None,None),
-									size=(400,200),
-									auto_dismiss=False
-									)
-			self.success_auth.open()
-			auth_design.ids.okay.bind(on_release=self.transition)
+		return_details_list = return_details()
+		if len(return_details_list) == 0:
+			group_deleted= True
 			self.refresh_members.cancel()
-			global refresh_group_list
-			refresh_group_list.cancel()
-		elif not self.auth:
-			quick_message("Oops!", True, "Wrong password was entered.")
-		elif self.full:
-			quick_message("Ah! You are late", True, "The chamber is currently full.")
+		else:
+			for group in return_details_list:
+				if self.group_name not in group:
+					group_deleted = True
+		print('group deleted: '+ str(group_deleted))
+		if not group_deleted:
+			if self.auth and not self.full:
+				auth_design = QuickMessage_pop()
+				auth_design.ids.message.text = 'The password was verified press okay to continue.'
+				self.success_auth = CustomPopup(title='Success',
+										title_align='center',
+										separator_color=(22/255,160/255,133/255,1), 
+										content=auth_design,
+										size_hint=(None,None),
+										size=(400,200),
+										auto_dismiss=False
+										)
+				self.success_auth.open()
+				auth_design.ids.okay.bind(on_release=self.transition)
+				self.refresh_members.cancel()
+				global refresh_group_list
+				refresh_group_list.cancel()
+			elif not self.auth:
+				quick_message("Oops!", True, "Wrong password was entered.")
+			elif self.full:
+				quick_message("Ah! You are late", True, "The chamber is currently full.")
+		else:
+			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
+	
 	def auth_and_full(self, *args):
 		self.auth = return_authenticate()
 		self.full = return_groupfull()
