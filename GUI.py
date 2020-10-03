@@ -8,7 +8,7 @@ from kivy.uix.popup import Popup
 from random import randint
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, AliasProperty, NumericProperty, DictProperty
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.clock import Clock
+from kivy.clock import Clock 
 #------Imports from the modules---------------------
 from EncryptionHashing import hash_str
 from FileManage import *
@@ -21,6 +21,7 @@ Window.clearcolor = (27/255, 34/255, 36/255, 1)
 
 #---------------Global Variables and Global functions------------------#
 separator="*****seperator*****"
+refresh_group_list = None
 
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
@@ -32,6 +33,7 @@ def color_fix(textinput):
 	textinput.text=''
 	textinput.hint_text_color=(95/255,93/255,98/255,1)
 	textinput.foreground_color=(150/255,150/255,150/255,1)
+
 def quick_message(title, multiple_allow, message ):
 		design=QuickMessage_pop()
 		app=App.get_running_app()
@@ -135,13 +137,18 @@ class SelectGroup(Screen):
 		sendGroups()
 		print("these are the details")
 		Clock.schedule_once(self.schedule_details)
+		global refresh_group_list
+		refresh_group_list = Clock.schedule_interval(self.schedule_details, 2)
 	def schedule_details(self, *args):	
+		sendGroups()
 		self.detail_list=return_details()
+		self.activegroups=[]
 		for group in self.detail_list:
 			group_data = {'group_name': group[0], 'password': group[1], 'members': group[2], 'group_code': group[3], 'owner': self}
 			self.activegroups.append(group_data)
-	def clear_recycleview(self):
-		self.activegroups=[]
+	def unschedule(self):
+		global refresh_group_list
+		refresh_group_list.cancel()
 
 
 class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
@@ -151,29 +158,87 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	members = NumericProperty()
 	password = StringProperty()
 	index = NumericProperty()
+	auth = None
+	full = None
+	group_details = ListProperty()
 
+	def update_online_members(self, *args):
+		sendGroups()
+		self.group_details=return_details	
+		print(self.group_details)
+		self.design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(len(self.group_details[self.index])-4)  + "[color=#E0744C]"
+	
 	def AuthenticateAndJoin(self):
-		design = GroupVerifyAndJoin()
-		design.chambername = self.group_name
-		design.ids.title.text = "Enter the password of: "
-		design.ids.name.text = "[color=#E0744C]" +  str(design.chambername) + "[color=#E0744C]"
-		design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(int(self.members)) + "[color=#E0744C]"
-		authwin = CustomPopup(
+		self.design = GroupVerifyAndJoin()
+		self.design.chambername = self.group_name
+		self.design.ids.title.text = "Enter the password of: "
+		self.design.ids.name.text = "[color=#E0744C]" +  str(self.design.chambername) + "[color=#E0744C]"
+		self.update_online_members()
+		self.refresh_members = Clock.schedule_interval(self.update_online_members, 1)
+		self.authwin = CustomPopup(
 								title='', 
 								background="img/authentication.png",
 								title_align="center", 
 								separator_height=0,
-								title_color=[110/255,110/255,110/255,1], 
-								content=design, 
+								separator_color=(22/255,160/255,133/255,1), 
+								content=self.design, 
 								size_hint=(None, None), 
 								size=(400,400),
 								auto_dismiss=False
 							)
-		authwin.open()
-		design.ids.back.bind(on_release=authwin.dismiss)
+		self.authwin.open()
+		self.design.ids.back.bind(on_release=self.authwin.dismiss)
+		self.design.ids.submit.bind(on_release=self.join_result)
+
+	def join_result(self,*args):
+		self.design.Authenticate_Client_Gui()
+		self.authwin.dismiss()
+		Clock.schedule_once(self.auth_and_full)
+		Clock.schedule_once(self.conditions)
+
+	def conditions(self, *args):		
+		print(str(self.auth)+'\t'+str(self.full)+' 2')
+		if self.auth and not self.full:
+			auth_design = QuickMessage_pop()
+			auth_design.ids.message.text = 'The password was verified press okay to continue.'
+			self.success_auth = CustomPopup(title='Success',
+									title_align='center',
+									separator_color=(22/255,160/255,133/255,1), 
+									content=auth_design,
+									size_hint=(None,None),
+									size=(400,200),
+									auto_dismiss=False
+									)
+			self.success_auth.open()
+			auth_design.ids.okay.bind(on_release=self.transition)
+			self.refresh_members.cancel()
+			global refresh_group_list
+			refresh_group_list.cancel()
+		elif not self.auth:
+			quick_message("Oops!", True, "Wrong password was entered.")
+		elif self.full:
+			quick_message("Ah! You are late", True, "The chamber is currently full.")
+	def auth_and_full(self, *args):
+		self.auth = return_authenticate()
+		self.full = return_groupfull()
+		print(str(self.auth)+'\t'+str(self.full)+' 1')
+	def transition(self, instance):
+		self.success_auth.dismiss()
+		app=App.get_running_app()
+		app.root.transition = SlideTransition(direction='left')
+		app.root.current = 'chatwin'
+
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
+
+class GroupVerifyAndJoin(BoxLayout):
+	chambername = StringProperty()
+	def Authenticate_Client_Gui(self):
+		global separator
+		join_string = self.chambername + separator + str(hash_str(self.ids.password.text))
+		#print(join_string)
+		sendJoin(join_string)
 
 class RecycleMessage(RecycleDataViewBehavior):
 	message = StringProperty()
@@ -183,7 +248,8 @@ class RecycleMessage(RecycleDataViewBehavior):
 	owner = ObjectProperty()
 
 class ChatWindow(Screen):
-	pass
+	def exit_chat(self):
+		sendLogout()
 
 class Screen_Manager(ScreenManager):
 	pass
@@ -260,23 +326,6 @@ class SignUp_pop(BoxLayout):
 class QuickMessage_pop(BoxLayout):
 	pass
 
-class GroupVerifyAndJoin(BoxLayout):
-	chambername = StringProperty()
-	authenticate = BooleanProperty(False)
-	def Authenticate_Client_Gui(self):
-		global separator
-		join_string = self.chambername + separator + str(hash_str(self.ids.password.text))
-		print(join_string)
-		sendJoin(join_string)
-		auth = return_authenticate()
-		full = return_groupfull()
-		if auth and not full:
-			quick_message("Success", True, "Press okay to enter chamber.")
-			self.authenticate = True
-		elif not auth:
-			quick_message("Oops!", True, "Wrong password was entered.")
-		elif full:
-			quick_message("Ah! You are late", True, "The chamber is currently full.")
 #------------------------------------------------#
 
 #-------------main app loop---------#
@@ -305,7 +354,7 @@ class ChatApp(App):
 	def popup_200(self, content, title, multiple_allow, message):
 		if multiple_allow:
 			self.close_all_popups()
-			content.ids.message.text=message
+		content.ids.message.text=message
 		popup = CustomPopup(
 								title=title, 
 								title_align="center", 

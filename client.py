@@ -22,7 +22,9 @@ def receive():
                 for i in range(1,len(x)-1):
                     y.append(x[i].split(sep2))
                 details=y
+                print(y)
             if m[0:8]=="$$auth$$":
+                print(m)
                 if m[8]=="t":
                     result=True
                     groupfull=False
@@ -42,10 +44,12 @@ def return_details():
 
 def return_authenticate():
     global result
+    print('from client side:' + str(result))
     return result
 
 def return_groupfull():
     global groupfull
+    print('from client side:' + str(groupfull))
     return groupfull
 
 
@@ -70,8 +74,10 @@ def sendJoin(s):
     client.send(s.encode('ASCII'))
     print('sent-join-request')
 
-
-
+def sendLogout():
+    global client
+    client.send("QUIT".encode('ASCII'))
+    print('sendlogout')
 
 def close():
     global client

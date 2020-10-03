@@ -229,8 +229,6 @@ Screen_Manager:
                 text:"Submit"
                 size_hint_x:0.25
                 pos_hint: {'right':1}
-                on_release: 
-                    root.Authenticate_Client_Gui()
     #------------------------------------------------------------------------------------------           
 
 
@@ -360,7 +358,7 @@ Screen_Manager:
                 on_release:
                     app.root.transition= SlideTransition(direction='up')
                     app.root.current= 'join_or_create'
-                    root.clear_recycleview()
+                    root.unschedule()
             Custom_Button:
                 id: submit
                 text:"Submit"
@@ -376,3 +374,4 @@ Screen_Manager:
             on_release:
                 app.root.transition=SlideTransition(direction="right")
                 app.root.current='join_or_create'
+                root.exit_chat()

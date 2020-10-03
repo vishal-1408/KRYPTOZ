@@ -1,8 +1,8 @@
 
 from threading import Thread
 import socket
-from kivy.clock import Clock
-
+import sched 
+import time
 
 def accept():
     while 1:
@@ -13,7 +13,7 @@ def accept():
 
 
 def details(c):
-
+    global groupinfo
     m="details!!!!!separator!!!!!"
     sep='*****seperator*****'
     for x,y  in groupinfo.items():
@@ -21,39 +21,41 @@ def details(c):
         #print(y)
     m=m.encode("ASCII")
     c.sendall(m)
-    #print(m)
+    print(m)
     return 1    
 #"details;groupname,grouppassword,name1,name2,name3...;groupname,..."
 
 
 def initialize(c):
-        try:
-         name=c.recv(1024).decode('ASCII')
-         #print(name)
-         clientinfo[c]=[name]
-         d=1
-         while(d):
-             print('while loop')
-             m=c.recv(1024).decode('ASCII')
-             print(m)
-             if(m=="groups"): #Gui part should send a message,
-                 d=details(c)
-             elif(m=="create"):
-                 d=create(c)
-             elif(m=="join"):
-                 d=join(c)
-             elif(m=="QUIT"):
-                 c.send("Bye".encode("ASCII"))
-                 c.close()
-                 break
-        except Exception as e:
-            print(e)
-            print("client socket closed")
-            c.close()
+    global clientinfo
+    try:
+        name=c.recv(1024).decode('ASCII')
+        #print(name)
+        clientinfo[c]=[name]
+        d=1
+        while(d):
+            print('while loop')
+            m=c.recv(1024).decode('ASCII')
+            print(m)
+            if(m=="groups"): #Gui part should send a message,
+                d=details(c)
+            elif(m=="create"):
+                d=create(c)
+            elif(m=="join"):
+                d=join(c)
+            elif(m=="QUIT"):
+                c.send("Bye".encode("ASCII"))
+                c.close()
+                break
+    except Exception as e:
+        print(e)
+        print("client socket closed")
+        c.close()
 
 
 
 def create(c):
+    global clientinfo, groupinfo
     try:
         #print("create")
         string=c.recv(1024).decode("ASCII")
@@ -62,8 +64,8 @@ def create(c):
         clientinfo[c].append(list1[0])
         #print(clientinfo)
         print(groupinfo)
-        #Thread(target=handling_the_client,args=(c,)).start()
-        return 1      #return 0 once handling clients is done!
+        Thread(target=handling_the_client,args=(c,)).start()
+        return 0      #return 0 once handling clients is done!
     except Exception as e:
         print("client socket closed")
         clientinfo.remove(clientinfo[c])
@@ -73,7 +75,9 @@ def create(c):
 
 def join(c):
     e=1
+    global clientinfo, groupinfo
     while e:
+            print(groupinfo)
             sep='*****seperator*****'
             string=c.recv(1024).decode("ASCII")
             name=string.split(sep)[0]
@@ -85,7 +89,10 @@ def join(c):
             if len(groupinfo[name][3])<(groupinfo[name][1]):
                 if grouppassword==password:
                     c.sendall("$$auth$$t".encode("ASCII"))
-                    groupinfo[name][1].append(clientinfo[c][0])
+                    print(groupinfo)
+                    print(clientinfo)
+                    groupinfo[name][3].append(clientinfo[c][0])
+                    print(groupinfo)
                     clientinfo[c].append(name)
                     #Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
                     return 1
@@ -100,6 +107,8 @@ def join(c):
 
 
 def handling_the_client(client):
+    global clientinfo, groupinfo
+    global group_name 
     # message=clientinfo[client][0]+" has joined the room!"
     # broadcast(message,"chatbot",client)
     # m="Welcome "+clientinfo[client][0]+"\nYou can enter a message and click enter and\nif you want to exit the app, please enter QUIT"
@@ -112,49 +121,59 @@ def handling_the_client(client):
         else:
             if len(groupinfo[clientinfo[client][1]][3])==1:
                 groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
-                Clock.schedule_once(checkgroup(groupinfo[clientinfo[client][1]]), 120)
-                clientinfo[client].pop()
+                group_name = clientinfo[client].pop()
                 #client.close()
+                print('clock')
+                print(groupinfo)
+                global scheduler
+                scheduler = sched.scheduler(time. time, time.sleep)
+                e1 = scheduler.enter(3, 1, checkgroup)
+                scheduler.run(blocking = False)
+                print('after clock')
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
             else:
+                #print("i removed it")
                 groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
                 clientinfo[client].pop()
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
+scheduler = None
 
-
-
-def checkgroup(gname):
-   if len(groupinfo[gname][3])==0:
-       groupinfo.pop(gname)
+def checkgroup(*args):
+    global clientinfo, groupinfo, group_name
+    if len(groupinfo[group_name][3])==0:
+        groupinfo.pop(group_name)
+    print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
 
 
 def joinorcreate(c):
-       try:
-         d=1
-         while(d):
-             m=c.recv(1024).decode('ASCII')
-             print(m)
-             if(m=="groups"): #Gui part should send a message,
-                 d=details(c)
-             elif(m=="create"):
-                 d=create(c)
-             elif(m=="join"):
-                 d=join(c)
-             elif(m=="QUIT"):
-                 c.send("Bye".encode("ASCII"))
-                # print("test")
-                 c.close()
-                 break
-       except Exception as e:
-            print("client socket closed")
-            c.close()
+    global clientinfo, groupinfo, scheduler
+    try:
+        d=1
+        while(d):
+            m=c.recv(1024).decode('ASCII')
+            print(m)
+            if(m=="groups"): #Gui part should send a message,
+                d=details(c)
+            elif(m=="create"):
+                d=create(c)
+            elif(m=="join"):
+                d=join(c)
+            elif(m=="QUIT"):
+                c.send("Bye".encode("ASCII"))
+            # print("test")
+                c.close()
+                break
+    except Exception as e:
+        print("client socket closed")
+        c.close()
 
 
 
 
 def broadcast(message,name,client="",group=""):
+    global clientinfo, groupinfo
     if not client=="":
         room=clientinfo[client][1]
         clients=groupinfo[room][1]
@@ -181,6 +200,7 @@ def broadcast(message,name,client="",group=""):
 
 clientinfo={}
 groupinfo={}
+group_name = None
 
 Host=""
 port=8000
