@@ -60,7 +60,7 @@ def sendName(username):
 
 def sendGroups():
     global client
-    client.sendall("groups".encode('ASCII'))
+    client.send("groups".encode('ASCII'))
 
 def sendCreate(s):
     global client

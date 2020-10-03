@@ -143,7 +143,7 @@ def scheduling():
     print(groupinfo)
     global scheduler
     scheduler = sched.scheduler(time. time, time.sleep)
-    e1 = scheduler.enter(9, 1, checkgroup)
+    e1 = scheduler.enter(5, 1, checkgroup)
     scheduler.run()
     print('after clock')
 

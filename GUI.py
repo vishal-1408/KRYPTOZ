@@ -190,14 +190,22 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 								auto_dismiss=False
 							)
 		self.authwin.open()
+		self.authwin.bind(on_dismiss = self.cancel)
 		self.design.ids.back.bind(on_release=self.authwin.dismiss)
 		self.design.ids.submit.bind(on_release=self.join_result)
+	
+	def cancel(self, dt):
+		self.refresh_members.cancel()
 
 	def join_result(self,*args):
-		self.design.Authenticate_Client_Gui()
+		self.refresh_members.cancel()
 		self.authwin.dismiss()
-		Clock.schedule_once(self.auth_and_full)
-		Clock.schedule_once(self.conditions)
+		if len(return_details())!=0:
+			self.design.Authenticate_Client_Gui()
+			Clock.schedule_once(self.auth_and_full)
+			Clock.schedule_once(self.conditions)
+		else:
+			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 
 	def conditions(self, *args):
 		group_deleted = False		
