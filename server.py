@@ -124,17 +124,8 @@ def handling_the_client(client):
                 group_name = clientinfo[client].pop()
                 #client.close()
                 print('clock')
-<<<<<<< HEAD
-                print(groupinfo)
-                global scheduler
-                scheduler = sched.scheduler(time. time, time.sleep)
-                e1 = scheduler.enter(3, 1, printaa)
-                scheduler.run()
-                print('after clock')
-=======
                 #print(groupinfo)
                 Thread(target=scheduling).start()
->>>>>>> 19fe865c6354a7c2d72e4f98a68332bf8b0d8510
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
             else:
