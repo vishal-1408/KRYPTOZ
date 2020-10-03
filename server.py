@@ -127,8 +127,8 @@ def handling_the_client(client):
                 print(groupinfo)
                 global scheduler
                 scheduler = sched.scheduler(time. time, time.sleep)
-                e1 = scheduler.enter(3, 1, checkgroup)
-                scheduler.run(blocking = False)
+                e1 = scheduler.enter(3, 1, printaa)
+                scheduler.run()
                 print('after clock')
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
@@ -139,6 +139,8 @@ def handling_the_client(client):
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
 scheduler = None
+def printaa():
+    print('i was called')
 
 def checkgroup(*args):
     global clientinfo, groupinfo, group_name

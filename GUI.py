@@ -131,6 +131,7 @@ class CreateGroup(Screen):
 			self.ids.c_password.text=''
 			self.ids.members.text=''
 			#self.manager.transition=SlideTransition(direction="right")
+
 class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency
@@ -138,7 +139,7 @@ class SelectGroup(Screen):
 		print("these are the details")
 		Clock.schedule_once(self.schedule_details)
 		global refresh_group_list
-		refresh_group_list = Clock.schedule_interval(self.schedule_details, 2)
+		refresh_group_list = Clock.schedule_interval(self.schedule_details, 1)
 	def schedule_details(self, *args):	
 		sendGroups()
 		self.detail_list=return_details()
