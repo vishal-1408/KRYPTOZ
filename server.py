@@ -124,12 +124,8 @@ def handling_the_client(client):
                 group_name = clientinfo[client].pop()
                 #client.close()
                 print('clock')
-                print(groupinfo)
-                global scheduler
-                scheduler = sched.scheduler(time. time, time.sleep)
-                e1 = scheduler.enter(3, 1, checkgroup)
-                scheduler.run(blocking = False)
-                print('after clock')
+                #print(groupinfo)
+                Thread(target=scheduling).start()
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
             else:
@@ -140,11 +136,21 @@ def handling_the_client(client):
                 break
 scheduler = None
 
+def scheduling():
+    print('clock')
+    print(groupinfo)
+    global scheduler
+    scheduler = sched.scheduler(time. time, time.sleep)
+    e1 = scheduler.enter(3, 1, checkgroup)
+    scheduler.run()
+    print('after clock')
+
 def checkgroup(*args):
+    print('called')
     global clientinfo, groupinfo, group_name
     if len(groupinfo[group_name][3])==0:
         groupinfo.pop(group_name)
-    print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
+    #print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
 
 
 def joinorcreate(c):
