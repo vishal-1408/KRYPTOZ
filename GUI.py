@@ -22,7 +22,7 @@ Window.clearcolor = (27/255, 34/255, 36/255, 1)
 #---------------Global Variables and Global functions------------------#
 separator="*****seperator*****"
 refresh_group_list = None
-
+chamber_name_and_code = ''
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
 	textinput.text=''
@@ -93,7 +93,7 @@ class JoinOrCreate(Screen):
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
 	def requirements(self):
-		if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=26:
+		if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=15:
 			if len(self.ids.password.text)>=5:
 				if self.ids.password.text==self.ids.c_password.text:
 					if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
@@ -108,7 +108,7 @@ class CreateGroup(Screen):
 					quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
 					return False
 		else:
-			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 26.")
+			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
 			return False
 
 	def submit(self):
@@ -123,6 +123,8 @@ class CreateGroup(Screen):
 			group_string = self.ids.name.text + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
 			#print(group_string)
 			sendCreate(group_string)
+			global chamber_name_and_code
+			chamber_name_and_code  = self.ids.name.text + group_code #Assigning the group name to global variable so that we can access it in chatwin
 			self.manager.transition=SlideTransition(direction="down")
 			self.manager.current = 'chatwin'
 			#clearing textinputs
@@ -232,6 +234,8 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 										auto_dismiss=False
 										)
 				self.success_auth.open()
+				global chamber_name_and_code
+				chamber_name_and_code = self.group_name + self.group_code #Assigns group code to the global variable to use in next screen
 				auth_design.ids.okay.bind(on_release=self.transition)
 				self.refresh_members.cancel()
 				global refresh_group_list
@@ -273,6 +277,11 @@ class RecycleMessage(RecycleDataViewBehavior):
 	owner = ObjectProperty()
 
 class ChatWindow(Screen):
+	
+	def assign_chamber_info(self):
+		global chamber_name_and_code
+		self.ids.info_label.text = "[color=#E0744C]" + chamber_name_and_code[:-6] + "[/color] " + chamber_name_and_code[-6:]
+	
 	def exit_chat(self):
 		sendLogout()
 

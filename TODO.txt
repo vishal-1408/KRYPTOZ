@@ -1,0 +1,2 @@
+arjun:
+1. server should be able to handle errors that are being thrown due to code modification on client side.

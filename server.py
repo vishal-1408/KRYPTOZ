@@ -108,7 +108,7 @@ def join(c):
 
 def handling_the_client(client):
     global clientinfo, groupinfo
-    global group_name 
+    global group_name, is_dead 
     # message=clientinfo[client][0]+" has joined the room!"
     # broadcast(message,"chatbot",client)
     # m="Welcome "+clientinfo[client][0]+"\nYou can enter a message and click enter and\nif you want to exit the app, please enter QUIT"
@@ -121,10 +121,12 @@ def handling_the_client(client):
         else:
             if len(groupinfo[clientinfo[client][1]][3])==1:
                 groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
+                is_dead=True
                 group_name = clientinfo[client].pop()
                 #client.close()
                 print('clock')
                 #print(groupinfo)
+                is_dead=False
                 Thread(target=scheduling).start()
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
@@ -148,9 +150,10 @@ def scheduling():
     print('after clock')
 
 def checkgroup(*args):
+    global is_dead
     print('called')
     global clientinfo, groupinfo, group_name
-    if len(groupinfo[group_name][3])==0:
+    if len(groupinfo[group_name][3])==0 and not is_dead:
         groupinfo.pop(group_name)
     #print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
 
@@ -178,7 +181,7 @@ def joinorcreate(c):
         c.close()
 
 
-
+is_dead = True
 
 def broadcast(message,name,client="",group=""):
     global clientinfo, groupinfo

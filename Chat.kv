@@ -250,6 +250,7 @@ Screen_Manager:
                 id: name
                 text: 'hey'
                 hint_text: "Chamber Name [atleast 3 characters]"
+                font_size:18
             BoxLayout:
                 spacing: 640*0.1
                 CustomTextInput:
@@ -362,10 +363,29 @@ Screen_Manager:
 
 <ChatWindow>:
     name:'chatwin'
+    on_pre_enter:
+        root.assign_chamber_info()
     BoxLayout:
-        Custom_Button:
-            text: "back to join or create"
-            on_release:
-                app.root.transition=SlideTransition(direction="right")
-                app.root.current='join_or_create'
-                root.exit_chat()
+        FloatLayout:
+            size_hint_y: 0.1
+            pos_hint: {'top': 1}
+            Custom_Button:
+                text: "Exit"
+                pos_hint: {'x': 0, 'top': 1}
+                size_hint_x: 0.25
+                font_size: 16
+                on_release:
+                    app.root.transition=SlideTransition(direction="right")
+                    app.root.current='join_or_create'
+                    root.exit_chat()
+            BoxLayout:
+                size_hint_x:0.6
+                pos_hint: {'right':1, 'top':1}
+                spacing: dp(15)
+                H2:
+                    id: info_label
+                    text: ''
+                Custom_Button:
+                    text: "Copy to Clipboard"
+                    font_size: 14
+                    size_hint_x: 0.35
