@@ -21,7 +21,7 @@ def details(c):
         #print(y)
     m=m.encode("ASCII")
     c.sendall(m)
-    print(m)
+    #print(m)
     return 1    
 #"details;groupname,grouppassword,name1,name2,name3...;groupname,..."
 
@@ -33,10 +33,11 @@ def initialize(c):
         #print(name)
         clientinfo[c]=[name]
         d=1
+        print("initialize")
         while(d):
-            print('while loop')
+            #print('while loop')
             m=c.recv(1024).decode('ASCII')
-            print(m)
+            #print(m)
             if(m=="groups"): #Gui part should send a message,
                 d=details(c)
             elif(m=="create"):
@@ -55,19 +56,21 @@ def initialize(c):
 
 
 def create(c):
-    global clientinfo, groupinfo
+    global clientinfo, groupinfo,eventslist
     try:
-        #print("create")
+        print("create")
         string=c.recv(1024).decode("ASCII")
         list1=string.split("*****seperator*****")
         groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]]]            #groupinfo=[password,limit,groupcode,[]]
         clientinfo[c].append(list1[0])
+        eventslist[list1[0]]=[]
         #print(clientinfo)
-        print(groupinfo)
+        #print(groupinfo)
         Thread(target=handling_the_client,args=(c,)).start()
         return 0      #return 0 once handling clients is done!
     except Exception as e:
         print("client socket closed")
+        print(e+"inside create")
         clientinfo.remove(clientinfo[c])
         c.close()
         return 0
@@ -75,9 +78,10 @@ def create(c):
 
 def join(c):
     e=1
-    global clientinfo, groupinfo
+    print("join")
+    global clientinfo, groupinfo,eventslist,scheduler
     while e:
-            print(groupinfo)
+            #print(groupinfo)
             sep='*****seperator*****'
             string=c.recv(1024).decode("ASCII")
             name=string.split(sep)[0]
@@ -85,14 +89,20 @@ def join(c):
             password=string.split(sep)[1]
             #print(password)
             grouppassword=groupinfo[name][0]
-            print(grouppassword + "\t" + password)
+            #print(grouppassword + "\t" + password)
             if len(groupinfo[name][3])<(groupinfo[name][1]):
                 if grouppassword==password:
                     c.sendall("$$auth$$t".encode("ASCII"))
-                    print(groupinfo)
-                    print(clientinfo)
+                    for x in eventslist[name]:
+                        if x:
+                             print(x)
+                             scheduler.cancel(x)
+                             eventslist[name].remove(x)
+
+                    #print(groupinfo)
+                   # print(clientinfo)
                     groupinfo[name][3].append(clientinfo[c][0])
-                    print(groupinfo)
+                    #print(groupinfo)
                     clientinfo[c].append(name)
                     Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
                     return 0
@@ -107,8 +117,8 @@ def join(c):
 
 
 def handling_the_client(client):
+    print("hanfdling client")
     global clientinfo, groupinfo
-    global group_name, is_dead 
     # message=clientinfo[client][0]+" has joined the room!"
     # broadcast(message,"chatbot",client)
     # m="Welcome "+clientinfo[client][0]+"\nYou can enter a message and click enter and\nif you want to exit the app, please enter QUIT"
@@ -124,10 +134,8 @@ def handling_the_client(client):
                 is_dead=True
                 group_name = clientinfo[client].pop()
                 #client.close()
-                print('clock')
                 #print(groupinfo)
-                is_dead=False
-                Thread(target=scheduling).start()
+                Thread(target=scheduling,args=(group_name,)).start()
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
             else:
@@ -137,23 +145,22 @@ def handling_the_client(client):
                 Thread(target=joinorcreate,args=(client,)).start()
                 break
 scheduler = None
-def printaa():
-    print('i was called')
 
-def scheduling():
+def scheduling(group_name):
+    global eventslist,scheduler
     print('clock')
     print(groupinfo)
-    global scheduler
     scheduler = sched.scheduler(time. time, time.sleep)
-    e1 = scheduler.enter(5, 1, checkgroup)
+    e1 = scheduler.enter(7, 1, checkgroup,(group_name,))
+    eventslist[group_name].append(e1)
+    print(eventslist)
     scheduler.run()
     print('after clock')
 
-def checkgroup(*args):
-    global is_dead
+def checkgroup(group_name):
     print('called')
-    global clientinfo, groupinfo, group_name
-    if len(groupinfo[group_name][3])==0 and not is_dead:
+    global clientinfo, groupinfo
+    if len(groupinfo[group_name][3])==0:
         groupinfo.pop(group_name)
     #print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
 
@@ -164,7 +171,7 @@ def joinorcreate(c):
         d=1
         while(d):
             m=c.recv(1024).decode('ASCII')
-            print(m)
+            #print(m)
             if(m=="groups"): #Gui part should send a message,
                 d=details(c)
             elif(m=="create"):
@@ -178,6 +185,7 @@ def joinorcreate(c):
                 break
     except Exception as e:
         print("client socket closed")
+        print(e)
         c.close()
 
 
@@ -211,7 +219,7 @@ def broadcast(message,name,client="",group=""):
 
 clientinfo={}
 groupinfo={}
-group_name = None
+eventslist={}
 
 Host=""
 port=8000
