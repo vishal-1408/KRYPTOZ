@@ -3,9 +3,10 @@ from threading import Thread
 import socket
 sep1='!!!!!separator!!!!!'
 sep2='*****seperator*****'
+
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull
+    global details, sep1, sep2,result,groupfull,length
     i=1
     print('Function Started!!!!')
     while 1:
@@ -16,14 +17,14 @@ def receive():
                 client.close()
                 print("Connection got disconnected.............")
                 break
-            if m[0:7]=="details":
+            elif m[0:7]=="details":
                 x=m.split(sep1)
                 y=[]
                 for i in range(1,len(x)-1):
                     y.append(x[i].split(sep2))
-                details=y
+                details=y                                       #details=[[groupname,limit,groupcode]]
                 print(y)
-            if m[0:8]=="$$auth$$":
+            elif m[0:8]=="$$auth$$":
                 print(m)
                 if m[8]=="t":
                     result=True
@@ -34,6 +35,9 @@ def receive():
                 elif m[8]=="g":
                     result=False
                     groupfull=True
+            elif m[0:12]=="$$$length$$$":
+                length=int(m[12:])
+
 
         except OSError:
            print("Connection got disconnected")
@@ -52,6 +56,9 @@ def return_groupfull():
     print('from client side:' + str(groupfull))
     return groupfull
 
+def return_members():
+    global length
+    return length
 
 def sendName(username):
     global client
@@ -61,6 +68,10 @@ def sendName(username):
 def sendGroups():
     global client
     client.send("groups".encode('ASCII'))
+
+def sendMembers():
+    global client
+    client.send("members".encode('ASCII'))
 
 def sendCreate(s):
     global client
@@ -120,6 +131,7 @@ client=None
 details=[]
 result=None
 groupfull=None
+length=0
 
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))

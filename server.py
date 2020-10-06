@@ -17,14 +17,22 @@ def details(c):
     m="details!!!!!separator!!!!!"
     sep='*****seperator*****'
     for x,y  in groupinfo.items():
-        m+=x+sep+y[0]+sep+str(y[1])+sep+str(y[2])+sep+" ".join([str(x) for x in y[3]])+"!!!!!separator!!!!!"
+        #m+=x+sep+y[0]+sep+str(y[1])+sep+str(y[2])+sep+" ".join([str(x) for x in y[3]])+"!!!!!separator!!!!!"
         #print(y)
+        m+=x+sep+str(y[1])+sep+str(y[2])+"!!!!!separator!!!!!"      #groupname,limit,groupcode
     m=m.encode("ASCII")
     c.sendall(m)
     #print(m)
-    return 1    
+    return 1
 #"details;groupname,grouppassword,name1,name2,name3...;groupname,..."
 
+def members(c):
+    global groupinfo,clientinfo
+    length=len(groupinfo[clientinfo[c][1]][3])
+    m="$$$length$$$"+str(length)
+    m=m.encode("ASCII")
+    c.sendall(m)
+    return 1
 
 def initialize(c):
     global clientinfo
@@ -40,6 +48,8 @@ def initialize(c):
             #print(m)
             if(m=="groups"): #Gui part should send a message,
                 d=details(c)
+            elif(m=="members"):
+                d=members(c)
             elif(m=="create"):
                 d=create(c)
             elif(m=="join"):
@@ -173,6 +183,8 @@ def joinorcreate(c):
             #print(m)
             if(m=="groups"): #Gui part should send a message,
                 d=details(c)
+            elif(m=="members"):
+                d=members(c)
             elif(m=="create"):
                 d=create(c)
             elif(m=="join"):
@@ -186,6 +198,8 @@ def joinorcreate(c):
         print("client socket closed")
         print(e)
         c.close()
+
+
 
 
 def broadcast(message,name,client="",group=""):
