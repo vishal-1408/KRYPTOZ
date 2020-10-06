@@ -131,7 +131,6 @@ def handling_the_client(client):
         else:
             if len(groupinfo[clientinfo[client][1]][3])==1:
                 groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
-                is_dead=True
                 group_name = clientinfo[client].pop()
                 #client.close()
                 #print(groupinfo)
@@ -188,8 +187,6 @@ def joinorcreate(c):
         print(e)
         c.close()
 
-
-is_dead = True
 
 def broadcast(message,name,client="",group=""):
     global clientinfo, groupinfo
