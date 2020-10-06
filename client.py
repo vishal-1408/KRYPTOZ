@@ -44,6 +44,8 @@ def receive():
            break
 def return_details():
     global details
+    print('from client script:  ')
+    print(details)
     return details
 
 def return_authenticate():

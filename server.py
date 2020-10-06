@@ -28,6 +28,7 @@ def details(c):
 
 def members(c):
     global groupinfo,clientinfo
+    print(groupinfo)
     length=len(groupinfo[clientinfo[c][1]][3])
     m="$$$length$$$"+str(length)
     m=m.encode("ASCII")

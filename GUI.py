@@ -138,16 +138,17 @@ class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency
 		sendGroups()
-		print("these are the details")
 		Clock.schedule_once(self.schedule_details)
 		global refresh_group_list
 		refresh_group_list = Clock.schedule_interval(self.schedule_details, 1)
 	def schedule_details(self, *args):	
 		sendGroups()
+		sendMembers()
 		self.detail_list=return_details()
+		print(self.detail_list)
 		self.activegroups=[]
 		for group in self.detail_list:
-			group_data = {'group_name': group[0], 'password': group[1], 'members': group[2], 'group_code': group[3], 'owner': self}
+			group_data = {'group_name': group[0], 'limit': group[1], 'group_code': group[2], 'members_online': return_members()  ,'owner': self}
 			self.activegroups.append(group_data)
 	def unschedule(self):
 		global refresh_group_list
@@ -158,19 +159,19 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	owner =  ObjectProperty()
 	group_name = StringProperty()
 	group_code = StringProperty()
-	members = NumericProperty()
+	limit = NumericProperty()
+	members_online = NumericProperty()
 	password = StringProperty()
 	index = NumericProperty()
 	auth = None
 	full = None
 	group_details = ListProperty()
 
-	def update_online_members(self, *args):
-		sendGroups()
-		self.group_details=return_details()	
-		print(self.group_details)
+	def update_online_members(self, *args): 
+		sendMembers()
+		members_online = return_members()
 		try:
-			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(len(self.group_details[self.index])-4)  + "[color=#E0744C]"
+			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(members_online[self.design.chambername]) + "[color=#E0744C]"
 		except:
 			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]0[color=#E0744C]"
 	def AuthenticateAndJoin(self):
