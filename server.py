@@ -28,8 +28,9 @@ def details(c):
 
 def members(c):
     global groupinfo,clientinfo
-    length=len(groupinfo[clientinfo[c][1]][3])
-    m="$$$length$$$"+str(length)
+    m="$$$length$$$"+"!!!!!separator!!!!!"
+    for x,y  in groupinfo.items():
+        m+=x+sep+str(len(y[3]))+"!!!!!separator!!!!!"
     m=m.encode("ASCII")
     c.sendall(m)
     return 1

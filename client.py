@@ -6,7 +6,7 @@ sep2='*****seperator*****'
 
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull,length
+    global details, sep1, sep2,result,groupfull,members
     i=1
     print('Function Started!!!!')
     while 1:
@@ -36,7 +36,10 @@ def receive():
                     result=False
                     groupfull=True
             elif m[0:12]=="$$$length$$$":
-                length=int(m[12:])
+                x=m.split(sep1)
+                for i in range(1,len(x)-1):
+                    y=x[i].split(sep2)
+                    members[y[0]]=int(y[1])
 
 
         except OSError:
@@ -57,8 +60,8 @@ def return_groupfull():
     return groupfull
 
 def return_members():
-    global length
-    return length
+    global members
+    return members
 
 def sendName(username):
     global client
@@ -131,7 +134,7 @@ client=None
 details=[]
 result=None
 groupfull=None
-length=0
+members={}
 
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
