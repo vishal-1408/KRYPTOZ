@@ -1,4 +1,5 @@
 #: import SlideTransition kivy.uix.screenmanager.SlideTransition
+#:import RGBA kivy.utils.rgba
 Screen_Manager:
     Login:
     JoinOrCreate:
@@ -360,12 +361,45 @@ Screen_Manager:
                     app.root.transition= SlideTransition(direction='up')
                     app.root.current= 'join_or_create'
                     root.unschedule()
+<MemberLabels>:
+    H2:
+        text: root.text
 
+<Message>:
+    canvas.before:
+        Color:
+            rgba: RGBA(root.bg_color)
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: 5, 5, 5, 5
+    padding: 10, 10
+    text: ''
+    username: ''
+    message_id: -1
+    bg_color: '#223344'
+    orientation: 'vertical'
+    size_hint: 1, None
+    height: userLabel.texture_size[1] + messageLabel.texture_size[1] + 20
+    H3:
+        id: userLabel
+        text: root.username
+        size_hint: 1, None
+        text_size: self.width, None
+        size: self.texture_size
+    Label:
+        id: messageLabel
+        text: root.text
+        size_hint: 1, None
+        text_size: self.width, None
+        size: self.texture_size
+        padding: 10, 0
 <ChatWindow>:
     name:'chatwin'
     on_pre_enter:
         root.assign_chamber_info()
     BoxLayout:
+        orientation: 'vertical'
         FloatLayout:
             size_hint_y: 0.1
             pos_hint: {'top': 1}
@@ -389,3 +423,72 @@ Screen_Manager:
                     text: "Copy to Clipboard"
                     font_size: 14
                     size_hint_x: 0.35
+        BoxLayout:
+            BoxLayout:
+                size_hint_x: 0.2
+                RecycleView:
+                    id: memberview
+                    data: root.members_online
+                    viewclass: 'MemberLabels'
+                    RecycleBoxLayout: 
+                        id: members_box
+                        spacing: 10
+                        padding: (100,0)
+                        default_size: None, dp(30)
+                        default_size_hint: 1, None
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+            BoxLayout:
+                size_hint_x:0.8
+                orientation: 'vertical'
+                padding: dp(20)
+                RecycleView:
+                    id: chat_view
+                    canvas.before:
+                        Color:
+                            rgba: (34/255,43/255,46/255,1)
+                        Rectangle:
+                            size: self.size
+                            pos: self.pos
+                    data: root.messages
+                    viewclass: 'Message'
+                    RecycleBoxLayout:
+                        id: box
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        padding: dp(10)
+                        spacing: dp(15)
+                        default_size_hint: 1, None
+                FloatLayout:
+                    size_hint_y: None
+                    height: 0
+                    Custom_Button:
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        padding: [5,5]
+                        opacity: 0 if not self.height else 1
+                        text: 'Go to Latest Message' if chat_view.height < box.height and chat_view.scroll_y > 0 else ''
+                        pos_hint: {'pos': (0, 0)}
+                        on_release: root.scroll_bottom()
+                BoxLayout:
+                    size_hint_y:0.08
+                    CustomTextInput:
+                        id: message_input
+                        height: min(max(self.line_height, self.minimum_height), 90)
+                        background_color:(40/255,50/255,54/255,1)
+                        multiline: True
+                        size_hint: 0.8, None
+                        pos_hint:{'center_y': 0.5}
+                    Custom_Button:
+                        text: 'Send'
+                        disabled: not message_input.text
+                        background_disabled_normal:''
+                        background_disabled_down: ''
+                        background_color:  (4/255,40/255,33/255,1) if self.disabled else (22/255,160/255,133/255,1)
+                        disabled_color: (110/255,110/255,110/255,1)
+                        size_hint: 0.2, 1
+                        on_release:
+                            root.send_message(message_input.text)
+                            message_input.text = ''

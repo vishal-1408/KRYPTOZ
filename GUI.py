@@ -1,3 +1,7 @@
+from kivy.config import Config
+Config.set('graphics', 'width',  800)
+Config.set('graphics', 'height', 600)
+Config.set('graphics', 'resizable', False)
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
@@ -13,6 +17,7 @@ from kivy.clock import Clock
 from EncryptionHashing import hash_str
 from FileManage import *
 from client import *
+from kivy.animation import Animation
 
 #--------------------------------------------------
 #---------------App Parameters------------------#
@@ -23,6 +28,8 @@ Window.clearcolor = (27/255, 34/255, 36/255, 1)
 separator="*****seperator*****"
 refresh_group_list = None
 chamber_name_and_code = ''
+username = ''
+
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
 	textinput.text=''
@@ -68,6 +75,8 @@ class Login(Screen):
 		Credential_List=return_credentials()
 		for i in range(0,len(Credential_List),2):
 			if Credential_List[i] == hashed_username and Credential_List[i+1]==hashed_password:
+				global username
+				username = self.ids.username.text
 				return True
 		return False
 	def login_error(self):
@@ -254,12 +263,14 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		self.auth = return_authenticate()
 		self.full = return_groupfull()
 		print(str(self.auth)+'\t'+str(self.full)+' 1')
+	
 	def transition(self, instance):
 		self.success_auth.dismiss()
 		app=App.get_running_app()
 		app.root.transition = SlideTransition(direction='left')
 		app.root.current = 'chatwin'
-
+		join = app.root.get_screen('join')
+		join.unschedule()
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
@@ -272,21 +283,55 @@ class GroupVerifyAndJoin(BoxLayout):
 		#print(join_string)
 		sendJoin(join_string)
 
-class RecycleMessage(RecycleDataViewBehavior):
-	message = StringProperty()
-	sendername = StringProperty()
-	color = StringProperty()
-	right = BooleanProperty()
-	owner = ObjectProperty()
+class Message(RecycleDataViewBehavior, BoxLayout):
+    owner = ObjectProperty()
+    index = NumericProperty(0)
+
+    def update_height(self, *_):
+        self.height = self.ids.userLabel.texture_size[1] + self.ids.messageLabel.texture_size[1] + 20
+
+    def refresh_view_attrs(self, rv, index, data):
+        Clock.schedule_once(self.update_height, -1)
+        self.index = index
+        return super().refresh_view_attrs(rv, index, data)
 
 class ChatWindow(Screen):
-	
+
+	messages = ListProperty()
+	members_online = ListProperty()
+
 	def assign_chamber_info(self):
 		global chamber_name_and_code
 		self.ids.info_label.text = "[color=#E0744C]" + chamber_name_and_code[:-6] + "[/color] " + chamber_name_and_code[-6:]
 	
+	def add_message(self, text, color):
+		global username
+		self.messages.append({
+			'message_id': len(self.messages),
+			'bg_color': color,
+			'username': username,
+			'text': text
+		})
+		print(username)
+	
+	def send_message(self, text):
+		self.add_message(text, '#223344')
+		Clock.schedule_once(lambda *args: self.answer(text), 1)
+		self.scroll_bottom()
+	
+	def answer(self, text, *args):
+		self.add_message('do you really think so?', '#332211')
+
+	def scroll_bottom(self):
+		Animation.cancel_all(self.ids.chat_view, 'scroll_y')
+		Animation(scroll_y=0, t='out_quad', d=.5).start(self.ids.chat_view)
+	
 	def exit_chat(self):
 		sendLogout()
+		self.messages={}
+
+class MemberLabels(RecycleDataViewBehavior, BoxLayout):
+	text=StringProperty()
 
 class Screen_Manager(ScreenManager):
 	pass
