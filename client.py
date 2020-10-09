@@ -6,7 +6,7 @@ sep2='*****seperator*****'
 
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull,members
+    global details, sep1, sep2,result,groupfull,members,memberslist
     i=1
     print('Function Started!!!!')
     while 1:
@@ -40,6 +40,10 @@ def receive():
                 for i in range(1,len(x)-1):
                     y=x[i].split(sep2)
                     members[y[0]]=int(y[1])
+            elif m[0:11]=="$$memlist$$":
+                x=m.split(sep2)
+                n=len(x)-1
+                memberslist=x[1:n]
 
 
         except OSError:
@@ -65,6 +69,10 @@ def return_members():
     global members
     return members
 
+def return_memeberslist():
+    global memberslist
+    return memberslist
+
 def sendName(username):
     global client
     print("sendname")
@@ -77,6 +85,10 @@ def sendGroups():
 def sendMembers():
     global client
     client.send("members".encode('ASCII'))
+
+def sendMembersList():
+    global client
+    client.send("membersList".encode("ASCII"))
 
 def sendCreate(s):
     global client
@@ -137,7 +149,7 @@ details=[]
 result=None
 groupfull=None
 members={}
-
+memberslist=[]
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"

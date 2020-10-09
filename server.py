@@ -131,6 +131,17 @@ def join(c):
 
 
 
+def membersList(client,grouplist):
+    sep='*****seperator*****'                                                    #groupinfo=[password,limit,groupcode,[]]
+    groupmembers="$$memlist$$"+sep
+    for x in grouplist[3]:
+        groupmembers+=x+sep
+    print(groupmembers)
+    client.sendall(groupmembers.encode("ascii"))
+
+
+
+
 
 def handling_the_client(client):
     print("hanfdling client")
@@ -144,6 +155,8 @@ def handling_the_client(client):
         print(received+" by "+clientinfo[client][0])
         if not received=="QUIT":
             broadcast(received,clientinfo[client][0],client)
+        elif received=="membersList":
+            membersList(client,groupinfo[clientinfo[client][1]])
         else:
             if len(groupinfo[clientinfo[client][1]][3])==1:
                 groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
