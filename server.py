@@ -153,10 +153,10 @@ def handling_the_client(client):
     while 1:
         received=client.recv(1024).decode('ASCII')
         print(received+" by "+clientinfo[client][0])
-        if not received=="QUIT":
-            broadcast(received,clientinfo[client][0],client)
-        elif received=="membersList":
+        if received=="membersList" and not received == 'QUIT':
             membersList(client,groupinfo[clientinfo[client][1]])
+        elif not received=="QUIT":
+            broadcast(received,clientinfo[client][0],client)
         else:
             if len(groupinfo[clientinfo[client][1]][3])==1:
                 groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])

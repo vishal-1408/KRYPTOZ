@@ -88,7 +88,7 @@ def sendMembers():
 
 def sendMembersList():
     global client
-    client.send("membersList".encode("ASCII"))
+    client.sendall("membersList".encode("ASCII"))
 
 def sendCreate(s):
     global client
