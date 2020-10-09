@@ -283,6 +283,12 @@ class GroupVerifyAndJoin(BoxLayout):
 		#print(join_string)
 		sendJoin(join_string)
 
+class MemberLabels(RecycleDataViewBehavior, BoxLayout):
+	text=StringProperty()
+	owner = ObjectProperty()
+	index = NumericProperty(0)
+	
+
 class Message(RecycleDataViewBehavior, BoxLayout):
     owner = ObjectProperty()
     index = NumericProperty(0)
@@ -329,9 +335,6 @@ class ChatWindow(Screen):
 	def exit_chat(self):
 		sendLogout()
 		self.messages={}
-
-class MemberLabels(RecycleDataViewBehavior, BoxLayout):
-	text=StringProperty()
 
 class Screen_Manager(ScreenManager):
 	pass
