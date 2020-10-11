@@ -1,12 +1,13 @@
 
 from threading import Thread
+import copy
 import socket
 sep1='!!!!!separator!!!!!'
 sep2='*****seperator*****'
 
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull,members,memberslist
+    global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList
     i=1
     #print('Function Started!!!!')
     while 1:
@@ -49,11 +50,19 @@ def receive():
                 n=len(x)-1
                 memberslist=x[1:n]
                 #print(memberslist)
-
-
+            elif m[0:11]=="$$message$$":
+                obj={}
+                x=m.split(sep2)
+                obj["colour"]=x[1]               #{"colour":value , "name": value, "message": value }
+                obj["name"]=x[2]
+                obj["message"]=x[3]
+                print(obj)
+                clientmessageList.append(obj)
+                
         except OSError:
            print("Connection got disconnected")
            break
+
 def return_details():
     global details
    # print('from client script:  ')
@@ -77,6 +86,21 @@ def return_members():
 def return_memeberslist():
     global memberslist
     return memberslist
+
+def return_message():
+    global clientmessageList,sentList
+    if len(sentList)==0:
+        sentList=copy.deepcopy(clientmessageList)
+        return sentList
+    elif len(sentList)==len(clientmessageList):
+        return []
+    else:
+        newMessages=clientmessageList[len(sentList):]
+        for i in newMessages:
+            sentList.append(i)
+        return newMessages
+
+
 
 def sendName(username):
     global client
@@ -107,15 +131,18 @@ def sendJoin(s):
     client.send(s.encode('ASCII'))
     print('sent-join-request')
 
-def sendMessage(message):
+def sendMessage(message,colour):
     global client
-    m="message-"+message
+    m="message-"+colour+message
     client.sendall(m.encode("ascii"))
 
 def sendLogout():
-    global client
+    global client,sentList,clientmessageList,sentList
+    clientmessageList.clear()
+    sentList.clear()
     client.send("QUIT".encode('ASCII'))
     print('sendlogout')
+
 
 def close():
     global client
@@ -160,6 +187,9 @@ result=None
 groupfull=None
 members={}
 memberslist=[]
+clientmessageList=[]
+sentList=[]
+
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
