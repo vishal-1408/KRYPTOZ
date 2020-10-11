@@ -355,12 +355,8 @@ class ChatWindow(Screen):
 	
 	def send_message(self, text):
 		self.add_message(text, '#223344')
-		Clock.schedule_once(lambda *args: self.answer(text), 1)
 		self.scroll_bottom()
 	
-	def answer(self, text, *args):
-		self.add_message('do you really think so?', '#332211')
-
 	def scroll_bottom(self):
 		Animation.cancel_all(self.ids.chat_view, 'scroll_y')
 		Animation(scroll_y=0, t='out_quad', d=.5).start(self.ids.chat_view)
