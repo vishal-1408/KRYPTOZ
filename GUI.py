@@ -257,10 +257,10 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 				self.refresh_members.cancel()
 				global refresh_group_list
 				refresh_group_list.cancel()
-			elif not self.auth:
-				quick_message("Oops!", True, "Wrong password was entered.")
 			elif self.full:
 				quick_message("Ah! You are late", True, "The chamber is currently full.")
+			elif not self.auth:
+				quick_message("Oops!", True, "Wrong password was entered.")
 		else:
 			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 	
