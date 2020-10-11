@@ -32,7 +32,7 @@ def members(c):
     m="$$$length$$$"+"!!!!!separator!!!!!"
     for x,y  in groupinfo.items():
         m+=x+sep+str(len(y[3]))+"!!!!!separator!!!!!"
-    print("from server, this is m"+ str(m))
+    #print("from server, this is m"+ str(m))
     m=m.encode("ASCII")
     c.sendall(m)
     return 1
@@ -44,7 +44,7 @@ def initialize(c):
         #print(name)
         clientinfo[c]=[name]
         d=1
-        print("initialize")
+        #print("initialize")
         while(d):
             #print('while loop')
             m=c.recv(1024).decode('ASCII')
@@ -63,7 +63,7 @@ def initialize(c):
                 break
     except Exception as e:
         print(e)
-        print("client socket closed")
+        print("client socket closed"+e)
         c.close()
 
 
@@ -71,10 +71,10 @@ def initialize(c):
 def create(c):
     global clientinfo, groupinfo,eventslist
     try:
-        print("create")
+        #print("create")
         string=c.recv(1024).decode("ASCII")
         list1=string.split("*****seperator*****")
-        groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]]]            #groupinfo=[password,limit,groupcode,[]]
+        groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]],[c]]            #groupinfo=[password,limit,groupcode,[],[]]
         clientinfo[c].append(list1[0])
         eventslist[list1[0]]=[]
         #print(clientinfo)
@@ -108,13 +108,14 @@ def join(c):
                     c.sendall("$$auth$$t".encode("ASCII"))
                     for x in eventslist[name]:
                         if x:
-                             print(x)
+                             #print(x)
                              scheduler.cancel(x)
                              eventslist[name].remove(x)
 
                     #print(groupinfo)
                    # print(clientinfo)
                     groupinfo[name][3].append(clientinfo[c][0])
+                    groupinfo[name][4].append(c)
                     #print(groupinfo)
                     clientinfo[c].append(name)
                     Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
@@ -123,17 +124,17 @@ def join(c):
                     c.send("$$auth$$f".encode("ASCII"))
                     return 1                                                     #return 0 once handling clients is done!
             else:
-                c.send("$$auth$$g")
+                c.send("$$auth$$g".encode("ASCII"))
                 return 1
 
 
 
 def membersList(client,grouplist):
-    sep='*****seperator*****'                                                    #groupinfo=[password,limit,groupcode,[]]
+    sep='*****seperator*****'                                                    #groupinfo=[password,limit,groupcode,[],[]]
     groupmembers="$$memlist$$"+sep
     for x in grouplist[3]:
         groupmembers+=x+sep
-    print(groupmembers)
+    #print(groupmembers)
     client.sendall(groupmembers.encode("ascii"))
 
 
@@ -141,7 +142,7 @@ def membersList(client,grouplist):
 
 
 def handling_the_client(client):
-    print("hanfdling client")
+    print("handling client")
     global clientinfo, groupinfo
     # message=clientinfo[client][0]+" has joined the room!"
     # broadcast(message,"chatbot",client)
@@ -149,8 +150,10 @@ def handling_the_client(client):
     # client.send(m.encode("ASCII"))
     while 1:
         received=client.recv(1024).decode('ASCII')
-        print(received+" by "+clientinfo[client][0])
-        if received=="membersList" and not received == 'QUIT':
+        #print(received+" by "+clientinfo[client][0])
+        if received[0:8]=="message-":
+            broadcast(received[8:],clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4])
+        elif received=="membersList":
             membersList(client,groupinfo[clientinfo[client][1]])
         elif not received=="QUIT":
             broadcast(received,clientinfo[client][0],client)
@@ -173,17 +176,17 @@ scheduler = None
 
 def scheduling(group_name):
     global eventslist,scheduler
-    print('clock')
-    print(groupinfo)
+    #print('clock')
+    #print(groupinfo)
     scheduler = sched.scheduler(time. time, time.sleep)
     e1 = scheduler.enter(7, 1, checkgroup,(group_name,))
     eventslist[group_name].append(e1)
-    print(eventslist)
+    #print(eventslist)
     scheduler.run()
-    print('after clock')
+    #print('after clock')
 
 def checkgroup(group_name):
-    print('called')
+    #print('called')
     global clientinfo, groupinfo
     if len(groupinfo[group_name][3])==0:
         groupinfo.pop(group_name)
@@ -218,29 +221,34 @@ def joinorcreate(c):
 
 
 
-def broadcast(message,name,client="",group=""):
-    global clientinfo, groupinfo
-    if not client=="":
-        room=clientinfo[client][1]
-        clients=groupinfo[room][1]
-        if name=="chatbot":
-            for x in clients:
-                if not x==client:
-                    m=name+" : "+message
-                    m=m.encode("ASCII")
-                    x.send(m)
-        else:
-            for x in clients:
-                if not x==clients:
-                    m=name+" : "+message
-                    m=m.encode("ASCII")
-                    x.send(m)
-    else:
-        clients=groupinfo[group][1]
-        for x in clients:
-             m=name+" : "+message
-             m=m.encode("ASCII")
-             x.send(m)
+def broadcast(message,name,client,memberslist):
+    # if not client=="":
+    #     room=clientinfo[client][1]
+    #     clients=groupinfo[room][1]
+    #     if name=="chatbot":
+    #         for x in clients:
+    #             if not x==client:
+    #                 m=name+" : "+message
+    #                 m=m.encode("ASCII")
+    #                 x.send(m)
+    #     else:
+    #         for x in clients:
+    #             if not x==clients:
+    #                 m=name+" : "+message
+    #                 m=m.encode("ASCII")
+    #                 x.send(m)
+    # else:
+    #     clients=groupinfo[group][1]
+    #     for x in clients:
+    #          m=name+" : "+message
+    #          m=m.encode("ASCII")
+    #          x.send(m)
+    for x in membersList:
+        if not x == client:
+            m=name+":"+message
+            x.send(m.encode('ascii'))
+
+
 
 
 

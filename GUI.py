@@ -154,7 +154,9 @@ class SelectGroup(Screen):
 	def schedule_details(self, *args):	
 		sendGroups()
 		sendMembers()
+		print("received")
 		self.detail_list=return_details()
+		print("recieved-2")
 		print(self.detail_list)
 		print(return_members())
 		self.activegroups=[]
@@ -259,8 +261,10 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 				refresh_group_list.cancel()
 			elif self.full:
 				quick_message("Ah! You are late", True, "The chamber is currently full.")
+					
 			elif not self.auth:
 				quick_message("Oops!", True, "Wrong password was entered.")
+			
 		else:
 			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 	
