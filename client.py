@@ -66,8 +66,18 @@ def receive():
                     obj["colour"]=y[0]
                     obj["name"]=y[1]
                     obj["message"]=y[2]
+<<<<<<< HEAD
                     clientmessageList.append(obj)
                 print ('old messages: ' + str(clientmessageList))
+=======
+                    print("this is an old message: "+str(y))
+                    clientmessageList.append({
+                        "colour":y[0],
+                        "name":y[1],
+                        "message":y[2]
+                    })
+
+>>>>>>> 40f4415183d1e7cd2f0517f01025daa3ca7b6186
         except OSError:
            print("Connection got disconnected")
            break
