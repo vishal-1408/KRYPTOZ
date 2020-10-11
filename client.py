@@ -8,7 +8,7 @@ def receive():
     global client
     global details, sep1, sep2,result,groupfull,members,memberslist
     i=1
-    print('Function Started!!!!')
+    #print('Function Started!!!!')
     while 1:
         try:
             m=client.recv(1024)
@@ -23,28 +23,32 @@ def receive():
                 for i in range(1,len(x)-1):
                     y.append(x[i].split(sep2))
                 details=y                                       #details=[[groupname,limit,groupcode]]
-                print(y)
+                #print(y)
             elif m[0:8]=="$$auth$$":
-                print(m)
+                #print(m)
                 if m[8]=="t":
+                    print("auth successfull")
                     result=True
                     groupfull=False
                 elif m[8]=="f":
+                    print("auth failed password wrong")
                     result=False
                     groupfull=False
                 elif m[8]=="g":
+                    print("auth failed group full")
                     result=False
                     groupfull=True
             elif m[0:12]=="$$$length$$$":
                 x=m.split(sep1)
                 for i in range(1,len(x)-1):
-                    print('print x from client'+str(x))
+                  #  print('print x from client'+str(x))
                     y=x[i].split(sep2)
                     members[y[0]]=int(y[1])
             elif m[0:11]=="$$memlist$$":
                 x=m.split(sep2)
                 n=len(x)-1
                 memberslist=x[1:n]
+                #print(memberslist)
 
 
         except OSError:
@@ -52,18 +56,18 @@ def receive():
            break
 def return_details():
     global details
-    print('from client script:  ')
-    print(details)
+   # print('from client script:  ')
+   # print(details)
     return details
 
 def return_authenticate():
     global result
-    print('from client side:' + str(result))
+   # print('from client side:' + str(result))
     return result
 
 def return_groupfull():
     global groupfull
-    print('from client side:' + str(groupfull))
+   # print('from client side:' + str(groupfull))
     return groupfull
 
 def return_members():
@@ -76,7 +80,7 @@ def return_memeberslist():
 
 def sendName(username):
     global client
-    print("sendname")
+   # print("sendname")
     client.send(username.encode('ASCII'))
 
 def sendGroups():
@@ -115,7 +119,7 @@ def sendLogout():
 
 def close():
     global client
-    print('close')
+   # print('close')
     m="QUIT".encode("ASCII")                  #settting the variable of text-input to QUIT
     client.send(m)                     #this is like clicking send button automatically
     

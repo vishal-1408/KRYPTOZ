@@ -146,13 +146,8 @@ class CreateGroup(Screen):
 class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency
-<<<<<<< HEAD
-		#sendGroups()
-		#sendMembers()
-=======
 		sendGroups() #Test this and remove 
 		sendMembers() #Test this and remove
->>>>>>> 635d90e1a1dc5be905588d44c879954eed73eecb
 		Clock.schedule_once(self.schedule_details)
 		global refresh_group_list
 		refresh_group_list = Clock.schedule_interval(self.schedule_details, 1)
@@ -264,10 +259,12 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 				self.refresh_members.cancel()
 				global refresh_group_list
 				refresh_group_list.cancel()
-			elif not self.auth:
-				quick_message("Oops!", True, "Wrong password was entered.")
 			elif self.full:
 				quick_message("Ah! You are late", True, "The chamber is currently full.")
+					
+			elif not self.auth:
+				quick_message("Oops!", True, "Wrong password was entered.")
+			
 		else:
 			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 	
