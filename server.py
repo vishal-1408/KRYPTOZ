@@ -31,11 +31,8 @@ def members(c):
     sep='*****seperator*****'
     m="$$$length$$$"+"!!!!!separator!!!!!"
     for x,y  in groupinfo.items():
-        if y[3]==[]:
-            m+=x+sep+str(0)+"!!!!!separator!!!!!"
-        else:
-            m+=x+sep+str(len(y[3]))+"!!!!!separator!!!!!"
-    print(m)
+        m+=x+sep+str(len(y[3]))+"!!!!!separator!!!!!"
+    print("from server, this is m"+ str(m))
     m=m.encode("ASCII")
     c.sendall(m)
     return 1

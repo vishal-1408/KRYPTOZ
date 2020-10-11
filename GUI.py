@@ -231,8 +231,12 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		else:
 			for group in return_details_list:
 				if self.group_name not in group:
-					print('\ngroup deleted entered here'+group_name)
+					print('\ngroup deleted entered here ' + str(group))
 					group_deleted = True
+				else:
+					group_deleted = False
+					print('\ngroup deleted entered here asdfsdf ' + str(group))
+					break
 		print('group deleted: '+ str(group_deleted))
 		if not group_deleted:
 			if self.auth and not self.full:
@@ -274,6 +278,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		app.root.current = 'chatwin'
 		join = app.root.get_screen('join')
 		join.unschedule()
+
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
