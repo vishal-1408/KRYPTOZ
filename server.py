@@ -77,7 +77,7 @@ def create(c):
         print("create")
         string=c.recv(1024).decode("ASCII")
         list1=string.split("*****seperator*****")
-        groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]]]            #groupinfo=[password,limit,groupcode,[]]
+        groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]],[c]]            #groupinfo=[password,limit,groupcode,[],[]]
         clientinfo[c].append(list1[0])
         eventslist[list1[0]]=[]
         #print(clientinfo)
@@ -118,6 +118,7 @@ def join(c):
                     #print(groupinfo)
                    # print(clientinfo)
                     groupinfo[name][3].append(clientinfo[c][0])
+                    groupinfo[name][4].append(c)
                     #print(groupinfo)
                     clientinfo[c].append(name)
                     Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
@@ -132,7 +133,7 @@ def join(c):
 
 
 def membersList(client,grouplist):
-    sep='*****seperator*****'                                                    #groupinfo=[password,limit,groupcode,[]]
+    sep='*****seperator*****'                                                    #groupinfo=[password,limit,groupcode,[],[]]
     groupmembers="$$memlist$$"+sep
     for x in grouplist[3]:
         groupmembers+=x+sep
@@ -153,8 +154,8 @@ def handling_the_client(client):
     while 1:
         received=client.recv(1024).decode('ASCII')
         print(received+" by "+clientinfo[client][0])
-        if not received=="QUIT":
-            broadcast(received,clientinfo[client][0],client)
+        if received[0:8]=="message-":
+            broadcast(received[8:],clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4])
         elif received=="membersList":
             membersList(client,groupinfo[clientinfo[client][1]])
         else:
@@ -221,29 +222,34 @@ def joinorcreate(c):
 
 
 
-def broadcast(message,name,client="",group=""):
-    global clientinfo, groupinfo
-    if not client=="":
-        room=clientinfo[client][1]
-        clients=groupinfo[room][1]
-        if name=="chatbot":
-            for x in clients:
-                if not x==client:
-                    m=name+" : "+message
-                    m=m.encode("ASCII")
-                    x.send(m)
-        else:
-            for x in clients:
-                if not x==clients:
-                    m=name+" : "+message
-                    m=m.encode("ASCII")
-                    x.send(m)
-    else:
-        clients=groupinfo[group][1]
-        for x in clients:
-             m=name+" : "+message
-             m=m.encode("ASCII")
-             x.send(m)
+def broadcast(message,name,client,memberslist):
+    # if not client=="":
+    #     room=clientinfo[client][1]
+    #     clients=groupinfo[room][1]
+    #     if name=="chatbot":
+    #         for x in clients:
+    #             if not x==client:
+    #                 m=name+" : "+message
+    #                 m=m.encode("ASCII")
+    #                 x.send(m)
+    #     else:
+    #         for x in clients:
+    #             if not x==clients:
+    #                 m=name+" : "+message
+    #                 m=m.encode("ASCII")
+    #                 x.send(m)
+    # else:
+    #     clients=groupinfo[group][1]
+    #     for x in clients:
+    #          m=name+" : "+message
+    #          m=m.encode("ASCII")
+    #          x.send(m)
+    for x in membersList:
+        if not x == client:
+            m=name+":"+message
+            x.send(m.encode('ascii'))
+
+
 
 
 

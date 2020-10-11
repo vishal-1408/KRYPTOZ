@@ -102,6 +102,11 @@ def sendJoin(s):
     client.send(s.encode('ASCII'))
     print('sent-join-request')
 
+def sendMessage(message):
+    global client
+    m="message-"+message
+    client.sendall(m.encode("ascii"))
+
 def sendLogout():
     global client
     client.send("QUIT".encode('ASCII'))

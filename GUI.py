@@ -146,15 +146,17 @@ class CreateGroup(Screen):
 class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency
-		sendGroups()
-		sendMembers()
+		#sendGroups()
+		#sendMembers()
 		Clock.schedule_once(self.schedule_details)
 		global refresh_group_list
 		refresh_group_list = Clock.schedule_interval(self.schedule_details, 1)
 	def schedule_details(self, *args):	
 		sendGroups()
 		sendMembers()
+		print("received")
 		self.detail_list=return_details()
+		print("recieved-2")
 		print(self.detail_list)
 		print(return_members())
 		self.activegroups=[]
