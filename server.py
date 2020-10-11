@@ -31,11 +31,8 @@ def members(c):
     sep='*****seperator*****'
     m="$$$length$$$"+"!!!!!separator!!!!!"
     for x,y  in groupinfo.items():
-        if y[3]==[]:
-            m+=x+sep+str(0)+"!!!!!separator!!!!!"
-        else:
-            m+=x+sep+str(len(y[3]))+"!!!!!separator!!!!!"
-    print(m)
+        m+=x+sep+str(len(y[3]))+"!!!!!separator!!!!!"
+    print("from server, this is m"+ str(m))
     m=m.encode("ASCII")
     c.sendall(m)
     return 1
@@ -154,10 +151,16 @@ def handling_the_client(client):
     while 1:
         received=client.recv(1024).decode('ASCII')
         print(received+" by "+clientinfo[client][0])
+<<<<<<< HEAD
         if received[0:8]=="message-":
             broadcast(received[8:],clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4])
         elif received=="membersList":
+=======
+        if received=="membersList" and not received == 'QUIT':
+>>>>>>> 635d90e1a1dc5be905588d44c879954eed73eecb
             membersList(client,groupinfo[clientinfo[client][1]])
+        elif not received=="QUIT":
+            broadcast(received,clientinfo[client][0],client)
         else:
             if len(groupinfo[clientinfo[client][1]][3])==1:
                 groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])

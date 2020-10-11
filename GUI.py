@@ -146,8 +146,13 @@ class CreateGroup(Screen):
 class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency
+<<<<<<< HEAD
 		#sendGroups()
 		#sendMembers()
+=======
+		sendGroups() #Test this and remove 
+		sendMembers() #Test this and remove
+>>>>>>> 635d90e1a1dc5be905588d44c879954eed73eecb
 		Clock.schedule_once(self.schedule_details)
 		global refresh_group_list
 		refresh_group_list = Clock.schedule_interval(self.schedule_details, 1)
@@ -233,7 +238,12 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		else:
 			for group in return_details_list:
 				if self.group_name not in group:
+					print('\ngroup deleted entered here ' + str(group))
 					group_deleted = True
+				else:
+					group_deleted = False
+					print('\ngroup deleted entered here asdfsdf ' + str(group))
+					break
 		print('group deleted: '+ str(group_deleted))
 		if not group_deleted:
 			if self.auth and not self.full:
@@ -265,6 +275,8 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		self.auth = return_authenticate()
 		self.full = return_groupfull()
 		print(str(self.auth)+'\t'+str(self.full)+' 1')
+		if self.auth==None or self.full==None:
+			self.auth_and_full()
 	
 	def transition(self, instance):
 		self.success_auth.dismiss()
@@ -273,6 +285,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		app.root.current = 'chatwin'
 		join = app.root.get_screen('join')
 		join.unschedule()
+
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		return super(RecycleGroups, self).refresh_view_attrs(rv, index, data)
@@ -284,6 +297,15 @@ class GroupVerifyAndJoin(BoxLayout):
 		join_string = self.chambername + separator + str(hash_str(self.ids.password.text))
 		#print(join_string)
 		sendJoin(join_string)
+
+class MemberLabels(RecycleDataViewBehavior, BoxLayout):
+	text=StringProperty()
+	owner = ObjectProperty()
+	index = NumericProperty(0)
+	
+	def refresh_view_attrs(self, rv, index, data):
+		self.index = index
+		return super(MemberLabels, self).refresh_view_attrs(rv, index, data)
 
 class Message(RecycleDataViewBehavior, BoxLayout):
     owner = ObjectProperty()
@@ -301,6 +323,24 @@ class ChatWindow(Screen):
 
 	messages = ListProperty()
 	members_online = ListProperty()
+
+	def members_online_rv_assignment(self):
+		sendMembersList()
+		Clock.schedule_once(self.schedule_members_online)
+		self.refresh_online_members = Clock.schedule_interval(self.schedule_members_online, 1)
+
+	def schedule_members_online(self, *_):
+		sendMembersList()
+		self.member_list=return_memeberslist()
+		self.members_online = []
+		for member in self.member_list:
+			self.members_online.append({
+				'text': member,
+				'owner': self
+			})
+	
+	def unschedule_on_exit(self):
+		self.refresh_online_members.cancel()
 
 	def assign_chamber_info(self):
 		global chamber_name_and_code
@@ -331,9 +371,7 @@ class ChatWindow(Screen):
 	def exit_chat(self):
 		sendLogout()
 		self.messages={}
-
-class MemberLabels(RecycleDataViewBehavior, BoxLayout):
-	text=StringProperty()
+		self.unschedule_on_exit()
 
 class Screen_Manager(ScreenManager):
 	pass

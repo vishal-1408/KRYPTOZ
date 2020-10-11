@@ -38,6 +38,7 @@ def receive():
             elif m[0:12]=="$$$length$$$":
                 x=m.split(sep1)
                 for i in range(1,len(x)-1):
+                    print('print x from client'+str(x))
                     y=x[i].split(sep2)
                     members[y[0]]=int(y[1])
             elif m[0:11]=="$$memlist$$":
@@ -88,7 +89,7 @@ def sendMembers():
 
 def sendMembersList():
     global client
-    client.send("membersList".encode("ASCII"))
+    client.sendall("membersList".encode("ASCII"))
 
 def sendCreate(s):
     global client

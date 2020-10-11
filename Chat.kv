@@ -362,8 +362,21 @@ Screen_Manager:
                     app.root.current= 'join_or_create'
                     root.unschedule()
 <MemberLabels>:
-    H2:
+    H3:
+        canvas.before:
+            Color:
+                rgba: (11/255,80/255,66/255,1)
+            RoundedRectangle:
+                size: self.size
+                pos: self.pos
+                radius: 10,10,10,10
         text: root.text
+        font_size:13
+        color: (1,1,1,1)
+        text_size: 120, None
+        halign: "center"
+        shorten: True
+        shorten_from: 'right'
 
 <Message>:
     canvas.before:
@@ -398,6 +411,7 @@ Screen_Manager:
     name:'chatwin'
     on_pre_enter:
         root.assign_chamber_info()
+        root.members_online_rv_assignment()
     BoxLayout:
         orientation: 'vertical'
         FloatLayout:
@@ -425,22 +439,29 @@ Screen_Manager:
                     size_hint_x: 0.35
         BoxLayout:
             BoxLayout:
-                size_hint_x: 0.2
+                size_hint_x: 0.25
+                padding: dp(20), dp(20), 0, dp(20)
                 RecycleView:
                     id: memberview
+                    canvas.before:
+                        Color:
+                            rgba: (34/255,43/255,46/255,1)
+                        Rectangle:
+                            size: self.size
+                            pos: self.pos
                     data: root.members_online
                     viewclass: 'MemberLabels'
                     RecycleBoxLayout: 
                         id: members_box
                         spacing: 10
-                        padding: (100,0)
+                        padding: dp(10)
                         default_size: None, dp(30)
                         default_size_hint: 1, None
                         orientation: 'vertical'
                         size_hint_y: None
                         height: self.minimum_height
             BoxLayout:
-                size_hint_x:0.8
+                size_hint_x:0.75
                 orientation: 'vertical'
                 padding: dp(20)
                 RecycleView:
