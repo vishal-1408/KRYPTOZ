@@ -69,12 +69,13 @@ def initialize(c):
 
 
 def create(c):
-    global clientinfo, groupinfo,eventslist
+    global clientinfo, groupinfo,eventslist,groupMessages
     try:
         #print("create")
         string=c.recv(1024).decode("ASCII")
         list1=string.split("*****seperator*****")
         groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]],[c]]            #groupinfo=[password,limit,groupcode,[],[]]
+        groupMessages[list1[0]]=[]
         clientinfo[c].append(list1[0])
         eventslist[list1[0]]=[]
         #print(clientinfo)
@@ -92,7 +93,7 @@ def create(c):
 def join(c):
     e=1
     print("join")
-    global clientinfo, groupinfo,eventslist,scheduler
+    global clientinfo, groupinfo,eventslist,scheduler,groupMessages
     while e:
             #print(groupinfo)
             sep='*****seperator*****'
@@ -118,6 +119,9 @@ def join(c):
                     groupinfo[name][4].append(c)
                     #print(groupinfo)
                     clientinfo[c].append(name)
+                    
+                    sendAllMessages(name,c)
+                    
                     Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
                     return 0
                 elif password!=grouppassword:
@@ -127,7 +131,16 @@ def join(c):
                 c.send("$$auth$$g".encode("ASCII"))
                 return 1
 
+def sendAllMessages(groupname,c):
+    sep='*****seperator*****'
+    sep1='!!!!!separator!!!!!'
+    global groupMessages
+    m="$$oldmessages$$"+sep1
+    for x in groupMessages[groupname]:
+        m+=x["colour"]+sep+x["name"]+sep+x["message"]+sep1
+    c.sendall(m.encode("ascii"))
 
+       
 
 def membersList(client,grouplist):
     sep='*****seperator*****'                                                    #groupinfo=[password,limit,groupcode,[],[]]
@@ -143,7 +156,7 @@ def membersList(client,grouplist):
 
 def handling_the_client(client):
     print("handling client")
-    global clientinfo, groupinfo
+    global clientinfo, groupinfo,groupMessages
     # message=clientinfo[client][0]+" has joined the room!"
     # broadcast(message,"chatbot",client)
     # m="Welcome "+clientinfo[client][0]+"\nYou can enter a message and click enter and\nif you want to exit the app, please enter QUIT"
@@ -153,10 +166,15 @@ def handling_the_client(client):
         #print(received+" by "+clientinfo[client][0])
         if received[0:8]=="message-":
             broadcast(received[8:15],received[15:],clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4])
+            groupMessages[clientinfo[client][1]].append({
+                "colour":received[8:15],
+                "message":received[15:],
+                "name":clientinfo[client][0]
+            })
         elif received=="membersList":
             membersList(client,groupinfo[clientinfo[client][1]])
-        elif not received=="QUIT":
-            broadcast(received,clientinfo[client][0],client)
+        # elif not received=="QUIT":
+        #     broadcast(received,clientinfo[client][0],client)
         else:
             if len(groupinfo[clientinfo[client][1]][3])==1:
                 groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
@@ -244,7 +262,8 @@ def broadcast(colour,message,name,client,memberslist):
     #          m=name+" : "+message
     #          m=m.encode("ASCII")
     #          x.send(m)
-    for x in membersList:
+
+    for x in memberslist:
         if  x!=client:
             m="$$message$$"+sep+colour+sep+name+sep+message
             x.send(m.encode('ascii'))
@@ -256,6 +275,7 @@ def broadcast(colour,message,name,client,memberslist):
 clientinfo={}
 groupinfo={}
 eventslist={}
+groupMessages={}
 
 Host=""
 port=8000
