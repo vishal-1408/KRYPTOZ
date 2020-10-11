@@ -320,7 +320,7 @@ class ChatWindow(Screen):
 
 	messages = ListProperty()
 	members_online = ListProperty()
-
+	user_color = hex_gen()
 	def members_online_rv_assignment(self):
 		sendMembersList()
 		Clock.schedule_once(self.schedule_members_online)
@@ -343,18 +343,28 @@ class ChatWindow(Screen):
 		global chamber_name_and_code
 		self.ids.info_label.text = "[color=#E0744C]" + chamber_name_and_code[:-6] + "[/color] " + chamber_name_and_code[-6:]
 	
-	def add_message(self, text, color):
-		global username
+	def add_message(self, text, color, name):
 		self.messages.append({
 			'message_id': len(self.messages),
 			'bg_color': color,
-			'username': username,
+			'username': name,
 			'text': text
 		})
 		print(username)
+
+	def refresh_messages_scheduler(self):
+		Clock.schedule_interval(self.refresh_messsages, 0.5)
+
+	def refresh_messsages(self, dt):
+		new_messages = return_message()
+		for messages in new_messages:
+			print (messages)
+			self.add_message(messages['message'], messages['colour'], messages['name'])
 	
 	def send_message(self, text):
-		self.add_message(text, '#223344')
+		global username
+		self.add_message(text, self.user_color, username)
+		sendMessage(text, self.user_color)
 		self.scroll_bottom()
 	
 	def scroll_bottom(self):

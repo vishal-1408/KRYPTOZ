@@ -412,6 +412,7 @@ Screen_Manager:
     on_pre_enter:
         root.assign_chamber_info()
         root.members_online_rv_assignment()
+        root.refresh_messages_scheduler()
     BoxLayout:
         orientation: 'vertical'
         FloatLayout:

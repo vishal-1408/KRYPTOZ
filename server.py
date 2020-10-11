@@ -244,7 +244,7 @@ def broadcast(colour,message,name,client,memberslist):
     #          m=name+" : "+message
     #          m=m.encode("ASCII")
     #          x.send(m)
-    for x in membersList:
+    for x in memberslist:
         if  x!=client:
             m="$$message$$"+sep+colour+sep+name+sep+message
             x.send(m.encode('ascii'))

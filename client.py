@@ -91,13 +91,16 @@ def return_message():
     global clientmessageList,sentList
     if len(sentList)==0:
         sentList=copy.deepcopy(clientmessageList)
+        print('a'+str(sentList))
         return sentList
     elif len(sentList)==len(clientmessageList):
+        print('b')
         return []
     else:
         newMessages=clientmessageList[len(sentList):]
         for i in newMessages:
             sentList.append(i)
+        print('c'+str(newMessages))
         return newMessages
 
 
