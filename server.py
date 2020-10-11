@@ -135,9 +135,10 @@ def sendAllMessages(groupname,c):
     sep='*****seperator*****'
     sep1='!!!!!separator!!!!!'
     global groupMessages
+    print (str(groupMessages[groupname]))
     m="$$oldmessages$$"+sep1
     for x in groupMessages[groupname]:
-        m+=x["colour"]+sep+x["name"]+sep+x["message"]+sep1
+        m+=x["colour"]+sep+x["name"]+sep+x["message"]+sep1 # $$oldmessages$$ + sep1 + color + sep + name + sep + message + sep1
     c.sendall(m.encode("ascii"))
 
        
@@ -171,6 +172,7 @@ def handling_the_client(client):
                 "message":received[15:],
                 "name":clientinfo[client][0]
             })
+            print(str(groupMessages[clientinfo[client][1]]))
         elif received=="membersList":
             membersList(client,groupinfo[clientinfo[client][1]])
         # elif not received=="QUIT":

@@ -58,7 +58,7 @@ def receive():
                 obj["message"]=x[3]
                 print(obj)
                 clientmessageList.append(obj)
-            elif m[0:15]=="$$oldmessages$$":
+            elif m[0:15]=="$$oldmessages$$":  # $$oldmessages$$ + sep1 + color + sep2 + name + sep2 + message + sep1
                 obj={}
                 x=m.split(sep1)
                 for i in range(1,len(x)-1):
@@ -67,6 +67,7 @@ def receive():
                     obj["name"]=y[1]
                     obj["message"]=y[2]
                     clientmessageList.append(obj)
+                print ('old messages: ' + str(clientmessageList))
         except OSError:
            print("Connection got disconnected")
            break

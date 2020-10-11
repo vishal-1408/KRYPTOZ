@@ -48,9 +48,9 @@ def WriteLine(file, info): #Writes line with \n included
 	file.writelines(info + '\n')
 
 def hex_gen():
-    hexdigits = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
-    red = hexdigits[random.randint(0,15)] + hexdigits[random.randint(0,15)]
-    blue = hexdigits[random.randint(0,15)] + hexdigits[random.randint(0,15)]
-    green = hexdigits[random.randint(0,15)] + hexdigits[random.randint(0,15)]
+    hexdigits = ['0','1','2','3','4','5','6']
+    red = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
+    blue = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
+    green = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
     return '#'+red+green+blue
 print(hex_gen())
