@@ -152,7 +152,7 @@ def handling_the_client(client):
         received=client.recv(1024).decode('ASCII')
         #print(received+" by "+clientinfo[client][0])
         if received[0:8]=="message-":
-            broadcast(received[8:],clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4])
+            broadcast(received[8:15],received[15:],clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4])
         elif received=="membersList":
             membersList(client,groupinfo[clientinfo[client][1]])
         elif not received=="QUIT":
@@ -221,7 +221,8 @@ def joinorcreate(c):
 
 
 
-def broadcast(message,name,client,memberslist):
+def broadcast(colour,message,name,client,memberslist):
+    sep='*****seperator*****'
     # if not client=="":
     #     room=clientinfo[client][1]
     #     clients=groupinfo[room][1]
@@ -244,8 +245,8 @@ def broadcast(message,name,client,memberslist):
     #          m=m.encode("ASCII")
     #          x.send(m)
     for x in membersList:
-        if not x == client:
-            m=name+":"+message
+        if  x!=client:
+            m="$$message$$"+sep+colour+sep+name+sep+message
             x.send(m.encode('ascii'))
 
 
