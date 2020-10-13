@@ -154,14 +154,14 @@ class SelectGroup(Screen):
 	def schedule_details(self, *args):	
 		sendGroups()
 		sendMembers()
-		#print("received")
-		self.details=return_details() #ds
-		#print("recieved-2")
-		#print(self.detail_list)
-		#print(return_members())
+		print("received")
+		self.detail_list=return_details()
+		print("recieved-2")
+		print(self.detail_list)
+		print(return_members())
 		self.activegroups=[]
-		for x,y in self.details.items():
-			group_data = {'group_name': x, 'limit': y[0], 'group_code': y[1], 'members_online': y[2],'owner': self}
+		for group in self.detail_list:
+			group_data = {'group_name': group[0], 'limit': group[1], 'group_code': group[2], 'members_online': return_members()[group[0]]  ,'owner': self}
 			self.activegroups.append(group_data)
 	def unschedule(self):
 		global refresh_group_list
@@ -181,8 +181,8 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	group_details = ListProperty()
 
 	def update_online_members(self, *args): 
-		#sendMembers()
-		#members_online = return_members()
+		sendMembers()
+		members_online = return_members()
 		try:
 			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(members_online[self.design.chambername]) + "[color=#E0744C]"
 		except:
