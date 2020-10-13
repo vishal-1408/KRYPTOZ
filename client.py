@@ -2,54 +2,75 @@
 from threading import Thread
 import copy
 import socket
+import pickle
 sep1='!!!!!separator!!!!!'
 sep2='*****seperator*****'
 
+HEADER_SIZE=10
+
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList
+    global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name
     i=1
     #print('Function Started!!!!')
     while 1:
         try:
-            m=client.recv(1024)
-            m=m.decode("ASCII")
+            length=client.recv(HEADER_SIZE).decode('UTF-8')
+            #print("legnth: "+str(length))
+            m=client.recv(int(length)).decode('UTF-8')
+            #print("message:"+str(m))
             if m[0:3]=="Bye":
                 client.close()
                 print("Connection got disconnected.............")
                 break
             elif m[0:7]=="details":
-                x=m.split(sep1)
-                y=[]
-                for i in range(1,len(x)-1):
-                    y.append(x[i].split(sep2))
-                details=y                                       #details=[[groupname,limit,groupcode]]
-                #print(y)
-            elif m[0:8]=="$$auth$$":
+                print("details")
+                message=client.recv(int(m[7:]))
+                details=pickle.loads(message)        #details={'groupname':'[limit,code,length]'}
+            elif m[0:4]=="auth":
+                length=int(m[4:])
+                obj=pickle.loads(client.recv(length))
+                result=obj["result"]
+                groupfull=obj["groupfull"]
+                if result==True and groupfull==True:
+                      clientmessageList.append({
+                       'colour':"#00a343",
+                       'name':"ChatBot",
+                       'message':"Welcome {} to the Crypto Chamber! Start sharing your secrets!!".format(name)
+                     })
                 #print(m)
-                if m[8]=="t":
-                    print("auth successfull")
-                    result=True
-                    groupfull=False
-                elif m[8]=="f":
-                    print("auth failed password wrong")
-                    result=False
-                    groupfull=False
-                elif m[8]=="g":
-                    print("auth failed group full")
-                    result=False
-                    groupfull=True
-            elif m[0:12]=="$$$length$$$":
-                x=m.split(sep1)
-                for i in range(1,len(x)-1):
-                  #  print('print x from client'+str(x))
-                    y=x[i].split(sep2)
-                    members[y[0]]=int(y[1])
-            elif m[0:11]=="$$memlist$$":
-                x=m.split(sep2)
-                n=len(x)-1
-                memberslist=x[1:n]
-                #print(memberslist)
+                # if m[8]=="t":
+                #     print("auth successfull")
+                #     result=True
+                #     groupfull=False
+                # elif m[8]=="f":
+                #     print("auth failed password wrong")
+                #     result=False
+                #     groupfull=False
+                # elif m[8]=="g":
+                #     print("auth failed group full")
+                #     result=False
+                #     groupfull=True
+            # elif m[0:12]=="$$$length$$$":
+            #     x=m.split(sep1)
+            #     for i in range(1,len(x)-1):
+            #       #  print('print x from client'+str(x))
+            #         y=x[i].split(sep2)
+            #         members[y[0]]=int(y[1])
+            elif m[0:11]=="membersList":
+                listobj=pickle.loads(client.recv(int(m[11:])))
+                memberslist=listobj["0"]
+            elif m[0:9]=="memberadd":
+                addobj=pickle.loads(client.recv(int(m[9:])))
+                memberslist.append(addobj['name'])
+                # clientmessageList.append({
+                #      'colour':"#00a343",
+                #      'name':"ChatBot",
+                #      'message': addobj['message']
+                # })
+            elif m[0:11]=="oldmessages":
+                oldmessages=pickle.load(client.recv(int(m[11:])))
+                clientmessageList=copy.deepcopy(oldmessages["0"])
             elif m[0:11]=="$$message$$":
                 obj={}
                 x=m.split(sep2)
@@ -58,20 +79,6 @@ def receive():
                 obj["message"]=x[3]
                 print(obj)
                 clientmessageList.append(obj)
-            elif m[0:15]=="$$oldmessages$$":  # $$oldmessages$$ + sep1 + color + sep2 + name + sep2 + message + sep1
-                obj={}
-                x=m.split(sep1)
-                for i in range(1,len(x)-1):
-                    y=x[i].split(sep2)
-                    obj["colour"]=y[0]
-                    obj["name"]=y[1]
-                    obj["message"]=y[2]
-                    print("this is an old message: "+str(y))
-                    clientmessageList.append({
-                        "colour":y[0],
-                        "name":y[1],
-                        "message":y[2]
-                    })
 
         except OSError:
            print("Connection got disconnected")
@@ -80,8 +87,7 @@ def receive():
 
 def return_details():
     global details
-   # print('from client script:  ')
-   # print(details)
+    print("details: "+str(details))
     return details
 
 def return_authenticate():
@@ -95,7 +101,9 @@ def return_groupfull():
     return groupfull
 
 def return_members():
-    global members
+    global members,details
+    for x,y in details.items():
+        members[x]=y[2]
     return members
 
 def return_memeberslist():
@@ -109,7 +117,6 @@ def return_message():
         print('a'+str(sentList))
         return sentList
     elif len(sentList)==len(clientmessageList):
-        print('b')
         return []
     else:
         newMessages=clientmessageList[len(sentList):]
@@ -121,33 +128,55 @@ def return_message():
 
 
 def sendName(username):
-    global client
-   # print("sendname")
-    client.send(username.encode('ASCII'))
+    global client,name
+    name=username
+    name=username.encode('UTF-8')
+    header=f"{len(name):<{HEADER_SIZE}}".encode("UTF-8")
+    client.send(header+name)
 
 def sendGroups():
     global client
-    client.send("groups".encode('ASCII'))
+    m="groups".encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.send(header+m)
 
 def sendMembers():
     global client
-    client.send("members".encode('ASCII'))
+    m="members".encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.send(header+m)
 
-def sendMembersList():
-    global client
-    client.sendall("membersList".encode("ASCII"))
+# def sendMembersList():
+#     global client
+#     client.sendall("membersList".encode("ASCII"))
 
 def sendCreate(s):
-    global client
-    client.send("create".encode('ASCII'))
-    client.send(s.encode("ASCII"))
+    global client,memberslist,name
+    m="create".encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header+m)
+    m=s.encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header+m)
     print('sent-create-request')
+    memberslist.append(name)
+    clientmessageList.append({
+        'colour':"#00a343",
+        'name':"ChatBot",
+        'message':"Welcome to your Crypto Chamber! Share Chamber Name and Code with your friends and have fun sharing secrets on crypto chamber!!"
+    })
 
 def sendJoin(s):
     global client
     client.send("join".encode('ASCII'))
     client.send(s.encode('ASCII'))
     print('sent-join-request')
+    m="join".encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header+m)
+    m=s.encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header+m)
 
 def sendMessage(message,colour):
     global client
@@ -158,7 +187,9 @@ def sendLogout():
     global client,sentList,clientmessageList,sentList
     clientmessageList.clear()
     sentList.clear()
-    client.send("QUIT".encode('ASCII'))
+    m="QUIT".encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header+m)
     print('sendlogout')
 
 
@@ -172,41 +203,18 @@ def close2():
     global client
     client.close()
 
-#############################GUI
-'''
-window=tkinter.Tk()
-window.title("chat-app")
 
-#frame+scrollbar+listboxes
-frame=tkinter.Frame(window)
-message=tkinter.StringVar() #this variable is only used for all the functions to be done on the input field.. In simple terms for accessing the input field u need this var!!
-message.set("Type your messages here...")
-scrollbar=tkinter.Scrollbar(frame)
-listm=tkinter.Listbox(frame,height=20,width=100,yscrollcommand=scrollbar.set)
-scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
-listm.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
-listm.pack()
-frame.pack()
-#str variable+sendbtn+inputfield
-inputfield=tkinter.Entry(window, textvariable=message)
-inputfield.bind("<Return>",send)   #ntg but attaching send function to input field
-inputfield.pack()
-sendbtn=tkinter.Button(window,text="Send",command=send) #command=send binds it with the send function
-sendbtn.pack()
-
-
-#binding the window closing event to close function
-window.protocol("WM_DELETE_WINDOW",close)
-'''
 
 client=None
-details=[]
+details={}
 result=None
 groupfull=None
 members={}
 memberslist=[]
 clientmessageList=[]
 sentList=[]
+name=""
+groupname=None
 
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
@@ -215,6 +223,7 @@ def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     Host="127.0.0.1"
+    #Host="52.204.124.224"
     Port=8000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
