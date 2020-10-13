@@ -9,6 +9,7 @@ sep2='*****seperator*****'
 HEADER_SIZE=10
 
 def receive():
+  try:  
     global client
     global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name
     i=1
@@ -24,7 +25,7 @@ def receive():
                 print("Connection got disconnected.............")
                 break
             elif m[0:7]=="details":
-                print("details")
+                #print("details")
                 message=client.recv(int(m[7:]))
                 details=pickle.loads(message)        #details={'groupname':'[limit,code,length]'}
             elif m[0:4]=="auth":
@@ -32,56 +33,33 @@ def receive():
                 obj=pickle.loads(client.recv(length))
                 result=obj["result"]
                 groupfull=obj["groupfull"]
-                if result==True and groupfull==True:
-                      clientmessageList.append({
-                       'colour':"#00a343",
-                       'name':"ChatBot",
-                       'message':"Welcome {} to the Crypto Chamber! Start sharing your secrets!!".format(name)
-                     })
-                #print(m)
-                # if m[8]=="t":
-                #     print("auth successfull")
-                #     result=True
-                #     groupfull=False
-                # elif m[8]=="f":
-                #     print("auth failed password wrong")
-                #     result=False
-                #     groupfull=False
-                # elif m[8]=="g":
-                #     print("auth failed group full")
-                #     result=False
-                #     groupfull=True
-            # elif m[0:12]=="$$$length$$$":
-            #     x=m.split(sep1)
-            #     for i in range(1,len(x)-1):
-            #       #  print('print x from client'+str(x))
-            #         y=x[i].split(sep2)
-            #         members[y[0]]=int(y[1])
+                # if result==True and groupfull==True:
+                    #   clientmessageList.append({
+                    #    'colour':"#00a343",
+                    #    'name':"ChatBot",
+                    #    'message':"Welcome {} to the Crypto Chamber! Start sharing your secrets!!".format(name)
+                    #  })
             elif m[0:11]=="membersList":
                 listobj=pickle.loads(client.recv(int(m[11:])))
                 memberslist=listobj["0"]
             elif m[0:9]=="memberadd":
                 addobj=pickle.loads(client.recv(int(m[9:])))
                 memberslist.append(addobj['name'])
-                # clientmessageList.append({
-                #      'colour':"#00a343",
-                #      'name':"ChatBot",
-                #      'message': addobj['message']
-                # })
+                clientmessageList.append({
+                     'colour':"#00a343",
+                     'name':"ChatBot",
+                     'message': addobj['message']
+                })
             elif m[0:11]=="oldmessages":
                 oldmessages=pickle.load(client.recv(int(m[11:])))
                 clientmessageList=copy.deepcopy(oldmessages["0"])
-            elif m[0:11]=="$$message$$":
-                obj={}
-                x=m.split(sep2)
-                obj["colour"]=x[1]               #{"colour":value , "name": value, "message": value }
-                obj["name"]=x[2]
-                obj["message"]=x[3]
-                print(obj)
-                clientmessageList.append(obj)
 
-        except OSError:
-           print("Connection got disconnected")
+            elif m[0:10]=="newmessage":
+                newmessage=pickle.loads(client.recv(int(m[10:])))
+                clientmessageList.append(copy.deepcopy(newmessage))   #{"colour":value , "name": value, "message": value }
+
+        except Exception as e:
+           print("Exception occured in receive:(client socket disc....) "+str(e))
            break
 
 
@@ -111,6 +89,7 @@ def return_memeberslist():
     return memberslist
 
 def return_message():
+  try:
     global clientmessageList,sentList
     if len(sentList)==0:
         sentList=copy.deepcopy(clientmessageList)
@@ -124,33 +103,47 @@ def return_message():
             sentList.append(i)
         print('c'+str(newMessages))
         return newMessages
+  except Exception as e:
+      print("Exception in return_message: "+str(e))
 
 
 
 def sendName(username):
+  try:
     global client,name
     name=username
     name=username.encode('UTF-8')
     header=f"{len(name):<{HEADER_SIZE}}".encode("UTF-8")
     client.send(header+name)
+  except Exception as e:
+      print("Exception occured in sendName: "+str(e))
 
 def sendGroups():
+  try:
+    #print('sendGroups')
     global client
     m="groups".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.send(header+m)
+  except Exception as e:
+      print("Exception occured in sendGroups: "+str(e))
 
-def sendMembers():
-    global client
-    m="members".encode('UTF-8')
-    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
-    client.send(header+m)
-
-# def sendMembersList():
+# def sendMembers():
+#   try:
+#     #print('sendMembers')
 #     global client
-#     client.sendall("membersList".encode("ASCII"))
+#     m="members".encode('UTF-8')
+#     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+#     client.send(header+m)
+#   except Exception as e:
+#       print("Exception occured in sendMembers: "+str(e))
+
+def sendMembersList():
+    print("ntg left to do")
 
 def sendCreate(s):
+  try:
+    print('sendCreate')
     global client,memberslist,name
     m="create".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
@@ -165,8 +158,12 @@ def sendCreate(s):
         'name':"ChatBot",
         'message':"Welcome to your Crypto Chamber! Share Chamber Name and Code with your friends and have fun sharing secrets on crypto chamber!!"
     })
+  except Exception as e:
+      print("Exception occured in sendCreate: "+str(e))
 
 def sendJoin(s):
+  try:
+    print('sendJoin')
     global client
     client.send("join".encode('ASCII'))
     client.send(s.encode('ASCII'))
@@ -177,21 +174,39 @@ def sendJoin(s):
     m=s.encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
+  except Exception as e:
+      print("Exception occured in sendJoin: "+str(e))
 
-def sendMessage(message,colour):
-    global client
-    m="message-"+colour+message
-    client.sendall(m.encode("ascii"))
+def sendMessage(mess,colour):
+  try:
+    print('sendMessage')
+    global client,name
+    message="message"
+    messagedict={
+        "colour":colour,
+        "message":mess,
+        "name":name
+    }
+    messageobj=pickle.dumps(messagedict)
+    message=message+str(len(messageobj))
+    message=message.encode('UTF-8')
+    header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+    client.sendall(header+message)
+    client.sendall(messageobj)
+  except Exception as e:
+      print("Exception occured in sendMessage: "+str(e))
 
 def sendLogout():
+  try:
+    print('sendlogout')
     global client,sentList,clientmessageList,sentList
     clientmessageList.clear()
     sentList.clear()
     m="QUIT".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
-    print('sendlogout')
-
+  except Exception as e:
+      print("Exception occured in sendLogout: "+str(e))
 
 def close():
     global client
