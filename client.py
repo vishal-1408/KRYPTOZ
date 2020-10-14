@@ -18,7 +18,7 @@ def receive():
             length=client.recv(HEADER_SIZE).decode('UTF-8')
             #print("legnth: "+str(length))
             m=client.recv(int(length)).decode('UTF-8')
-            print("message:"+str(m))
+            #print("message:"+str(m))
             if m[0:3]=="Bye":
                 client.close()
                 print("Connection got disconnected.............")
@@ -40,11 +40,11 @@ def receive():
                     #  })
             elif m[0:11]=="membersList":
                try:
-                print('handling memberlist')
+                #print('handling memberlist')
                 receive =  client.recv(int(m[11:]))
                 listobj=pickle.loads(receive)
                 memberslist=listobj["0"]
-                print(memberslist)
+                #print("membersList: 1"+memberslist)
                except Exception as e:
                    print('inside memembers list' + str(e))
 
@@ -230,7 +230,7 @@ def sendMessage(mess,colour):
   except Exception as e:
       print("Exception occured in sendMessage: "+str(e))
 
-def sendLogout():
+def sendLogout(*args):
   try:
     print('sendlogout')
     global client,sentList,clientmessageList,sentList
@@ -272,13 +272,12 @@ groupname=None
 def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    #Host="127.0.0.1"
-    Host="52.204.124.224"
-    Port=3000
+    Host="127.0.0.1"
+    Port=8000
+    #Host="52.204.124.224"
+    #Port=3000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()
 
-
-    
 

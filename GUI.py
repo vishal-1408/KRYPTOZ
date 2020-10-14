@@ -12,7 +12,7 @@ from kivy.uix.popup import Popup
 from random import randint
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, AliasProperty, NumericProperty, DictProperty
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.clock import Clock 
+from kivy.clock import Clock
 #------Imports from the modules---------------------
 from EncryptionHashing import hash_str
 from FileManage import *
@@ -22,6 +22,7 @@ from kivy.animation import Animation
 #--------------------------------------------------
 #---------------App Parameters------------------#
 Window.clearcolor = (27/255, 34/255, 36/255, 1)
+Window.bind(on_request_close=sendLogout)
 #------------------------------------------------#
 
 #---------------Global Variables and Global functions------------------#
@@ -146,7 +147,7 @@ class CreateGroup(Screen):
 class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency
-		sendGroups() #Test this and remove 
+		#sendGroups() #Test this and remove 
 		#sendMembers() #Test this and remove
 		Clock.schedule_once(self.schedule_details)
 		global refresh_group_list
