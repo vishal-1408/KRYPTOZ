@@ -236,7 +236,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			self.refresh_members.cancel()
 		else:
 			for group in return_details_list:
-				if self.group_name!= group:
+				if self.group_name+self.group_code!= group:
 					print('\ngroup deleted entered here ' + str(group))
 					group_deleted = True
 				else:
