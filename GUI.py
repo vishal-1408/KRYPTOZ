@@ -22,6 +22,7 @@ from kivy.animation import Animation
 #--------------------------------------------------
 #---------------App Parameters------------------#
 Window.clearcolor = (27/255, 34/255, 36/255, 1)
+Window.bind(on_request_close=sendLogout)
 #------------------------------------------------#
 
 #---------------Global Variables and Global functions------------------#

@@ -230,7 +230,7 @@ def sendMessage(mess,colour):
   except Exception as e:
       print("Exception occured in sendMessage: "+str(e))
 
-def sendLogout():
+def sendLogout(*args):
   try:
     print('sendlogout')
     global client,sentList,clientmessageList,sentList
