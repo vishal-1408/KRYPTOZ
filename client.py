@@ -272,10 +272,10 @@ groupname=None
 def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    Host="127.0.0.1"
+    '''#Host="127.0.0.1"
+    Port=8000#'''
+    Host="52.204.124.224"
     Port=8000
-    #Host="52.204.124.224"
-    #Port=3000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()
