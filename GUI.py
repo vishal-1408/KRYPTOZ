@@ -148,7 +148,7 @@ class CreateGroup(Screen):
 class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency
-		#sendGroups() #Test this and remove 
+		sendGroups() #Test this and remove 
 		#sendMembers() #Test this and remove
 		Clock.schedule_once(self.schedule_details)
 		global refresh_group_list

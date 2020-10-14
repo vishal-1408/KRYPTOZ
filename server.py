@@ -88,7 +88,8 @@ def create(c):
         length=c.recv(HEADER_SIZE).decode("UTF-8")
         string=c.recv(int(length)).decode('UTF-8')
         list1=string.split("*****seperator*****")
-        groupinfo[list1[0]+list1[3]]=[list1[1],int(list1[2]),len(list[0]),[clientinfo[c][0]],[c]]            #groupinfo=[password,limit,groupcode,[],[]]
+        print(list1)
+        groupinfo[list1[0]+list1[3]]=[list1[1],int(list1[2]),len(list1[0]),[clientinfo[c][0]],[c]]            #groupinfo=[password,limit,groupcode,[],[]]
         groupMessages[list1[0]+list1[3]]=[]
         clientinfo[c].append(list1[0]+list1[3])
         eventslist[list1[0]+list1[3]]=[]
