@@ -12,7 +12,8 @@ from kivy.uix.popup import Popup
 from random import randint
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, AliasProperty, NumericProperty, DictProperty
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.clock import Clock
+from kivy.clock import Clock 
+import pyperclip
 #------Imports from the modules---------------------
 from EncryptionHashing import hash_str
 from FileManage import *
@@ -376,6 +377,9 @@ class ChatWindow(Screen):
 		sendLogout()
 		self.messages={}
 		self.unschedule_on_exit()
+	def copytoclipboard(self):
+		global chamber_name_and_code
+		pyperclip.copy(chamber_name_and_code)
 
 class Screen_Manager(ScreenManager):
 	pass
