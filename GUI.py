@@ -22,6 +22,7 @@ from kivy.animation import Animation
 #--------------------------------------------------
 #---------------App Parameters------------------#
 Window.clearcolor = (27/255, 34/255, 36/255, 1)
+Window.bind(on_request_close=sendLogout)
 #------------------------------------------------#
 
 #---------------Global Variables and Global functions------------------#
@@ -147,21 +148,21 @@ class SelectGroup(Screen):
 	activegroups = ListProperty()
 	def add_data(self):#Might have to change for efficiency
 		sendGroups() #Test this and remove 
-		sendMembers() #Test this and remove
+		#sendMembers() #Test this and remove
 		Clock.schedule_once(self.schedule_details)
 		global refresh_group_list
 		refresh_group_list = Clock.schedule_interval(self.schedule_details, 1)
 	def schedule_details(self, *args):	
 		sendGroups()
-		sendMembers()
+		#sendMembers()
 		print("received")
 		self.detail_list=return_details()
 		print("recieved-2")
 		print(self.detail_list)
 		print(return_members())
 		self.activegroups=[]
-		for group in self.detail_list:
-			group_data = {'group_name': group[0], 'limit': group[1], 'group_code': group[2], 'members_online': return_members()[group[0]]  ,'owner': self}
+		for group_name, value in self.detail_list.items():
+			group_data = {'group_name': group_name, 'limit': value[0], 'group_code': value[1], 'members_online': return_members()[group_name]  ,'owner': self}
 			self.activegroups.append(group_data)
 	def unschedule(self):
 		global refresh_group_list
@@ -181,7 +182,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	group_details = ListProperty()
 
 	def update_online_members(self, *args): 
-		sendMembers()
+		#sendMembers()
 		members_online = return_members()
 		try:
 			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]" + str(members_online[self.design.chambername]) + "[color=#E0744C]"
@@ -232,7 +233,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			self.refresh_members.cancel()
 		else:
 			for group in return_details_list:
-				if self.group_name not in group:
+				if self.group_name!= group:
 					print('\ngroup deleted entered here ' + str(group))
 					group_deleted = True
 				else:
@@ -269,11 +270,10 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 	
 	def auth_and_full(self, *args):
-		self.auth = return_authenticate()
-		self.full = return_groupfull()
-		print(str(self.auth)+'\t'+str(self.full)+' 1')
-		if self.auth==None or self.full==None:
-			self.auth_and_full()
+		while self.auth==None or self.full==None:
+			self.auth = return_authenticate()
+			self.full = return_groupfull()
+			print(str(self.auth)+'\t'+str(self.full)+' 1')
 	
 	def transition(self, instance):
 		self.success_auth.dismiss()
@@ -327,8 +327,9 @@ class ChatWindow(Screen):
 		self.refresh_online_members = Clock.schedule_interval(self.schedule_members_online, 1)
 
 	def schedule_members_online(self, *_):
-		sendMembersList()
+		#sendMembersList()
 		self.member_list=return_memeberslist()
+		#print(self.member_list)
 		self.members_online = []
 		for member in self.member_list:
 			self.members_online.append({

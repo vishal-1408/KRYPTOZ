@@ -3,56 +3,67 @@ from threading import Thread
 import socket
 import sched 
 import time
+import pickle
+import copy
 
+HEADER_SIZE=10
 def accept():
     while 1:
         client_socket,client_addr = server_socket.accept()        #threads are just created for making blocks of code execute parallely! like accepting the connections and handling clients all these work in parallel
         print("A client has been connected to the server")
-        Thread(target=initialize,args=(client_socket,)).start()
-       # Thread(target=details,args=(client_socket,)).start()
+        Thread(target=initialize,args=(client_socket,True)).start()
 
 
 def details(c):
-    global groupinfo
-    m="details!!!!!separator!!!!!"
-    sep='*****seperator*****'
-    for x,y  in groupinfo.items():
-        #m+=x+sep+y[0]+sep+str(y[1])+sep+str(y[2])+sep+" ".join([str(x) for x in y[3]])+"!!!!!separator!!!!!"
-        #print(y)
-        m+=x+sep+str(y[1])+sep+str(y[2])+"!!!!!separator!!!!!"      #groupname,limit,groupcode
-    m=m.encode("ASCII")
-    c.sendall(m)
-    #print(m)
-    return 1
-#"details;groupname,grouppassword,name1,name2,name3...;groupname,..."
+    try:
+        print("details")
+        global groupinfo
+        groupobject={}
+        for x,y in groupinfo.items():
+            groupobject[x]=list([y[1],y[2],len(y[3])])
+        messageobj=pickle.dumps(groupobject)
+        message="details"+str(len(messageobj))
+        message=message.encode('UTF-8')
+        c.sendall(f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')+message)
+        c.sendall(messageobj)
+        return 1
+    except Exception as e:
+        print("Exception occured in ddetails: "+str(e))
 
-def members(c):
-    global groupinfo,clientinfo
-    sep='*****seperator*****'
-    m="$$$length$$$"+"!!!!!separator!!!!!"
-    for x,y  in groupinfo.items():
-        m+=x+sep+str(len(y[3]))+"!!!!!separator!!!!!"
-    #print("from server, this is m"+ str(m))
-    m=m.encode("ASCII")
-    c.sendall(m)
-    return 1
 
-def initialize(c):
+
+# def members(c):
+#     global groupinfo,clientinfo
+#     sep='*****seperator*****'
+#     m="$$$length$$$"+"!!!!!separator!!!!!"
+
+#     for x,y  in groupinfo.items():
+#         m+=x+sep+str(len(y[3]))+"!!!!!separator!!!!!"
+#     #print("from server, this is m"+ str(m))
+#     m=m.encode("ASCII")
+#     c.sendall(m)
+#     return 1
+
+def initialize(c,check):
     global clientinfo
     try:
-        name=c.recv(1024).decode('ASCII')
-        #print(name)
-        clientinfo[c]=[name]
+        if check==True:
+           mess_len=c.recv(HEADER_SIZE).decode('UTF-8')
+          # print("messagelength"+mess_len)
+           name=c.recv(int(mess_len)).decode('UTF-8')
+           print("initialize: "+name)
+           clientinfo[c]=[name]
+        else:
+            print("logged out : ")
         d=1
-        #print("initialize")
         while(d):
-            #print('while loop')
-            m=c.recv(1024).decode('ASCII')
-            #print(m)
+            header=c.recv(HEADER_SIZE).decode('UTF-8')
+            m=c.recv(int(header)).decode('UTF-8')
+            #print("MESSAGE AT INITIALIZE:"+m)
             if(m=="groups"): #Gui part should send a message,
+                #print("groups2")
                 d=details(c)
-            elif(m=="members"):
-                d=members(c)
+                #print("groups3")
             elif(m=="create"):
                 d=create(c)
             elif(m=="join"):
@@ -62,8 +73,10 @@ def initialize(c):
                 c.close()
                 break
     except Exception as e:
-        print(e)
-        print("client socket closed"+e)
+        if check==True:
+            print("exception in initialize: "+str(e))
+        else:
+            print("exception after logging out: "+str(e))
         c.close()
 
 
@@ -71,8 +84,9 @@ def initialize(c):
 def create(c):
     global clientinfo, groupinfo,eventslist,groupMessages
     try:
-        #print("create")
-        string=c.recv(1024).decode("ASCII")
+        print("create")
+        length=c.recv(HEADER_SIZE).decode("UTF-8")
+        string=c.recv(int(length)).decode('UTF-8')
         list1=string.split("*****seperator*****")
         groupinfo[list1[0]]=[list1[1],int(list1[2]),list1[3],[clientinfo[c][0]],[c]]            #groupinfo=[password,limit,groupcode,[],[]]
         groupMessages[list1[0]]=[]
@@ -83,8 +97,7 @@ def create(c):
         Thread(target=handling_the_client,args=(c,)).start()
         return 0      #return 0 once handling clients is done!
     except Exception as e:
-        print("client socket closed")
-        print(e+"inside create")
+        print("exception in create: "+str(e))
         clientinfo.remove(clientinfo[c])
         c.close()
         return 0
@@ -93,23 +106,33 @@ def create(c):
 def join(c):
     e=1
     print("join")
+    sep='*****seperator*****'
     global clientinfo, groupinfo,eventslist,scheduler,groupMessages
-    while e:
+    try:
+        while e:
             #print(groupinfo)
-            sep='*****seperator*****'
-            string=c.recv(1024).decode("ASCII")
+            length=c.recv(HEADER_SIZE).decode("UTF-8")
+            string=c.recv(int(length)).decode('UTF-8')
             name=string.split(sep)[0]
             #print(name)
             password=string.split(sep)[1]
             #print(password)
             grouppassword=groupinfo[name][0]
             #print(grouppassword + "\t" + password)
+            obj={}
+            message="auth"
             if len(groupinfo[name][3])<(groupinfo[name][1]):
                 if grouppassword==password:
-                    c.sendall("$$auth$$t".encode("ASCII"))
+                    obj['result']=True
+                    obj['groupfull']=False
+                    messageobj=pickle.dumps(obj)
+                    message=message+str(len(messageobj))
+                    message=message.encode('UTF-8')
+                    header=f'{len(message):<{HEADER_SIZE}}'.encode('UTF-8')
+                    c.sendall(header+message)
+                    c.sendall(messageobj)
                     for x in eventslist[name]:
                         if x:
-                             #print(x)
                              scheduler.cancel(x)
                              eventslist[name].remove(x)
 
@@ -120,81 +143,176 @@ def join(c):
                     #print(groupinfo)
                     clientinfo[c].append(name)
                     
+                    groupMessages[name].append({
+                        "colour":"#223344",
+                        'message':"{} has joined the chamber!".format(clientinfo[c][0]),
+                        "name":"ChatBot"
+                    })
+
+                    sendAllmemberslist(name,c)
+
                     sendAllMessages(name,c)
+                   
+                    broadcasteveryone(name,c)
                     
+                    
+
                     Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
                     return 0
                 elif password!=grouppassword:
-                    c.send("$$auth$$f".encode("ASCII"))
-                    return 1                                                     #return 0 once handling clients is done!
+                    obj['result']=False
+                    obj['groupfull']=False
+                                               #return 0 once handling clients is done!
             else:
-                c.send("$$auth$$g".encode("ASCII"))
-                return 1
+                    obj['result']=False
+                    obj['groupfull']=True
+            messageobj=pickle.dumps(obj)
+            message=message+str(len(messageobj))
+            message=message.encode('UTF-8')
+            header=f'{len(message):<{HEADER_SIZE}}'.encode('UTF-8')
+            c.sendall(header+message)
+            c.sendall(messageobj)
+            return 1
+    except Exception as e:
+        print("Exceptiona in join: "+str(e))
+
+
+def sendAllmemberslist(name,c):
+    print("send all members list")
+    try:
+        message="membersList"
+        obj={}
+        obj["0"]=groupinfo[name][3]
+        messageobj=pickle.dumps(obj)
+        message=message+str(len(messageobj))
+        message=message.encode('UTF-8')
+        header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+        c.sendall(header+message)
+        c.sendall(messageobj)
+    except Exception as e:
+        print("Exception occured in sendAllmembersList: "+str(e))
+    
+
+def broadcasteveryone(gname,client):
+    try:
+        global clientinfo,groupinfo
+        message="memberadd"
+        addobj={'name':clientinfo[client][0], 'message': '{} has joined the chamber!'.format(clientinfo[client][0])}
+        messageobj=pickle.dumps(addobj)
+        message=message+str(len(messageobj))
+        message=message.encode('UTF-8')
+        header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+        for x in groupinfo[gname][4]:
+           if x!=client:
+            x.sendall(header+message)
+            x.sendall(messageobj)
+    except Exception as e:
+        print("Exception occured in broadcast everyone: "+str(e))  
+           
+
+
 
 def sendAllMessages(groupname,c):
-    sep='*****seperator*****'
-    sep1='!!!!!separator!!!!!'
-    global groupMessages
-    print (str(groupMessages[groupname]))
-    m="$$oldmessages$$"+sep1
-    for x in groupMessages[groupname]:
-        m+=x["colour"]+sep+x["name"]+sep+x["message"]+sep1 # $$oldmessages$$ + sep1 + color + sep + name + sep + message + sep1
-    c.sendall(m.encode("ascii"))
+    try:
+        global groupMessages
+        oldmessages={'0':groupMessages[groupname]}
+        print("oldmessages: "+str(oldmessages))
+        messageobj=pickle.dumps(oldmessages)
+        message="oldmessages"
+        message=message+str(len(messageobj))
+        message=message.encode('UTF-8')
+        header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+        c.sendall(header+message)
+        c.sendall(messageobj)
+    except Exception as e:
+        print("Exception occured in sendAllMessages: "+str(e))
+
+    
+    
+    
 
        
 
-def membersList(client,grouplist):
-    sep='*****seperator*****'                                                    #groupinfo=[password,limit,groupcode,[],[]]
-    groupmembers="$$memlist$$"+sep
-    for x in grouplist[3]:
-        groupmembers+=x+sep
-    #print(groupmembers)
-    client.sendall(groupmembers.encode("ascii"))
+# def membersList(client,grouplist):
+#     sep='*****seperator*****'                                                    #groupinfo=[password,limit,groupcode,[],[]]
+#     groupmembers="$$memlist$$"+sep
+#     for x in grouplist[3]:
+#         groupmembers+=x+sep
+#     #print(groupmembers)
+#     client.sendall(groupmembers.encode("ascii"))
 
 
 
 
 
 def handling_the_client(client):
-    print("handling client")
-    global clientinfo, groupinfo,groupMessages
-    # message=clientinfo[client][0]+" has joined the room!"
-    # broadcast(message,"chatbot",client)
-    # m="Welcome "+clientinfo[client][0]+"\nYou can enter a message and click enter and\nif you want to exit the app, please enter QUIT"
-    # client.send(m.encode("ASCII"))
-    while 1:
-        received=client.recv(1024).decode('ASCII')
-        #print(received+" by "+clientinfo[client][0])
-        if received[0:8]=="message-":
-            broadcast(received[8:15],received[15:],clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4])
-            groupMessages[clientinfo[client][1]].append({
-                "colour":received[8:15],
-                "message":received[15:],
-                "name":clientinfo[client][0]
-            })
-            print(str(groupMessages[clientinfo[client][1]]))
-        elif received=="membersList":
-            membersList(client,groupinfo[clientinfo[client][1]])
-        # elif not received=="QUIT":
-        #     broadcast(received,clientinfo[client][0],client)
-        else:
-            if len(groupinfo[clientinfo[client][1]][3])==1:
-                groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
-                group_name = clientinfo[client].pop()
-                #client.close()
-                #print(groupinfo)
-                Thread(target=scheduling,args=(group_name,)).start()
-                Thread(target=joinorcreate,args=(client,)).start()
-                break
-            else:
-                #print("i removed it")
-                groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
-                clientinfo[client].pop()
-                Thread(target=joinorcreate,args=(client,)).start()
-                break
-scheduler = None
+    try:
+        print("handling client")
+        global clientinfo, groupinfo,groupMessages
+        while 1:
+             length=client.recv(HEADER_SIZE).decode('UTF-8')
+             print(length)
+             message=client.recv(int(length)).decode('UTF-8')
+             if message[0:7]=="message":
+                print("came")
+                broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4],int(message[7:]),True)
+             elif message=="QUIT":
+                if len(groupinfo[clientinfo[client][1]][3])==1:
+                    groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
+                    group_name = clientinfo[client].pop()
+                    #client.close()
+                    #print(groupinfo)
+                    Thread(target=scheduling,args=(group_name,)).start()
+                    Thread(target=initialize,args=(client,False)).start()
+                    break
+                else:
+                    broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4],"",False)
+                    groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
+                    Thread(target=initialize,args=(client,False)).start()
+                    break
+    except Exception as e:
+        print("Exception occured in handling client: "+str(e))
+
+def broadcast(name,client,memberslist,length,check):
+  try:
+    global clientinfo,groupMessages
+    if check==True:
+        newmessageobj=pickle.loads(client.recv(length))
+        print("broadcast: "+ str(newmessageobj))
+        groupMessages[clientinfo[client][1]].append(copy.deepcopy(newmessageobj))
+        messageobj=pickle.dumps(newmessageobj)
+        message="newmessage"
+    else:
+        messageobj=pickle.dumps({
+            "name":"ChatBot",
+            "colour":"#223344",
+            "message":"{} has left the chat".format(name),
+            "person":name
+        })
+        groupMessages[clientinfo[client][1]].append({
+            "name":"ChatBot",
+            "colour":"#223344",
+            "message":"{} has left the chat".format(name)
+        })
+        message="membergone"
+    message=message+str(len(messageobj))
+    message=message.encode('UTF-8')
+    header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+    for x in memberslist:
+        if  x!=client:
+            x.sendall(header+message)
+            x.sendall(messageobj)
+  except Exception as e:
+     print("Exception occured in broadcast: "+str(e))
+
+
+   
+
+
+
 
 def scheduling(group_name):
+ try:
     global eventslist,scheduler
     #print('clock')
     #print(groupinfo)
@@ -204,72 +322,44 @@ def scheduling(group_name):
     #print(eventslist)
     scheduler.run()
     #print('after clock')
+ except Exception as e:
+    print("Exception occured in scheduling: "+str(e))
 
 def checkgroup(group_name):
+  try:
     #print('called')
     global clientinfo, groupinfo
     if len(groupinfo[group_name][3])==0:
         groupinfo.pop(group_name)
+        groupMessages.pop(group_name)
     #print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
+  except Exception as e:
+    print("Exception occured in checkgroup: "+str(e))
 
-
-def joinorcreate(c):
-    global clientinfo, groupinfo, scheduler
-    try:
-        d=1
-        while(d):
-            m=c.recv(1024).decode('ASCII')
-            #print(m)
-            if(m=="groups"): #Gui part should send a message,
-                d=details(c)
-            elif(m=="members"):
-                d=members(c)
-            elif(m=="create"):
-                d=create(c)
-            elif(m=="join"):
-                d=join(c)
-            elif(m=="QUIT"):
-                c.send("Bye".encode("ASCII"))
-            # print("test")
-                c.close()
-                break
-    except Exception as e:
-        print("client socket closed")
-        print(e)
-        c.close()
-
-
-
-
-def broadcast(colour,message,name,client,memberslist):
-    sep='*****seperator*****'
-    # if not client=="":
-    #     room=clientinfo[client][1]
-    #     clients=groupinfo[room][1]
-    #     if name=="chatbot":
-    #         for x in clients:
-    #             if not x==client:
-    #                 m=name+" : "+message
-    #                 m=m.encode("ASCII")
-    #                 x.send(m)
-    #     else:
-    #         for x in clients:
-    #             if not x==clients:
-    #                 m=name+" : "+message
-    #                 m=m.encode("ASCII")
-    #                 x.send(m)
-    # else:
-    #     clients=groupinfo[group][1]
-    #     for x in clients:
-    #          m=name+" : "+message
-    #          m=m.encode("ASCII")
-    #          x.send(m)
-    for x in memberslist:
-        if  x!=client:
-            m="$$message$$"+sep+colour+sep+name+sep+message
-            x.send(m.encode('ascii'))
-
-
+# def joinorcreate(c):
+#     global clientinfo, groupinfo, scheduler
+#     try:
+#         d=1
+#         while(d):
+#             m=c.recv(1024).decode('ASCII')
+#             #print(m)
+#             if(m=="groups"): #Gui part should send a message,
+#                 d=details(c)
+#             elif(m=="members"):
+#                 d=members(c)
+#             elif(m=="create"):
+#                 d=create(c)
+#             elif(m=="join"):
+#                 d=join(c)
+#             elif(m=="QUIT"):
+#                 c.send("Bye".encode("ASCII"))
+#             # print("test")
+#                 c.close()
+#                 break
+#     except Exception as e:
+#         print("client socket closed")
+#         print(e)
+#         c.close()
 
 
 
@@ -277,6 +367,7 @@ clientinfo={}
 groupinfo={}
 eventslist={}
 groupMessages={}
+scheduler = None
 
 Host=""
 port=8000
