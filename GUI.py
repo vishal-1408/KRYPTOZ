@@ -156,11 +156,11 @@ class SelectGroup(Screen):
 	def schedule_details(self, *args):	
 		sendGroups()
 		#sendMembers()
-		print("received")
+		#print("received")
 		self.detail_list=return_details()
-		print("recieved-2")
-		print(self.detail_list)
-		print(return_members())
+		#print("recieved-2")
+		#print(self.detail_list)
+		#print(return_members())
 		self.activegroups=[]
 		for group_name, value in self.detail_list.items():
 			group_data = {'group_name': group_name, 'limit': value[0], 'group_code': value[1], 'members_online': return_members()[group_name]  ,'owner': self}
@@ -340,6 +340,7 @@ class ChatWindow(Screen):
 	
 	def unschedule_on_exit(self):
 		self.refresh_online_members.cancel()
+		self.message_refresh.cancel()
 
 	def assign_chamber_info(self):
 		global chamber_name_and_code
@@ -355,7 +356,7 @@ class ChatWindow(Screen):
 		print(username)
 
 	def refresh_messages_scheduler(self):
-		Clock.schedule_interval(self.refresh_messsages, 0.5)
+		self.message_refresh = Clock.schedule_interval(self.refresh_messsages, 0.5)
 
 	def refresh_messsages(self, dt):
 		new_messages = return_message()
