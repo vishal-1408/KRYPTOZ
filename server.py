@@ -251,23 +251,23 @@ def handling_the_client(client):
         global clientinfo, groupinfo,groupMessages
         while 1:
              length=client.recv(HEADER_SIZE).decode('UTF-8')
-             print(length)
+             #print(length)
              message=client.recv(int(length)).decode('UTF-8')
+             #print(message)
              if message[0:7]=="message":
-                print("came")
                 broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4],int(message[7:]),True)
              elif message=="QUIT":
                 if len(groupinfo[clientinfo[client][1]][3])==1:
                     groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
+                    groupinfo[clientinfo[client][1]][4].remove(client)
                     group_name = clientinfo[client].pop()
-                    #client.close()
-                    #print(groupinfo)
                     Thread(target=scheduling,args=(group_name,)).start()
                     Thread(target=initialize,args=(client,False)).start()
                     break
                 else:
                     broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4],"",False)
                     groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
+                    groupinfo[clientinfo[client][1]][4].remove(client)
                     Thread(target=initialize,args=(client,False)).start()
                     break
     except Exception as e:
@@ -278,7 +278,7 @@ def broadcast(name,client,memberslist,length,check):
     global clientinfo,groupMessages
     if check==True:
         newmessageobj=pickle.loads(client.recv(length))
-        print("broadcast: "+ str(newmessageobj))
+        #print("broadcast: "+ str(newmessageobj))
         groupMessages[clientinfo[client][1]].append(copy.deepcopy(newmessageobj))
         messageobj=pickle.dumps(newmessageobj)
         message="newmessage"
@@ -299,9 +299,10 @@ def broadcast(name,client,memberslist,length,check):
     message=message.encode('UTF-8')
     header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
     for x in memberslist:
-        if  x!=client:
+        if x!=client:
             x.sendall(header+message)
             x.sendall(messageobj)
+    print("member gone broadcast done!")
   except Exception as e:
      print("Exception occured in broadcast: "+str(e))
 
@@ -374,7 +375,7 @@ port=8000
 server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
 server_socket.bind((Host,port))
-print(Host)
+#print(Host)
 
 
 if __name__ == "__main__":
