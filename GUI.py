@@ -156,14 +156,16 @@ class SelectGroup(Screen):
 	def schedule_details(self, *args):	
 		sendGroups()
 		#sendMembers()
-		print("received")
+		#print("received")
 		self.detail_list=return_details()
-		print("recieved-2")
-		print(self.detail_list)
-		print(return_members())
+		#print("recieved-2")
+		#print(self.detail_list)
+		#print(return_members())
 		self.activegroups=[]
 		for group_name, value in self.detail_list.items():
-			group_data = {'group_name': group_name, 'limit': value[0], 'group_code': value[1], 'members_online': return_members()[group_name]  ,'owner': self}
+			group_data = {'group_name': group_name[0:value[1]], 'limit': value[0], 
+			             'group_code': group_name[value[1]:], 'members_online': return_members()[group_name],
+						 'owner': self}# slicing is done for getting the group name and code seperately when needed and that is how it's received form the server
 			self.activegroups.append(group_data)
 	def unschedule(self):
 		global refresh_group_list
@@ -191,7 +193,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]0[color=#E0744C]"
 	def AuthenticateAndJoin(self):
 		self.design = GroupVerifyAndJoin()
-		self.design.chambername = self.group_name
+		self.design.chambername = self.group_name+self.group_code
 		self.design.ids.title.text = "Enter the password of: "
 		self.design.ids.name.text = "[color=#E0744C]" +  str(self.design.chambername) + "[color=#E0744C]"
 		self.update_online_members()
@@ -256,7 +258,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 										)
 				self.success_auth.open()
 				global chamber_name_and_code
-				chamber_name_and_code = self.group_name + self.group_code #Assigns group code to the global variable to use in next screen
+				chamber_name_and_code = self.group_name + self.group_code#Assigns group code to the global variable to use in next screen
 				auth_design.ids.okay.bind(on_release=self.transition)
 				self.refresh_members.cancel()
 				global refresh_group_list
@@ -340,6 +342,7 @@ class ChatWindow(Screen):
 	
 	def unschedule_on_exit(self):
 		self.refresh_online_members.cancel()
+		self.message_refresh.cancel()
 
 	def assign_chamber_info(self):
 		global chamber_name_and_code
@@ -355,7 +358,7 @@ class ChatWindow(Screen):
 		print(username)
 
 	def refresh_messages_scheduler(self):
-		Clock.schedule_interval(self.refresh_messsages, 0.5)
+		self.message_refresh = Clock.schedule_interval(self.refresh_messsages, 0.5)
 
 	def refresh_messsages(self, dt):
 		new_messages = return_message()
