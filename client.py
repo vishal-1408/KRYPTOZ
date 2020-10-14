@@ -9,7 +9,6 @@ sep2='*****seperator*****'
 HEADER_SIZE=10
 
 def receive():
-  try:  
     global client
     global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name
     i=1
@@ -19,7 +18,7 @@ def receive():
             length=client.recv(HEADER_SIZE).decode('UTF-8')
             #print("legnth: "+str(length))
             m=client.recv(int(length)).decode('UTF-8')
-            #print("message:"+str(m))
+            print("message:"+str(m))
             if m[0:3]=="Bye":
                 client.close()
                 print("Connection got disconnected.............")
@@ -35,33 +34,53 @@ def receive():
                 groupfull=obj["groupfull"]
                 # if result==True and groupfull==True:
                     #   clientmessageList.append({
-                    #    'colour':"#00a343",
+                    #    'colour':"#223344",
                     #    'name':"ChatBot",
                     #    'message':"Welcome {} to the Crypto Chamber! Start sharing your secrets!!".format(name)
                     #  })
             elif m[0:11]=="membersList":
-                listobj=pickle.loads(client.recv(int(m[11:])))
+               try:
+                print('handling memberlist')
+                receive =  client.recv(int(m[11:]))
+                listobj=pickle.loads(receive)
                 memberslist=listobj["0"]
+                print(memberslist)
+               except Exception as e:
+                   print('inside memembers list' + str(e))
+
             elif m[0:9]=="memberadd":
+               try:
                 addobj=pickle.loads(client.recv(int(m[9:])))
                 memberslist.append(addobj['name'])
                 clientmessageList.append({
-                     'colour':"#00a343",
+                     'colour':"#223344",
                      'name':"ChatBot",
                      'message': addobj['message']
                 })
+               except Exception as e:
+                   print('inside member add' + str(e))
+            
             elif m[0:11]=="oldmessages":
-                oldmessages=pickle.load(client.recv(int(m[11:])))
+               try:
+                gotit = client.recv(int(m[11:]))
+                print(gotit)
+                oldmessages=pickle.load(gotit)
+                print(oldmessages)
                 clientmessageList=copy.deepcopy(oldmessages["0"])
-
+               except Exception as e:
+                   print('inside old messages' + str(e))
+            
             elif m[0:10]=="newmessage":
-                newmessage=pickle.loads(client.recv(int(m[10:])))
+               try:
+                gotnew= client.recv(int(m[10:]))
+                newmessage=pickle.loads(gotnew)
+                print(newmessage)
                 clientmessageList.append(copy.deepcopy(newmessage))   #{"colour":value , "name": value, "message": value }
-
+               except Exception as e:
+                   print('inside new message' + str(e))
         except Exception as e:
            print("Exception occured in receive:(client socket disc....) "+str(e))
            break
-
 
 def return_details():
     global details
@@ -112,9 +131,9 @@ def sendName(username):
   try:
     global client,name
     name=username
-    name=username.encode('UTF-8')
-    header=f"{len(name):<{HEADER_SIZE}}".encode("UTF-8")
-    client.send(header+name)
+    name2=username.encode('UTF-8')
+    header=f"{len(name2):<{HEADER_SIZE}}".encode("UTF-8")
+    client.send(header+name2)
   except Exception as e:
       print("Exception occured in sendName: "+str(e))
 
@@ -154,7 +173,7 @@ def sendCreate(s):
     print('sent-create-request')
     memberslist.append(name)
     clientmessageList.append({
-        'colour':"#00a343",
+        'colour':"#223344",
         'name':"ChatBot",
         'message':"Welcome to your Crypto Chamber! Share Chamber Name and Code with your friends and have fun sharing secrets on crypto chamber!!"
     })
@@ -163,10 +182,10 @@ def sendCreate(s):
 
 def sendJoin(s):
   try:
-    print('sendJoin')
-    global client
-    client.send("join".encode('ASCII'))
-    client.send(s.encode('ASCII'))
+    #print('sendJoin')
+    #global client
+    #client.send("join".encode('ASCII'))
+    #client.send(s.encode('ASCII'))
     print('sent-join-request')
     m="join".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")

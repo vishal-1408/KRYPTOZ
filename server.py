@@ -144,7 +144,7 @@ def join(c):
                     clientinfo[c].append(name)
                     
                     groupMessages[name].append({
-                        "colour":"#00a343",
+                        "colour":"#223344",
                         'message':"{} has joined the chamber!".format(clientinfo[c][0]),
                         "name":"ChatBot"
                     })
@@ -281,12 +281,12 @@ def broadcast(name,client,memberslist,length,check):
     else:
         messageobj=pickle.dumps({
             "name":"ChatBot",
-            "colour":"#00a343",
+            "colour":"#223344",
             "message":"{} has left the chat".format(name)
         })
         groupMessages[clientinfo[client][1]].append({
             "name":"ChatBot",
-            "colour":"#00a343",
+            "colour":"#223344",
             "message":"{} has left the chat".format(name)
         })
     message="newmessage"
@@ -297,7 +297,7 @@ def broadcast(name,client,memberslist,length,check):
         if  x!=client:
             x.sendall(header+message)
             x.sendall(messageobj)
-  except Exceptiona as e:
+  except Exception as e:
      print("Exception occured in broadcast: "+str(e))
 
 
