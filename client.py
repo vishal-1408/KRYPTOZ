@@ -59,19 +59,33 @@ def receive():
                 })
                except Exception as e:
                    print('inside member add' + str(e))
-            
+            elif m[0:10]=="membergone":
+                try:
+                 recvobj=pickle.loads(client.recv(int(m[10:])))
+                 member=recvobj["person"]
+                 memberslist.remove(member)
+                 clientmessageList.append({
+                     "name":"ChatBot",
+                     "colour":"#223344",
+                     "message":recvobj["message"],
+                 })
+                except Exception as e:
+                    print('inside membergone '+str(e))
             elif m[0:11]=="oldmessages":
                try:
+                print(m[11:])
                 gotit = client.recv(int(m[11:]))
                 print(gotit)
-                oldmessages=pickle.load(gotit)
-                print(oldmessages)
+                oldmessages={}
+                oldmessages=pickle.loads(gotit)
+                #print(oldmessages)
                 clientmessageList=copy.deepcopy(oldmessages["0"])
                except Exception as e:
                    print('inside old messages' + str(e))
             
             elif m[0:10]=="newmessage":
                try:
+                newmessage={}
                 gotnew= client.recv(int(m[10:]))
                 newmessage=pickle.loads(gotnew)
                 print(newmessage)
@@ -207,6 +221,7 @@ def sendMessage(mess,colour):
         "name":name
     }
     messageobj=pickle.dumps(messagedict)
+    print(messageobj)
     message=message+str(len(messageobj))
     message=message.encode('UTF-8')
     header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
@@ -221,6 +236,7 @@ def sendLogout():
     global client,sentList,clientmessageList,sentList
     clientmessageList.clear()
     sentList.clear()
+    memberslist.clear()
     m="QUIT".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
