@@ -54,7 +54,7 @@ def initialize(c,check):
            print("initialize: "+name)
            clientinfo[c]=[name]
         else:
-            print("logged out : "+name)
+            print("logged out : ")
         d=1
         while(d):
             header=c.recv(HEADER_SIZE).decode('UTF-8')
@@ -150,17 +150,19 @@ def join(c):
                     })
 
                     sendAllmemberslist(name,c)
+
+                    sendAllMessages(name,c)
                    
                     broadcasteveryone(name,c)
                     
-                    sendAllMessages(name,c)
+                    
 
                     Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
                     return 0
                 elif password!=grouppassword:
                     obj['result']=False
                     obj['groupfull']=False
-                                                                   #return 0 once handling clients is done!
+                                               #return 0 once handling clients is done!
             else:
                     obj['result']=False
                     obj['groupfull']=True
@@ -214,6 +216,7 @@ def sendAllMessages(groupname,c):
     try:
         global groupMessages
         oldmessages={'0':groupMessages[groupname]}
+        print("oldmessages: "+str(oldmessages))
         messageobj=pickle.dumps(oldmessages)
         message="oldmessages"
         message=message+str(len(messageobj))
@@ -247,12 +250,13 @@ def handling_the_client(client):
         print("handling client")
         global clientinfo, groupinfo,groupMessages
         while 1:
-            length=client.recv(HEADER_SIZE).decode('UTF-8')
-            message=client.recv(int(length)).decode('UTF-8')
-            #print(received+" by "+clientinfo[client][0])
-            if message[0:8]=="message":
-                broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4],int(message[8:]),True)
-            elif message=="QUIT":
+             length=client.recv(HEADER_SIZE).decode('UTF-8')
+             print(length)
+             message=client.recv(int(length)).decode('UTF-8')
+             if message[0:7]=="message":
+                print("came")
+                broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4],int(message[7:]),True)
+             elif message=="QUIT":
                 if len(groupinfo[clientinfo[client][1]][3])==1:
                     groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
                     group_name = clientinfo[client].pop()
@@ -264,32 +268,33 @@ def handling_the_client(client):
                 else:
                     broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4],"",False)
                     groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
-                    clientinfo[client].pop()
                     Thread(target=initialize,args=(client,False)).start()
                     break
     except Exception as e:
         print("Exception occured in handling client: "+str(e))
 
 def broadcast(name,client,memberslist,length,check):
-  try:  
+  try:
     global clientinfo,groupMessages
     if check==True:
-        newmessageobj=pickle.load(client.recv(length))
+        newmessageobj=pickle.loads(client.recv(length))
+        print("broadcast: "+ str(newmessageobj))
         groupMessages[clientinfo[client][1]].append(copy.deepcopy(newmessageobj))
-        newmessage=newmessageobj
         messageobj=pickle.dumps(newmessageobj)
+        message="newmessage"
     else:
         messageobj=pickle.dumps({
             "name":"ChatBot",
             "colour":"#00a343",
-            "message":"{} has left the chat".format(name)
+            "message":"{} has left the chat".format(name),
+            "person":name
         })
         groupMessages[clientinfo[client][1]].append({
             "name":"ChatBot",
             "colour":"#00a343",
             "message":"{} has left the chat".format(name)
         })
-    message="newmessage"
+        message="membergone"
     message=message+str(len(messageobj))
     message=message.encode('UTF-8')
     header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
@@ -297,7 +302,7 @@ def broadcast(name,client,memberslist,length,check):
         if  x!=client:
             x.sendall(header+message)
             x.sendall(messageobj)
-  except Exceptiona as e:
+  except Exception as e:
      print("Exception occured in broadcast: "+str(e))
 
 
@@ -326,6 +331,7 @@ def checkgroup(group_name):
     global clientinfo, groupinfo
     if len(groupinfo[group_name][3])==0:
         groupinfo.pop(group_name)
+        groupMessages.pop(group_name)
     #print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
   except Exception as e:
     print("Exception occured in checkgroup: "+str(e))
