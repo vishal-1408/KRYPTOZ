@@ -131,7 +131,7 @@ class CreateGroup(Screen):
 			group_code=''
 			for i in range (6):
 				group_code+=randlist[randint(0,randomlen-1)]
-			group_string = self.ids.name.text + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
+			group_string = self.ids.name.text.strip() + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text.strip() + sep + group_code
 			#print(group_string)
 			sendCreate(group_string)
 			global chamber_name_and_code
@@ -147,26 +147,27 @@ class CreateGroup(Screen):
 
 class SelectGroup(Screen):
 	activegroups = ListProperty()
-	def add_data(self):#Might have to change for efficiency
+
+	def on_search(self):
 		sendGroups() #Test this and remove 
 		#sendMembers() #Test this and remove
-		Clock.schedule_once(self.schedule_details)
+		Clock.schedule_once(self.search_refresh)
 		global refresh_group_list
-		refresh_group_list = Clock.schedule_interval(self.schedule_details, 1)
-	def schedule_details(self, *args):	
+		refresh_group_list =  Clock.schedule_interval(self.search_refresh, 1)
+
+	def search_refresh(self, *args):
 		sendGroups()
-		#sendMembers()
-		#print("received")
-		self.detail_list=return_details()
-		#print("recieved-2")
-		#print(self.detail_list)
-		#print(return_members())
-		self.activegroups=[]
+		search_text = self.ids.search_box.text.strip() #remove whitepaces in beg and end
+		search_text = search_text.lower() #all lower for search efficiency
+		self.activegroups = []
+		self.detail_list =  return_details()
 		for group_name, value in self.detail_list.items():
-			group_data = {'group_name': group_name[0:value[1]], 'limit': value[0], 
-			             'group_code': group_name[value[1]:], 'members_online': return_members()[group_name],
-						 'owner': self}# slicing is done for getting the group name and code seperately when needed and that is how it's received form the server
-			self.activegroups.append(group_data)
+			if search_text in group_name.lower(): #substring searching
+				group_found = {'group_name': group_name[0:value[1]], 'limit': value[0],
+								'group_code': group_name[value[1]:], 'members_online':return_members()[group_name],
+								'owner': self} #if substring match is successful the group is added to the rv
+				self.activegroups.append(group_found)
+
 	def unschedule(self):
 		global refresh_group_list
 		refresh_group_list.cancel()
