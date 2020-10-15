@@ -30,6 +30,7 @@ def receive():
             elif m[0:4]=="auth":
                 length=int(m[4:])
                 obj=pickle.loads(client.recv(length))
+                print("object received:::::::::::::::::::::::::::::::::::::::::"+str(obj))
                 result=obj["result"]
                 groupfull=obj["groupfull"]
                 # if result==True and groupfull==True:
@@ -101,14 +102,20 @@ def return_details():
     print("details: "+str(details))
     return details
 
+def makeNone():
+    global groupfull,result
+    result=None
+    groupfull=None
+
+
 def return_authenticate():
     global result
-   # print('from client side:' + str(result))
+    print('from client side:' + str(result))
     return result
 
 def return_groupfull():
     global groupfull
-   # print('from client side:' + str(groupfull))
+    print('from client side:' + str(groupfull))
     return groupfull
 
 def return_members():

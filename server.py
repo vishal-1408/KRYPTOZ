@@ -115,14 +115,15 @@ def join(c):
             length=c.recv(HEADER_SIZE).decode("UTF-8")
             string=c.recv(int(length)).decode('UTF-8')
             name=string.split(sep)[0]   #name of the group should be sent concat with code!!
-            #print(name)
+            print(name)
             password=string.split(sep)[1]
-            #print(password)
+            print(password)
             grouppassword=groupinfo[name][0]
-            #print(grouppassword + "\t" + password)
+            print(grouppassword + "\t" + password)
             obj={}
             message="auth"
             if len(groupinfo[name][3])<(groupinfo[name][1]):
+                print("insdie")
                 if grouppassword==password:
                     obj['result']=True
                     obj['groupfull']=False
@@ -132,6 +133,7 @@ def join(c):
                     header=f'{len(message):<{HEADER_SIZE}}'.encode('UTF-8')
                     c.sendall(header+message)
                     c.sendall(messageobj)
+                    print("Sent succesylly")
                     for x in eventslist[name]:
                         if x:
                              scheduler.cancel(x)
