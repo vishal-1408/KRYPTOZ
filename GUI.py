@@ -223,8 +223,8 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		self.authwin.dismiss()
 		if len(return_details())!=0:
 			self.design.Authenticate_Client_Gui()
-			Clock.schedule_once(self.auth_and_full)
-			Clock.schedule_once(self.conditions)
+			self.auth_and_full()
+			self.conditions()
 		else:
 			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 
