@@ -104,20 +104,24 @@ class JoinOrCreate(Screen):
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
 	def requirements(self):
-		if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=15:
-			if len(self.ids.password.text)>=5:
-				if self.ids.password.text==self.ids.c_password.text:
-					if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
-						return True
+		if self.ids.members.text.isnumeric():
+			if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=15:
+				if len(self.ids.password.text)>=5:
+					if self.ids.password.text==self.ids.c_password.text:
+						if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
+							return True
+						else:
+							quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+							return False
 					else:
-						quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+						quick_message("Meh! don't you wanna be secure", True, "Passwords so not match!")
 						return False
 				else:
-					quick_message("Meh! don't you wanna be secure", True, "Passwords so not match!")
-					return False
+						quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
+						return False
 			else:
-					quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
-					return False
+				quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
+				return False
 		else:
 			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
 			return False
@@ -136,6 +140,7 @@ class CreateGroup(Screen):
 			sendCreate(group_string)
 			global chamber_name_and_code
 			chamber_name_and_code  = self.ids.name.text + group_code #Assigning the group name to global variable so that we can access it in chatwin
+			print(chamber_name_and_code+ 'FROM GUI CHAMBER INFO')
 			self.manager.transition=SlideTransition(direction="down")
 			self.manager.current = 'chatwin'
 			#clearing textinputs
@@ -259,7 +264,8 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 										)
 				self.success_auth.open()
 				global chamber_name_and_code
-				chamber_name_and_code = self.group_name + self.group_code#Assigns group code to the global variable to use in next screen
+				chamber_name_and_code = self.design.chambername#Assigns group code to the global variable to use in next screen
+				print(chamber_name_and_code+ 'FROM GUI CHAMBER INFO')
 				auth_design.ids.okay.bind(on_release=self.transition)
 				self.refresh_members.cancel()
 				global refresh_group_list
