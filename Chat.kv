@@ -59,13 +59,13 @@ Screen_Manager:
         padding:(100,200)
         CustomTextInput:
             id: username
-            text:"" #REMOVEE THIS SHIT
+            text:"arjun" #REMOVEE THIS SHIT
             hint_text: "Username"
             size_hint_x:0.7
             pos_hint:{'center_x':0.5}
         CustomTextInput:
             id: password
-            text:""  #REMOVEE THIS SHIT
+            text:"arjun2000"  #REMOVEE THIS SHIT
             hint_text: "Password"
             password: True
             size_hint_x:0.7
@@ -249,14 +249,14 @@ Screen_Manager:
             spacing: dp(30)
             CustomTextInput:
                 id: name
-                text: ''
+                text: 'hey' #REMOVEE THIS SHIT
                 hint_text: "Chamber Name [atleast 3 characters]"
                 font_size:18
             BoxLayout:
                 spacing: 640*0.1
                 CustomTextInput:
                     id: password
-                    text: ""
+                    text: "arjun" #REMOVEE THIS SHIT
                     hint_text: "Chamber Password [atleast 5 characters]"
                     password: True
                     disabled: not root.allow_password
@@ -268,14 +268,14 @@ Screen_Manager:
                     size_hint_x: 0.45
             CustomTextInput:
                 id: c_password
-                text: ""
+                text: "arjun" #REMOVEE THIS SHIT
                 hint_text: "Confirm Password"
                 size_hint_x: 0.45
                 password: True
                 disabled: not root.allow_password
             CustomTextInput:
                 id: members
-                text: ""
+                text: "4" #REMOVEE THIS SHIT
                 hint_text: "Number of members [atleast two members]"
                 size_hint_x: 0.45
         FloatLayout:
@@ -312,7 +312,7 @@ Screen_Manager:
 <SelectGroup>:
     name: "join"
     on_pre_enter:
-        root.add_data()
+        root.on_search()
     BoxLayout:
         orientation: "vertical"
         padding: 0
@@ -320,11 +320,9 @@ Screen_Manager:
         BoxLayout:
             size_hint_y: 0.1
             CustomTextInput:
-                hint_text: "Search for a Chamber (Chambercode)"
+                id: search_box
+                hint_text: "Search for a Chamber (Chamber name + Chamber code)"
                 size_hint_x: 0.75
-            Custom_Button:
-                text: 'Search'
-                size_hint_x: 0.2
         BoxLayout:
             spacing:50
             size_hint_y:0.1

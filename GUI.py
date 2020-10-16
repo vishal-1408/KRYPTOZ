@@ -131,7 +131,7 @@ class CreateGroup(Screen):
 			group_code=''
 			for i in range (6):
 				group_code+=randlist[randint(0,randomlen-1)]
-			group_string = self.ids.name.text + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text + sep + group_code
+			group_string = self.ids.name.text.strip() + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text.strip() + sep + group_code
 			#print(group_string)
 			sendCreate(group_string)
 			global chamber_name_and_code
@@ -147,24 +147,27 @@ class CreateGroup(Screen):
 
 class SelectGroup(Screen):
 	activegroups = ListProperty()
-	def add_data(self):#Might have to change for efficiency
-		#sendGroups() #Test this and remove 
+
+	def on_search(self):
+		sendGroups() #Test this and remove 
 		#sendMembers() #Test this and remove
-		Clock.schedule_once(self.schedule_details)
+		Clock.schedule_once(self.search_refresh)
 		global refresh_group_list
-		refresh_group_list = Clock.schedule_interval(self.schedule_details, 1)
-	def schedule_details(self, *args):	
+		refresh_group_list =  Clock.schedule_interval(self.search_refresh, 1)
+
+	def search_refresh(self, *args):
 		sendGroups()
-		#sendMembers()
-		print("received")
-		self.detail_list=return_details()
-		print("recieved-2")
-		print(self.detail_list)
-		print(return_members())
-		self.activegroups=[]
+		search_text = self.ids.search_box.text.strip() #remove whitepaces in beg and end
+		search_text = search_text.lower() #all lower for search efficiency
+		self.activegroups = []
+		self.detail_list =  return_details()
 		for group_name, value in self.detail_list.items():
-			group_data = {'group_name': group_name, 'limit': value[0], 'group_code': value[1], 'members_online': return_members()[group_name]  ,'owner': self}
-			self.activegroups.append(group_data)
+			if search_text in group_name.lower(): #substring searching
+				group_found = {'group_name': group_name[0:value[1]], 'limit': value[0],
+								'group_code': group_name[value[1]:], 'members_online':return_members()[group_name],
+								'owner': self} #if substring match is successful the group is added to the rv
+				self.activegroups.append(group_found)
+
 	def unschedule(self):
 		global refresh_group_list
 		refresh_group_list.cancel()
@@ -191,7 +194,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]0[color=#E0744C]"
 	def AuthenticateAndJoin(self):
 		self.design = GroupVerifyAndJoin()
-		self.design.chambername = self.group_name
+		self.design.chambername = self.group_name+self.group_code
 		self.design.ids.title.text = "Enter the password of: "
 		self.design.ids.name.text = "[color=#E0744C]" +  str(self.design.chambername) + "[color=#E0744C]"
 		self.update_online_members()
@@ -220,8 +223,8 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		self.authwin.dismiss()
 		if len(return_details())!=0:
 			self.design.Authenticate_Client_Gui()
-			Clock.schedule_once(self.auth_and_full)
-			Clock.schedule_once(self.conditions)
+			self.auth_and_full()
+			self.conditions()
 		else:
 			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 
@@ -234,7 +237,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			self.refresh_members.cancel()
 		else:
 			for group in return_details_list:
-				if self.group_name!= group:
+				if self.group_name+self.group_code!= group:
 					print('\ngroup deleted entered here ' + str(group))
 					group_deleted = True
 				else:
@@ -256,11 +259,13 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 										)
 				self.success_auth.open()
 				global chamber_name_and_code
-				chamber_name_and_code = self.group_name + self.group_code #Assigns group code to the global variable to use in next screen
+				chamber_name_and_code =self.design.chambername
 				auth_design.ids.okay.bind(on_release=self.transition)
 				self.refresh_members.cancel()
 				global refresh_group_list
 				refresh_group_list.cancel()
+			elif self.group_dead:
+				quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 			elif self.full:
 				quick_message("Ah! You are late", True, "The chamber is currently full.")
 					
@@ -271,11 +276,17 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 	
 	def auth_and_full(self, *args):
-		while self.auth==None or self.full==None:
+		self.auth=None
+		self.full=None
+		self.group_dead = None
+		makeNone()
+		while (self.auth==None or self.full==None) and (self.group_dead!= True) :
+			print("loop")
+			self.group_dead = return_groupdead()
 			self.auth = return_authenticate()
 			self.full = return_groupfull()
 			print(str(self.auth)+'\t'+str(self.full)+' 1')
-	
+		print(self.group_dead)
 	def transition(self, instance):
 		self.success_auth.dismiss()
 		app=App.get_running_app()
@@ -340,6 +351,7 @@ class ChatWindow(Screen):
 	
 	def unschedule_on_exit(self):
 		self.refresh_online_members.cancel()
+		self.message_refresh.cancel()
 
 	def assign_chamber_info(self):
 		global chamber_name_and_code
@@ -355,7 +367,7 @@ class ChatWindow(Screen):
 		print(username)
 
 	def refresh_messages_scheduler(self):
-		Clock.schedule_interval(self.refresh_messsages, 0.5)
+		self.message_refresh = Clock.schedule_interval(self.refresh_messsages, 0.5)
 
 	def refresh_messsages(self, dt):
 		new_messages = return_message()
