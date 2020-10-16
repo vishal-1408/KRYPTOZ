@@ -144,7 +144,7 @@ def join(c):
                    # print(clientinfo)
                     groupinfo[name][3].append(clientinfo[c][0])
                     groupinfo[name][4].append(c)
-                    #print(groupinfo)
+                    print("joined:"+str(groupinfo))
                     clientinfo[c].append(name)
                     
                     groupMessages[name].append({
@@ -188,6 +188,7 @@ def sendAllmemberslist(name,c):
         message="membersList"
         obj={}
         obj["0"]=groupinfo[name][3]
+        print("memberslist"+str(obj["0"]))
         messageobj=pickle.dumps(obj)
         message=message+str(len(messageobj))
         message=message.encode('UTF-8')
@@ -309,6 +310,7 @@ def broadcast(name,client,memberslist,length,check):
     message=message+str(len(messageobj))
     message=message.encode('UTF-8')
     header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+    print("memberlist:"+str(memberslist))
     for x in memberslist:
         if x!=client:
             x.sendall(header+message)

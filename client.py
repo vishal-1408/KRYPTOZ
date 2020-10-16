@@ -251,14 +251,13 @@ def sendLogout(*args):
       print("Exception occured in sendLogout: "+str(e))
 
 def close():
-    global client
-   # print('close')
-    m="QUIT".encode("ASCII")                  #settting the variable of text-input to QUIT
-    client.send(m)                     #this is like clicking send button automatically
-    
-def close2():
-    global client
-    client.close()
+   global client
+   try: 
+    m="QUIT".encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header+m)         
+   except Exception as e:
+      print("Exception occured in sendLogout: "+str(e)) 
 
 
 
