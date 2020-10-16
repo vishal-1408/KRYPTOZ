@@ -10,7 +10,7 @@ HEADER_SIZE=10
 
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name
+    global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name,groupdead
     i=1
     #print('Function Started!!!!')
     while 1:
@@ -30,6 +30,7 @@ def receive():
             elif m[0:4]=="auth":
                 length=int(m[4:])
                 obj=pickle.loads(client.recv(length))
+                print("object received:::::::::::::::::::::::::::::::::::::::::"+str(obj))
                 result=obj["result"]
                 groupfull=obj["groupfull"]
                 # if result==True and groupfull==True:
@@ -47,7 +48,8 @@ def receive():
                 #print("membersList: 1"+memberslist)
                except Exception as e:
                    print('inside memembers list' + str(e))
-
+            elif m=="groupdead":
+                groupdead=True
             elif m[0:9]=="memberadd":
                try:
                 addobj=pickle.loads(client.recv(int(m[9:])))
@@ -101,14 +103,27 @@ def return_details():
     print("details: "+str(details))
     return details
 
+def makeNone():
+    global groupfull,result
+    result=None
+    groupfull=None
+
+def return_groupdead():
+    global groupdead
+    return groupdead
+    
+def set_group_dead():
+    global groupdead
+    groupdead=None
+
 def return_authenticate():
     global result
-   # print('from client side:' + str(result))
+    print('from client side:' + str(result))
     return result
 
 def return_groupfull():
     global groupfull
-   # print('from client side:' + str(groupfull))
+    print('from client side:' + str(groupfull))
     return groupfull
 
 def return_members():
@@ -244,14 +259,13 @@ def sendLogout(*args):
       print("Exception occured in sendLogout: "+str(e))
 
 def close():
-    global client
-   # print('close')
-    m="QUIT".encode("ASCII")                  #settting the variable of text-input to QUIT
-    client.send(m)                     #this is like clicking send button automatically
-    
-def close2():
-    global client
-    client.close()
+   global client
+   try: 
+    m="QUIT".encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header+m)         
+   except Exception as e:
+      print("Exception occured in sendLogout: "+str(e)) 
 
 
 
@@ -265,7 +279,7 @@ clientmessageList=[]
 sentList=[]
 name=""
 groupname=None
-
+groupdead=None
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"

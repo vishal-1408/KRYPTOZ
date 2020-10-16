@@ -274,7 +274,11 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 	
 	def auth_and_full(self, *args):
+		self.auth=None
+		self.full=None
+		makeNone()
 		while self.auth==None or self.full==None:
+			print("loop")
 			self.auth = return_authenticate()
 			self.full = return_groupfull()
 			print(str(self.auth)+'\t'+str(self.full)+' 1')
