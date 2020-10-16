@@ -181,8 +181,12 @@ def join(c):
           else:
              return 1
     except Exception as e:
-        print("Exceptiona in join: "+str(e))
-        return 1
+             message="groupdead"
+             message=message.encode('UTF-8')
+             header=f'{len(message):<{HEADER_SIZE}}'.encode('UTF-8')
+             c.sendall(header+message)
+             print("Exception in join: "+str(e))
+             return 1
 
 
 def sendAllmemberslist(name,c):

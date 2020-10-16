@@ -10,7 +10,7 @@ HEADER_SIZE=10
 
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name
+    global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name,groupdead
     i=1
     #print('Function Started!!!!')
     while 1:
@@ -48,7 +48,8 @@ def receive():
                 #print("membersList: 1"+memberslist)
                except Exception as e:
                    print('inside memembers list' + str(e))
-
+            elif m=="groupdead":
+                groupdead=True
             elif m[0:9]=="memberadd":
                try:
                 addobj=pickle.loads(client.recv(int(m[9:])))
@@ -107,6 +108,13 @@ def makeNone():
     result=None
     groupfull=None
 
+def return_groupdead():
+    global groupdead
+    return groupdead
+    
+def set_group_dead():
+    global groupdead
+    groupdead=None
 
 def return_authenticate():
     global result
@@ -271,7 +279,7 @@ clientmessageList=[]
 sentList=[]
 name=""
 groupname=None
-
+groupdead=None
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
