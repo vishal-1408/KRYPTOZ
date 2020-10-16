@@ -259,7 +259,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 										)
 				self.success_auth.open()
 				global chamber_name_and_code
-				chamber_name_and_code = self.group_name + self.group_code#Assigns group code to the global variable to use in next screen
+				chamber_name_and_code =self.design.chambername
 				auth_design.ids.okay.bind(on_release=self.transition)
 				self.refresh_members.cancel()
 				global refresh_group_list
