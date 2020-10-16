@@ -113,17 +113,18 @@ def join(c):
     try:
         while e:
             #print(groupinfo)
-            length=c.recv(HEADER_SIZE).decode("UTF-8")
-            string=c.recv(int(length)).decode('UTF-8')
-            name=string.split(sep)[0]   #name of the group should be sent concat with code!!
-            print(name)
-            password=string.split(sep)[1]
-            print(password)
-            grouppassword=groupinfo[name][0]
-            print(grouppassword + "\t" + password)
-            obj={}
-            message="auth"
-            if len(groupinfo[name][3])<(groupinfo[name][1]):
+          length=c.recv(HEADER_SIZE).decode("UTF-8")
+          string=c.recv(int(length)).decode('UTF-8')
+          name=string.split(sep)[0]   #name of the group should be sent concat with code!!
+          print(name)
+          password=string.split(sep)[1]
+          print(password)
+          grouppassword=groupinfo[name][0]
+          print(grouppassword + "\t" + password)
+          obj={}
+          message="auth"
+          if name in groupinfo.keys():
+             if len(groupinfo[name][3])<(groupinfo[name][1]):
                 print("insdie")
                 if grouppassword==password:
                     obj['result']=True
@@ -167,19 +168,21 @@ def join(c):
                     obj['result']=False
                     obj['groupfull']=False
                                                #return 0 once handling clients is done!
-            else:
+             else:
                     obj['result']=False
                     obj['groupfull']=True
-            messageobj=pickle.dumps(obj)
-            message=message+str(len(messageobj))
-            message=message.encode('UTF-8')
-            header=f'{len(message):<{HEADER_SIZE}}'.encode('UTF-8')
-            c.sendall(header+message)
-            c.sendall(messageobj)
-            return 1
+             messageobj=pickle.dumps(obj)
+             message=message+str(len(messageobj))
+             message=message.encode('UTF-8')
+             header=f'{len(message):<{HEADER_SIZE}}'.encode('UTF-8')
+             c.sendall(header+message)
+             c.sendall(messageobj)
+             return 1
+          else:
+             return 1
     except Exception as e:
         print("Exceptiona in join: "+str(e))
-        return
+        return 1
 
 
 def sendAllmemberslist(name,c):
