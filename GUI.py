@@ -279,6 +279,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		self.auth=None
 		self.full=None
 		self.group_dead = None
+		set_group_dead()
 		makeNone()
 		while (self.auth==None or self.full==None) and (self.group_dead!= True) :
 			print("loop")

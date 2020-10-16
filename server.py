@@ -325,7 +325,6 @@ def broadcast(name,client,memberslist,length,check):
     print("member broadcast done!")
   except Exception as e:
      print("Exception occured in broadcast: "+str(e))
-     
      return
 
 

@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['GUI.py'],
-             pathex=['E:\\Kivy Projects\\Crypto-Chamber'],
+             pathex=['C:\\Users\\chint\\Desktop\\Python-chat-application-with-encryption'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -21,14 +21,14 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='CryptoChamber beta v1.0',
+          name='Kryptos',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=True )
+          console=False )
 coll = COLLECT(exe,
-               a.binaries, Tree('..\\Crypto-Chamber\\'),
+               a.binaries, Tree('..\\Python-chat-application-with-encryption\\'),
                a.zipfiles,
                a.datas,
                *[Tree(p) for p in
@@ -36,4 +36,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='CryptoChamber beta v1.0')
+               name='Kryptos')
