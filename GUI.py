@@ -264,6 +264,8 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 				self.refresh_members.cancel()
 				global refresh_group_list
 				refresh_group_list.cancel()
+			elif self.group_dead:
+				quick_message("Chamber was abandoned", True, "The group has been removed due to inactivity." )
 			elif self.full:
 				quick_message("Ah! You are late", True, "The chamber is currently full.")
 					
@@ -276,13 +278,15 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	def auth_and_full(self, *args):
 		self.auth=None
 		self.full=None
+		self.group_dead = None
 		makeNone()
-		while self.auth==None or self.full==None:
+		while (self.auth==None or self.full==None) and (self.group_dead!= True) :
 			print("loop")
+			self.group_dead = return_groupdead()
 			self.auth = return_authenticate()
 			self.full = return_groupfull()
 			print(str(self.auth)+'\t'+str(self.full)+' 1')
-	
+		print(self.group_dead)
 	def transition(self, instance):
 		self.success_auth.dismiss()
 		app=App.get_running_app()

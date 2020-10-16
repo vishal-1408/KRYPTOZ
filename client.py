@@ -49,6 +49,7 @@ def receive():
                except Exception as e:
                    print('inside memembers list' + str(e))
             elif m=="groupdead":
+                print('GroupDead received')
                 groupdead=True
             elif m[0:9]=="memberadd":
                try:
