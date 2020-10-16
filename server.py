@@ -402,7 +402,7 @@ server_socket.bind((Host,port))
 
 
 if __name__ == "__main__":
-    server_socket.listen(10)
+    server_socket.listen(50)
     print("Socket is listening for sockets!!")
     main_thread=Thread(target=accept)
     main_thread.start() #starts the thread

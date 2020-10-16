@@ -264,8 +264,12 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 										)
 				self.success_auth.open()
 				global chamber_name_and_code
+<<<<<<< HEAD
 				chamber_name_and_code = self.design.chambername#Assigns group code to the global variable to use in next screen
 				print(chamber_name_and_code+ 'FROM GUI CHAMBER INFO')
+=======
+				chamber_name_and_code =self.design.chambername
+>>>>>>> 44ca2f110a8b83e03bf15d4c71514af58e76b40c
 				auth_design.ids.okay.bind(on_release=self.transition)
 				self.refresh_members.cancel()
 				global refresh_group_list
@@ -285,6 +289,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		self.auth=None
 		self.full=None
 		self.group_dead = None
+		set_group_dead()
 		makeNone()
 		while (self.auth==None or self.full==None) and (self.group_dead!= True) :
 			print("loop")
