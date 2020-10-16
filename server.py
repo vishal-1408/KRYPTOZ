@@ -77,6 +77,7 @@ def initialize(c,check):
             print("exception in initialize: "+str(e))
         else:
             print("exception after logging out: "+str(e))
+            
         c.close()
 
 
@@ -178,6 +179,7 @@ def join(c):
             return 1
     except Exception as e:
         print("Exceptiona in join: "+str(e))
+        return
 
 
 def sendAllmemberslist(name,c):
@@ -194,6 +196,7 @@ def sendAllmemberslist(name,c):
         c.sendall(messageobj)
     except Exception as e:
         print("Exception occured in sendAllmembersList: "+str(e))
+        return
     
 
 def broadcasteveryone(gname,client):
@@ -210,7 +213,8 @@ def broadcasteveryone(gname,client):
             x.sendall(header+message)
             x.sendall(messageobj)
     except Exception as e:
-        print("Exception occured in broadcast everyone: "+str(e))  
+        print("Exception occured in broadcast everyone: "+str(e))
+        return
            
 
 
@@ -229,6 +233,7 @@ def sendAllMessages(groupname,c):
         c.sendall(messageobj)
     except Exception as e:
         print("Exception occured in sendAllMessages: "+str(e))
+        return
 
     
     
@@ -264,6 +269,7 @@ def handling_the_client(client):
                     groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
                     groupinfo[clientinfo[client][1]][4].remove(client)
                     group_name = clientinfo[client].pop()
+                    print("group details:"+str(groupinfo[group_name]))
                     Thread(target=scheduling,args=(group_name,)).start()
                     Thread(target=initialize,args=(client,False)).start()
                     break
@@ -271,10 +277,12 @@ def handling_the_client(client):
                     broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][1]][4],"",False)
                     groupinfo[clientinfo[client][1]][3].remove(clientinfo[client][0])
                     groupinfo[clientinfo[client][1]][4].remove(client)
+                    clientinfo[client].pop()
                     Thread(target=initialize,args=(client,False)).start()
                     break
     except Exception as e:
         print("Exception occured in handling client: "+str(e))
+        return
 
 def broadcast(name,client,memberslist,length,check):
   try:
@@ -305,9 +313,10 @@ def broadcast(name,client,memberslist,length,check):
         if x!=client:
             x.sendall(header+message)
             x.sendall(messageobj)
-    print("member gone broadcast done!")
+    print("member broadcast done!")
   except Exception as e:
      print("Exception occured in broadcast: "+str(e))
+     return
 
 
    
@@ -328,6 +337,7 @@ def scheduling(group_name):
     #print('after clock')
  except Exception as e:
     print("Exception occured in scheduling: "+str(e))
+    return
 
 def checkgroup(group_name):
   try:
@@ -339,6 +349,7 @@ def checkgroup(group_name):
     #print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
   except Exception as e:
     print("Exception occured in checkgroup: "+str(e))
+    return
 
 # def joinorcreate(c):
 #     global clientinfo, groupinfo, scheduler
