@@ -115,7 +115,7 @@ class Login(Screen):
 
 class JoinOrCreate(Screen):
 	def client_close(self):
-		close()
+		sendLogout()
 
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
