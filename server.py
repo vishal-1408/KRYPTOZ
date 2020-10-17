@@ -69,7 +69,9 @@ def initialize(c,check):
             elif(m=="join"):
                 d=join(c)
             elif(m=="QUIT"):
-                c.send("Bye".encode("ASCII"))
+                m="BYE"
+                header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
+                c.sendall(header+m)
                 c.close()
                 break
     except Exception as e:
@@ -121,7 +123,7 @@ def join(c):
           print(password)
           grouppassword=groupinfo[name][0]
           print(grouppassword + "\t" + password)
-          obj={}
+          obj={}    
           message="auth"
           if name in groupinfo.keys():
              if len(groupinfo[name][3])<(groupinfo[name][1]):
