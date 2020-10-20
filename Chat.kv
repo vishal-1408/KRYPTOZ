@@ -7,7 +7,7 @@ Screen_Manager:
     SelectGroup:
     ChatWindow:
 #------------------------------------------------------------------------Custom Widgets------------------------------------
-<CustomTextInput@TextInput>:
+<CustomTextInput>:
     on_parent: self._refresh_text(self.text)
     background_normal: ""
     background_disabled_normal: ""
@@ -61,6 +61,7 @@ Screen_Manager:
             id: username
             #text:"arjun" #REMOVEE THIS SHIT
             hint_text: "Username"
+            press_enter: root.transition_after_login
             size_hint_x:0.7
             pos_hint:{'center_x':0.5}
         CustomTextInput:
@@ -68,6 +69,7 @@ Screen_Manager:
             #text:"arjun2000"  #REMOVEE THIS SHIT
             hint_text: "Password"
             password: True
+            press_enter: root.transition_after_login
             size_hint_x:0.7
             pos_hint:{'center_x':0.5}
         BoxLayout:
@@ -216,6 +218,7 @@ Screen_Manager:
                 background_color:(40/255,50/255,54/255,1)
                 size_hint: (0.8,0.18)
                 pos_hint: {'center_x':0.5}
+                password: True
         BoxLayout:
             size_hint_y:0.15
             orientation: "horizontal"
@@ -250,13 +253,15 @@ Screen_Manager:
             CustomTextInput:
                 id: name
                 #text: 'hey' #REMOVEE THIS SHIT
+                press_enter: root.submit
                 hint_text: "Chamber Name [atleast 3 characters]"
                 font_size:18
             BoxLayout:
                 spacing: 640*0.1
                 CustomTextInput:
                     id: password
-                   # text: "arjun" #REMOVEE THIS SHIT
+                    #text: "arjun" #REMOVEE THIS SHIT
+                    press_enter: root.submit
                     hint_text: "Chamber Password [atleast 5 characters]"
                     password: True
                     disabled: not root.allow_password
@@ -268,7 +273,8 @@ Screen_Manager:
                     size_hint_x: 0.45
             CustomTextInput:
                 id: c_password
-               # text: "arjun" #REMOVEE THIS SHIT
+                #text: "arjun" #REMOVEE THIS SHIT
+                press_enter: root.submit
                 hint_text: "Confirm Password"
                 size_hint_x: 0.45
                 password: True
@@ -278,6 +284,7 @@ Screen_Manager:
                 #text: "4" #REMOVEE THIS SHIT
                 hint_text: "Number of members [atleast two members]"
                 size_hint_x: 0.45
+                press_enter: root.submit
         FloatLayout:
             size_hint_y: 0.1
             Custom_Button:
@@ -501,6 +508,7 @@ Screen_Manager:
                         height: min(max(self.line_height, self.minimum_height), 90)
                         background_color:(40/255,50/255,54/255,1)
                         multiline: True
+                        press_enter: root.send_message
                         size_hint: 0.8, None
                         pos_hint:{'center_y': 0.5}
                     Custom_Button:
@@ -512,5 +520,4 @@ Screen_Manager:
                         disabled_color: (110/255,110/255,110/255,1)
                         size_hint: 0.2, 1
                         on_release:
-                            root.send_message(message_input.text)
-                            message_input.text = ''
+                            root.send_message()

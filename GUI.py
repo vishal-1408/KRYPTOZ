@@ -19,7 +19,7 @@ from EncryptionHashing import hash_str
 from FileManage import *
 from client import *
 from kivy.animation import Animation
-
+from functools import partial
 #--------------------------------------------------
 #---------------App Parameters------------------#
 Window.clearcolor = (27/255, 34/255, 36/255, 1)
@@ -51,7 +51,15 @@ def quick_message(title, multiple_allow, message ):
 #------------------------------------------------#
 
 #---------------Custom Widgets------------------#
-
+class CustomTextInput(TextInput):
+	def keyboard_on_key_down(self, window, keycode, text, modifiers):
+		if keycode[0] == 13:
+			print('ENTER WAS PRESSED ENTER WAS PRESSED ENTER WAS PRESSED 1')
+			self.press_enter(self, self.text)
+		super().keyboard_on_key_down(window, keycode, text, modifiers)
+	def press_enter(self, instance, text):
+		print('ENTER WAS PRESSED ENTER WAS PRESSED ENTER WAS PRESSED 2')
+		pass
 #------------------------------------------------#
 
 class Login(Screen):
@@ -81,6 +89,7 @@ class Login(Screen):
 				username = self.ids.username.text
 				return True
 		return False
+
 	def login_error(self):
 		if not self.login():
 			quick_message("Login Error", True, "You have entered the wrong credentials. Try again!")
@@ -97,32 +106,43 @@ class Login(Screen):
 			except:
 				quick_message("Login Error", True, "The connection was not established with the server. Try again!")
 				return False
+	
+	def transition_after_login(self, *args):
+		app = App.get_running_app()
+		if self.login_error():
+			app.root.transition = SlideTransition(direction = 'left')
+			app.root.current = 'join_or_create' 
+
 class JoinOrCreate(Screen):
 	def client_close(self):
-		close()
+		sendLogout()
 
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
 	def requirements(self):
-		if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=15:
-			if len(self.ids.password.text)>=5:
-				if self.ids.password.text==self.ids.c_password.text:
-					if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
-						return True
+		if self.ids.members.text.isnumeric():
+			if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=15:
+				if len(self.ids.password.text)>=5:
+					if self.ids.password.text==self.ids.c_password.text:
+						if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
+							return True
+						else:
+							quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+							return False
 					else:
-						quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+						quick_message("Meh! don't you wanna be secure", True, "Passwords so not match!")
 						return False
 				else:
-					quick_message("Meh! don't you wanna be secure", True, "Passwords so not match!")
-					return False
+						quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
+						return False
 			else:
-					quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
-					return False
+				quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
+				return False
 		else:
 			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
 			return False
 
-	def submit(self):
+	def submit(self, *args):
 		if self.requirements():
 			global separator
 			sep = separator 
@@ -136,6 +156,7 @@ class CreateGroup(Screen):
 			sendCreate(group_string)
 			global chamber_name_and_code
 			chamber_name_and_code  = self.ids.name.text + group_code #Assigning the group name to global variable so that we can access it in chatwin
+			print(chamber_name_and_code+ 'FROM GUI CHAMBER INFO')
 			self.manager.transition=SlideTransition(direction="down")
 			self.manager.current = 'chatwin'
 			#clearing textinputs
@@ -214,7 +235,6 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		self.authwin.bind(on_dismiss = self.cancel)
 		self.design.ids.back.bind(on_release=self.authwin.dismiss)
 		self.design.ids.submit.bind(on_release=self.join_result)
-	
 	def cancel(self, dt):
 		self.refresh_members.cancel()
 
@@ -376,11 +396,16 @@ class ChatWindow(Screen):
 			print (messages)
 			self.add_message(messages['message'], messages['colour'], messages['name'])
 	
-	def send_message(self, text):
+	def send_message(self, *args):
 		global username
-		self.add_message(text, self.user_color, username)
-		sendMessage(text, self.user_color)
-		self.scroll_bottom()
+		if self.ids.message_input.text is not '':
+			self.add_message(self.ids.message_input.text, self.user_color, username)
+			sendMessage(self.ids.message_input.text, self.user_color)
+			self.scroll_bottom()
+		Clock.schedule_once(self.clear_message_box)
+	
+	def clear_message_box(self, dt):
+		self.ids.message_input.text=''
 	
 	def scroll_bottom(self):
 		Animation.cancel_all(self.ids.chat_view, 'scroll_y')

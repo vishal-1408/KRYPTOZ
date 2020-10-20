@@ -16,10 +16,10 @@ def receive():
     while 1:
         try:
             length=client.recv(HEADER_SIZE).decode('UTF-8')
-            #print("legnth: "+str(length))
+            print("legnth: "+str(length))
             m=client.recv(int(length)).decode('UTF-8')
-            #print("message:"+str(m))
-            if m[0:3]=="Bye":
+            print("message:"+str(m))
+            if m=="BYE":
                 client.close()
                 print("Connection got disconnected.............")
                 break
@@ -287,10 +287,10 @@ groupdead=None
 def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    Host="127.0.0.1"
-    Port=8000
-    #Host="52.204.124.224"
+    #Host="127.0.0.1"
     #Port=8000
+    Host="52.204.124.224"
+    Port=8000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()
