@@ -69,7 +69,7 @@ def initialize(c,check):
             elif(m=="join"):
                 d=join(c)
             elif(m=="QUIT"):
-                m="BYE"
+                m="BYE".encode('UTF-8')
                 header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
                 c.sendall(header+m)
                 c.close()
