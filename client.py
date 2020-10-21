@@ -184,7 +184,7 @@ def addRandom(text):
 def sendName(username,pkey):
   try:
     global client,name
-    username=addRandom(username)
+    #username=addRandom(username)
     print(username)
     name=username
     obj={
@@ -201,7 +201,7 @@ def sendName(username,pkey):
 
 def sendGroups():
   try:
-    #print('sendGroups')
+    print('sendGroups')
     global client
     m="groups".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
