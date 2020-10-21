@@ -4,14 +4,16 @@ import copy
 import socket
 import pickle
 import random
-sep1='!!!!!separator!!!!!'
-sep2='*****seperator*****'
+#sep1='!!!!!separator!!!!!'
+#sep2='*****seperator*****'
 
 HEADER_SIZE=10
 
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name,groupdead
+    global details, sep1, sep2,result,groupfull
+    global members,memberslist,clientmessageList,name,groupdead
+    global publickeys
     i=1
     #print('Function Started!!!!')
     while 1:
@@ -46,6 +48,7 @@ def receive():
                 receive =  client.recv(int(m[11:]))
                 listobj=pickle.loads(receive)
                 memberslist=listobj["0"]
+                publickeys=listobj["1"]
                 #print("membersList: 1"+memberslist)
                except Exception as e:
                    print('inside memembers list' + str(e))
@@ -61,6 +64,9 @@ def receive():
                      'name':"ChatBot",
                      'message': addobj['message']
                 })
+                publickeys.append({
+                    addobj['name']:addobj['publickey']
+                })
                except Exception as e:
                    print('inside member add' + str(e))
             elif m[0:10]=="membergone":
@@ -68,6 +74,10 @@ def receive():
                  recvobj=pickle.loads(client.recv(int(m[10:])))
                  member=recvobj["person"]
                  memberslist.remove(member)
+                 key=publickeys[member]
+                 publickeys.remove({
+                     member:key
+                 })
                  clientmessageList.append({
                      "name":"ChatBot",
                      "colour":"#223344",
@@ -138,6 +148,10 @@ def return_memeberslist():
     global memberslist
     return memberslist
 
+def return_publickeys():
+    global publickeys
+    return publickeys
+
 def return_message():
   try:
     global clientmessageList,sentList
@@ -157,6 +171,7 @@ def return_message():
       print("Exception in return_message: "+str(e))
 
 
+
 def addRandom(text):
     randlist=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
     'S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0']
@@ -166,15 +181,21 @@ def addRandom(text):
     return text
 
 
-def sendName(username):
+def sendName(username,pkey):
   try:
     global client,name
     username=addRandom(username)
     print(username)
     name=username
-    name2=username.encode('UTF-8')
-    header=f"{len(name2):<{HEADER_SIZE}}".encode("UTF-8")
-    client.send(header+name2)
+    obj={
+        'name':name,
+        'publickey':pkey
+    }
+    dumpedobj=pickle.dumps(obj)
+    #name2=username.encode('UTF-8')
+    header=f"{len(dumpedobj):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header)
+    client.sendall(dumpedobj)
   except Exception as e:
       print("Exception occured in sendName: "+str(e))
 
@@ -223,16 +244,13 @@ def sendCreate(s):
 
 def sendJoin(s):
   try:
-    #print('sendJoin')
-    #global client
-    #client.send("join".encode('ASCII'))
-    #client.send(s.encode('ASCII'))
     print('sent-join-request')
     m="join".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
     m=s.encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
+    client.sendall(header+m)
     client.sendall(header+m)
   except Exception as e:
       print("Exception occured in sendJoin: "+str(e))
@@ -260,10 +278,11 @@ def sendMessage(mess,colour):
 def sendLogout(*args):
   try:
     print('sendlogout')
-    global client,sentList,clientmessageList,sentList
+    global client,sentList,clientmessageList,sentList,publickeys
     clientmessageList.clear()
     sentList.clear()
     memberslist.clear()
+    publickeys.clear()
     m="QUIT".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
@@ -292,6 +311,7 @@ sentList=[]
 name=""
 groupname=None
 groupdead=None
+publickeys=[]
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
