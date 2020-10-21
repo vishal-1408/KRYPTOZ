@@ -161,7 +161,7 @@ def addRandom(text):
     randlist=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
     'S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0']
     for i in range(4):
-       index=random.randint(0,len(randlist))
+       index=random.randint(0,len(randlist)-1)
        text+=randlist[index]
     return text
 
@@ -298,10 +298,10 @@ groupdead=None
 def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    #Host="127.0.0.1"
-    #Port=8000
-    Host="52.204.124.224"
+    Host="127.0.0.1"
     Port=8000
+    #Host="52.204.124.224"
+   # Port=8000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()

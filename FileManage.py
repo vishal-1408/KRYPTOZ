@@ -48,9 +48,7 @@ def WriteLine(file, info): #Writes line with \n included
 	file.writelines(info + '\n')
 
 def hex_gen():
-    hexdigits = ['0','1','2','3','4','5','6']
-    red = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
-    blue = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
-    green = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
-    return '#'+red+green+blue
+    file = open('color.txt', 'r')
+    color_list=ReadFile(file)
+    return color_list[random.randint(0,len(color_list)-1)]
 print(hex_gen())

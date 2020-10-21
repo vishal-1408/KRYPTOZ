@@ -48,6 +48,11 @@ Screen_Manager:
     markup: True
     font_size: 15
     color: (22/255,160/255,133/255,1)
+<LabelButton@ButtonBehavior+Label>:
+    font_family: "Arial"
+    markup: True
+    font_size: 18
+    color: (22/255,160/255,133/255,1)
 <Space@Widget>:
 #-------------------------------------------------------------------------------------------------------------------------
 
@@ -59,14 +64,14 @@ Screen_Manager:
         padding:(100,200)
         CustomTextInput:
             id: username
-            #text:"arjun" #REMOVEE THIS SHIT
+            text:"arjun" #REMOVEE THIS SHIT
             hint_text: "Username"
             press_enter: root.transition_after_login
             size_hint_x:0.7
             pos_hint:{'center_x':0.5}
         CustomTextInput:
             id: password
-            #text:"arjun2000"  #REMOVEE THIS SHIT
+            text:"arjun2000"  #REMOVEE THIS SHIT
             hint_text: "Password"
             password: True
             press_enter: root.transition_after_login
@@ -233,6 +238,21 @@ Screen_Manager:
                 text:"Submit"
                 size_hint_x:0.25
                 pos_hint: {'right':1}
+<Username_display_pop>:
+    width:400
+    padding: 20
+    H3:
+        id: label
+        text_size: self.width, None
+        size_hint_x:0.8
+        width: 200
+    FloatLayout:
+        size_hint_x: 0.2
+        Custom_Button:
+            id: copy
+            text: 'Copy'
+            pos_hint: {'center_y': 0.5, 'right':1}
+            on_release: root.copy()
     #------------------------------------------------------------------------------------------           
 
 
@@ -252,7 +272,7 @@ Screen_Manager:
             spacing: dp(30)
             CustomTextInput:
                 id: name
-                #text: 'hey' #REMOVEE THIS SHIT
+                text: 'hey' #REMOVEE THIS SHIT
                 press_enter: root.submit
                 hint_text: "Chamber Name [atleast 3 characters]"
                 font_size:18
@@ -260,7 +280,7 @@ Screen_Manager:
                 spacing: 640*0.1
                 CustomTextInput:
                     id: password
-                    #text: "arjun" #REMOVEE THIS SHIT
+                    text: "arjun" #REMOVEE THIS SHIT
                     press_enter: root.submit
                     hint_text: "Chamber Password [atleast 5 characters]"
                     password: True
@@ -273,7 +293,7 @@ Screen_Manager:
                     size_hint_x: 0.45
             CustomTextInput:
                 id: c_password
-                #text: "arjun" #REMOVEE THIS SHIT
+                text: "arjun" #REMOVEE THIS SHIT
                 press_enter: root.submit
                 hint_text: "Confirm Password"
                 size_hint_x: 0.45
@@ -281,7 +301,7 @@ Screen_Manager:
                 disabled: not root.allow_password
             CustomTextInput:
                 id: members
-                #text: "4" #REMOVEE THIS SHIT
+                text: "4" #REMOVEE THIS SHIT
                 hint_text: "Number of members [atleast two members]"
                 size_hint_x: 0.45
                 press_enter: root.submit
@@ -367,7 +387,7 @@ Screen_Manager:
                     app.root.current= 'join_or_create'
                     root.unschedule()
 <MemberLabels>:
-    H3:
+    LabelButton:
         canvas.before:
             Color:
                 rgba: (11/255,80/255,66/255,1)
@@ -382,7 +402,7 @@ Screen_Manager:
         halign: "center"
         shorten: True
         shorten_from: 'right'
-
+        on_release: root.give_username()
 <Message>:
     canvas.before:
         Color:
