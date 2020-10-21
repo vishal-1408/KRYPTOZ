@@ -3,6 +3,7 @@ from threading import Thread
 import copy
 import socket
 import pickle
+import random
 sep1='!!!!!separator!!!!!'
 sep2='*****seperator*****'
 
@@ -156,10 +157,20 @@ def return_message():
       print("Exception in return_message: "+str(e))
 
 
+def addRandom(text):
+    randlist=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
+    'S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0']
+    for i in range(4):
+       index=random.randint(0,len(randlist))
+       text+=randlist[index]
+    return text
+
 
 def sendName(username):
   try:
     global client,name
+    username=addRandom(username)
+    print(username)
     name=username
     name2=username.encode('UTF-8')
     header=f"{len(name2):<{HEADER_SIZE}}".encode("UTF-8")
