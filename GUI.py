@@ -16,6 +16,7 @@ from kivy.properties import ObjectProperty, StringProperty, ListProperty, Boolea
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.clock import Clock 
 import pyperclip
+import os
 #------Imports from the modules---------------------
 from EncryptionHashing import *
 from FileManage import *
@@ -86,30 +87,38 @@ class Login(Screen):
 	def login(self):
 		hashed_username=str(hash_str(self.ids.username.text))
 		hashed_password=str(hash_str(self.ids.password.text))
-		Credential_List=return_credentials()
-		for i in range(0,len(Credential_List),2):
-			if Credential_List[i] == hashed_username and Credential_List[i+1]==hashed_password:
-				global username
-				username = self.ids.username.text
-				ECC_Key = get_key(self.ids.username.text, self.ids.password.text)
-				print(ECC_Key)
-				return True
-		return False
+		try:
+			Credential_List=return_credentials()
+		except:
+			print('a')
+			return False
+		else:
+			for i in range(0,len(Credential_List),2):
+				if Credential_List[i] == hashed_username and Credential_List[i+1]==hashed_password:
+					global username, ECC_Key
+					username = self.ids.username.text
+					ECC_Key = get_key(self.ids.username.text, self.ids.password.text)
+					print(ECC_Key)
+					return True
 
 	def login_error(self):
-		if not self.login():
+		if not self.login() and not os.path.isfile(Return_App_Path('UserCredentials.txt')) :
+			quick_message("Login Error", True, "You need to sign-up first")
+		elif not self.login():
 			quick_message("Login Error", True, "You have entered the wrong credentials. Try again!")
 			return False
 		else:
 			try:
+				global ECC_Key
 				print('called')
 				client_initialize()
 				print(self.ids.username.text)
-				sendName(self.ids.username.text)
+				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y] )
 				self.ids.username.text=''
 				self.ids.password.text=''
 				return True
-			except:
+			except Exception as e:
+				print(e)
 				quick_message("Login Error", True, "The connection was not established with the server. Try again!")
 				return False
 	
@@ -387,6 +396,7 @@ class ChatWindow(Screen):
 	messages = ListProperty()
 	members_online = ListProperty()
 	user_color = hex_gen()
+
 	def members_online_rv_assignment(self):
 		sendMembersList()
 		Clock.schedule_once(self.schedule_members_online)
@@ -395,6 +405,8 @@ class ChatWindow(Screen):
 	def schedule_members_online(self, *_):
 		#sendMembersList()
 		self.member_list=return_memeberslist()
+		self.public_keys = return_publickeys()
+		print(self.public_keys)
 		#print(self.member_list)
 		self.members_online = []
 		for member in self.member_list:
@@ -482,6 +494,7 @@ class SignUp_pop(BoxLayout):
 				user_exists=False
 				username_hash = hash_str(self.username)
 				password_hash = hash_str(self.password)
+				code_export_file(self.username)
 				if  not os.path.isfile(Return_App_Path("UserCredentials.txt")): #ON FIRST SIGNUP
 					cred_file = open(Return_App_Path("UserCredentials.txt"), "w")
 				else:#IF not first SIGN UP

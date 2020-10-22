@@ -4,14 +4,13 @@ import copy
 import socket
 import pickle
 import random
-#sep1='!!!!!separator!!!!!'
-#sep2='*****seperator*****'
+
 
 HEADER_SIZE=10
 
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull
+    global details, result,groupfull
     global members,memberslist,clientmessageList,name,groupdead
     global publickeys
     i=1
@@ -183,8 +182,10 @@ def addRandom(text):
 
 def sendName(username,pkey):
   try:
-    global client,name
+    global client,name, publickeys
     #username=addRandom(username)
+    print(pkey)
+    publickeys.append({username:pkey})
     print(username)
     name=username
     obj={
@@ -276,7 +277,9 @@ def sendMessage(mess,colour):
       print("Exception occured in sendMessage: "+str(e))
 
 def sendLogout(*args):
+  global name
   try:
+   if name is not '' :
     print('sendlogout')
     global client,sentList,clientmessageList,sentList,publickeys
     clientmessageList.clear()
@@ -308,7 +311,7 @@ members={}
 memberslist=[]
 clientmessageList=[]
 sentList=[]
-name=""
+name=''
 groupname=None
 groupdead=None
 publickeys=[]
