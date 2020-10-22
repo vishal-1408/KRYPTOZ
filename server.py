@@ -20,7 +20,7 @@ def details(c):
         global groupinfo
         groupobject={}
         for x,y in groupinfo.items():
-            groupobject[x]=list([y[1],y[2],len(y[3])]) 
+            groupobject[x]=list([y[1],y[2],len(y[3]),y[6]])
         messageobj=pickle.dumps(groupobject)
         message="details"+str(len(messageobj))
         message=message.encode('UTF-8')
@@ -94,8 +94,11 @@ def create(c):
         length=c.recv(HEADER_SIZE).decode("UTF-8")
         string=c.recv(int(length)).decode('UTF-8')
         list1=string.split("*****seperator*****")
-        #print(list1)
-        groupinfo[list1[0]+list1[3]]=[list1[1],int(list1[2]),len(list1[0]),[clientinfo[c][0]],[c],{clientinfo[c][0]:clientinfo[c][1]}]            #groupinfo=[password,limit,groupcode,[],[]]
+        print(list1)
+        if list1[1]=="":
+         groupinfo[list1[0]+list1[3]]=[list1[1],int(list1[2]),len(list1[0]),[clientinfo[c][0]],[c],{clientinfo[c][0]:clientinfo[c][1]},False]            #groupinfo=[password,limit,groupcode,[],[]]
+        else:
+         groupinfo[list1[0]+list1[3]]=[list1[1],int(list1[2]),len(list1[0]),[clientinfo[c][0]],[c],{clientinfo[c][0]:clientinfo[c][1]},True]            #groupinfo=[password,limit,groupcode,[],[]]
         groupMessages[list1[0]+list1[3]]=[]
         clientinfo[c].append(list1[0]+list1[3])
         eventslist[list1[0]+list1[3]]=[]
@@ -133,7 +136,7 @@ def join(c):
           if name in groupinfo.keys():
              if len(groupinfo[name][3])<(groupinfo[name][1]):
                 #print("inside")
-                if grouppassword==password:
+                if grouppassword==password or not groupinfo[name][6]:
                     obj['result']=True
                     obj['groupfull']=False
                     messageobj=pickle.dumps(obj)
