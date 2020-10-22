@@ -6,7 +6,6 @@ import pickle
 import random
 from EncryptionHashing import *
 
-
 HEADER_SIZE=10
 
 def receive():
