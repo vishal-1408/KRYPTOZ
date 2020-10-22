@@ -332,6 +332,7 @@ def handling_the_client(client):
                  checkAvailable(client,int(message[6:]))
              elif message=="QUIT":
                 if len(groupinfo[clientinfo[client][2]][3])==1:
+                    group_name=clientinfo[client][2]
                     leavingGroup(client)
                     # groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
                     # groupinfo[clientinfo[client][2]][4].remove(client)
