@@ -30,15 +30,19 @@ def get_key(username, password):
 #print(get_key('arjun', 'arjun2000'))
 
 def generate_secret_key(user_key, sender_public_key): #receives the sender key and generates the secret pair key
+   try: 
     '''
     sender_public_key is of type ECCPoint
     user_key is also of type key
     '''
     #Assigining user_key to an ecc point
-    Secret_Key = user_key.d*sender_public_key
+    sender_public_key=ECC.EccPoint(sender_public_key[0],sender_public_key[1],curve="p256")
+    Secret_Key = user_key*sender_public_key
     salt = b'\x05;iBi\x17Q\xe0'
     Secret_Pair_Key = pbkdf2.PBKDF2(str(Secret_Key.x), salt).read(32) # Generating a 256-bit key
     return Secret_Pair_Key
+   except Exception as e:
+       print("from encryption and hashing: "+str(e))
 
 def generate_AES_key():
     AES_key = get_random_bytes(32)
@@ -47,11 +51,15 @@ def generate_AES_key():
 def encryption(key, plaintext):
     '''username should be appended with a unique code'''
     try:
-        data = bytes(plaintext, 'utf-8')
+        if type(plaintext)==str:
+            data = bytes(plaintext, 'utf-8')
+        else:
+            data = plaintext
         cipher = AES.new(key, AES.MODE_GCM)
         ciphertext, tag = cipher.encrypt_and_digest(data)
         encrypted_data = {'ciphertext': ciphertext, 'tag': tag, 'nonce': cipher.nonce}
-    except:
+    except Exception as e:
+        print("hhh: "+str(e))
         return False
     else:
         return encrypted_data

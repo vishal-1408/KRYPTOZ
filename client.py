@@ -4,6 +4,7 @@ import copy
 import socket
 import pickle
 import random
+from EncryptionHashing import *
 
 
 HEADER_SIZE=10
@@ -11,16 +12,16 @@ HEADER_SIZE=10
 def receive():
     global client
     global details, result,groupfull
-    global members,memberslist,clientmessageList,name,groupdead
-    global publickeys
+    global members,memberslist,clientmessageList,name,groupdead,check
+    global publickeys,decSenderKeys
     i=1
     #print('Function Started!!!!')
     while 1:
         try:
             length=client.recv(HEADER_SIZE).decode('UTF-8')
-            print("legnth: "+str(length))
+            #print("legnth: "+str(length))
             m=client.recv(int(length)).decode('UTF-8')
-            print("message:"+str(m))
+            #print("message:"+str(m))
             if m=="BYE":
                 client.close()
                 print("Connection got disconnected.............")
@@ -32,7 +33,7 @@ def receive():
             elif m[0:4]=="auth":
                 length=int(m[4:])
                 obj=pickle.loads(client.recv(length))
-                print("object received:::::::::::::::::::::::::::::::::::::::::"+str(obj))
+                #print("object received:::::::::::::::::::::::::::::::::::::::::"+str(obj))
                 result=obj["result"]
                 groupfull=obj["groupfull"]
                 # if result==True and groupfull==True:
@@ -48,12 +49,20 @@ def receive():
                 listobj=pickle.loads(receive)
                 memberslist=listobj["0"]
                 publickeys=listobj["1"]
+                generateSenderKeys()
                 #print("membersList: 1"+memberslist)
                except Exception as e:
                    print('inside memembers list' + str(e))
             elif m=="groupdead":
                 print('GroupDead received')
                 groupdead=True
+            elif m[0:12]=="memeberskeys":
+                rawbytesobj=client.recv(int(m[12:]))
+                pickledobj=pickle.loads(rawbytesobj)
+                decSenderKeys=pickledobj
+                print(decSenderKeys)
+                print("EVERYTHING RECEIVED !!!!!")
+
             elif m[0:9]=="memberadd":
                try:
                 addobj=pickle.loads(client.recv(int(m[9:])))
@@ -64,6 +73,17 @@ def receive():
                      'message': addobj['message']
                 })
                 publickeys[addobj['name']]=addobj['publickey']
+                decSenderKeys[addobj['name']]=addobj['encSkey']
+                check=1
+                generateSenderKey(addobj['name'])
+                check=0
+                """
+                check=1
+                func(pkey,name)
+                func()--send the whole enckey{} to server!
+                check=0
+
+                """
                except Exception as e:
                    print('inside member add' + str(e))
             elif m[0:10]=="membergone":
@@ -77,13 +97,20 @@ def receive():
                      "colour":"#223344",
                      "message":recvobj["message"],
                  })
+                 """
+                check=1
+                func() generate new sender keys and enc sender keys for every memeber!
+                func()--send the whole enckey{} to server!
+                check=0
+                
+                """
                 except Exception as e:
                     print('inside membergone '+str(e))
             elif m[0:11]=="oldmessages":
                try:
-                print(m[11:])
+                #print(m[11:])
                 gotit = client.recv(int(m[11:]))
-                print(gotit)
+                #print(gotit)
                 oldmessages={}
                 oldmessages=pickle.loads(gotit)
                 #print(oldmessages)
@@ -106,7 +133,7 @@ def receive():
 
 def return_details():
     global details
-    print("details: "+str(details))
+    #print("details: "+str(details))
     return details
 
 def makeNone():
@@ -124,12 +151,12 @@ def set_group_dead():
 
 def return_authenticate():
     global result
-    print('from client side:' + str(result))
+    #print('from client side:' + str(result))
     return result
 
 def return_groupfull():
     global groupfull
-    print('from client side:' + str(groupfull))
+    #print('from client side:' + str(groupfull))
     return groupfull
 
 def return_members():
@@ -140,6 +167,7 @@ def return_members():
 
 def return_memeberslist():
     global memberslist
+    #print(memberslist)
     return memberslist
 
 def return_publickeys():
@@ -151,7 +179,7 @@ def return_message():
     global clientmessageList,sentList
     if len(sentList)==0:
         sentList=copy.deepcopy(clientmessageList)
-        print('a'+str(sentList))
+        #print('a'+str(sentList))
         return sentList
     elif len(sentList)==len(clientmessageList):
         return []
@@ -159,25 +187,88 @@ def return_message():
         newMessages=clientmessageList[len(sentList):]
         for i in newMessages:
             sentList.append(i)
-        print('c'+str(newMessages))
+        #print('c'+str(newMessages))
         return newMessages
   except Exception as e:
       print("Exception in return_message: "+str(e))
 
-
-
-def addRandom(text):
-    randlist=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
-    'S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0']
-    for i in range(4):
-       index=random.randint(0,len(randlist)-1)
-       text+=randlist[index]
-    return text
-
-
-def sendName(username,pkey):
+def generateSenderKeys():
   try:
-    global client,name,publickeys
+    #print("came")
+    global publickeys,encSenderKeys,privatekey,clientsenderkey,name
+    global client
+    for x,y in publickeys.items():
+      if x!=name:
+        secretkey = generate_secret_key(privatekey,y) #y-publickkey of the user with which the secret key is generated
+        encsenderkey = encryption(secretkey,clientsenderkey)
+        encSenderKeys[x]=encsenderkey # {otheruser : encsenderkey}
+    #print("encrypted dict: "+str(encSenderKeys))
+    messsageobj=pickle.dumps(encSenderKeys)
+    message=("blah"+str(len(messsageobj))).encode('UTF-8')
+    #print("message: "+str(message))
+    header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+    client.sendall(header+message)
+    client.sendall(messsageobj)
+
+    #print("generate out !!!")
+  except Exception as e:
+      print(e)
+
+
+def generateSenderKey(name):
+  try:
+    global encSenderKeys,publickeys,clientsenderkey,privatekey
+    global client
+    publickey=publickeys[name]
+    secretkey=generate_secret_key(privatekey,publickey)
+    encSenderKey=encryption(secretkey,clientsenderkey)
+    encSenderKeys[name]=encSenderKey
+    array=[name,encSenderKey]
+    messagearray=pickle.dumps(array)
+    m=("append"+str(len(messagearray))).encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
+    client.sendall(header+m)
+    client.sendall(messagearray)
+  except Exception as e:
+      print(e)
+
+
+
+
+
+"""
+{
+ "A":"key",
+ "B":"key"
+}
+
+
+
+groupinfo[name][6][clientinfo[c][0]]=
+a:
+{
+ b:senderkey of a encryptedusing b's public key,
+ c:senderkeyofa,
+}
+
+b:{
+  a:senderkeyofb,
+  c:senderkeyofb,
+}
+
+"""
+
+
+
+
+
+
+
+def sendName(username,pkey,prkey,senderkey):
+  try:
+    global client,name,publickeys,privatekey,clientsenderkey
+    privatekey=prkey
+    clientsenderkey=senderkey
     publickeys[username]=pkey
     name=username
     obj={
@@ -243,8 +334,9 @@ def sendJoin(s):
     client.sendall(header+m)
     m=s.encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
-    client.sendall(header+m)
-    client.sendall(header+m)
+    client.send(header+m)
+    client.send(header+m)
+    #print("sent!!!")
   except Exception as e:
       print("Exception occured in sendJoin: "+str(e))
 
@@ -307,7 +399,12 @@ name=''
 groupname=None
 groupdead=None
 publickeys={}
-encSenderKeys={}
+encSenderKeys={} #keys encrypted by this client's private key!
+decSenderKeys={} #keys of other ppl!! used for decrypting!
+privatekey=None
+clientsenderkey=None
+check=0
+
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
