@@ -40,6 +40,7 @@ def generate_secret_key(user_key, sender_public_key): #receives the sender key a
     Secret_Key = user_key*sender_public_key
     salt = b'\x05;iBi\x17Q\xe0'
     Secret_Pair_Key = pbkdf2.PBKDF2(str(Secret_Key.x), salt).read(32) # Generating a 256-bit key
+    print(Secret_Pair_Key)
     return Secret_Pair_Key
    except Exception as e:
        print("from encryption and hashing: "+str(e))
@@ -66,24 +67,30 @@ def encryption(key, plaintext):
     else:
         return encrypted_data
 
-'''    
+"""
 key = generate_AES_key()
-e_d = encryption(key, 'arjun wrote this')
+e_d = encryption(key,"fuck you")
 print(e_d)
-'''
+"""
 
-def decryption(key, encrypted_data):
+
+def decryption(key, encrypted_data,check):
     try:
         header: encrypted_data['header']
         data = encrypted_data['ciphertext']
         cipher = AES.new(key, AES.MODE_GCM, encrypted_data['nonce'])
         plaintext = cipher.decrypt_and_verify(data, encrypted_data['tag'])
-    except:
+    except Exception as e:
+        print(e)
         return False
     else:
-        return plaintext.decode('utf-8')
+      if check==True:
+          return plaintext.decode('UTF-8')
+      else:
+          return plaintext
+      
 
-'''print(decryption(key, e_d))'''
+#print(decryption(key, e_d))
 
 def hash_str(credential): #for hashing passwords
     hashed_string=hashlib.sha256(str.encode(credential))

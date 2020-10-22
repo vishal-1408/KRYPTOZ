@@ -176,7 +176,7 @@ def join(c):
 
                     groupencSenderkeys[name][clientinfo[c][0]]=eSKeys
 
-                    sendAllMessages(name,c)
+                    #sendAllMessages(name,c)
                     broadcasteveryone(name,c,clientinfo[c][1])
                     #print("broadcast done")
                     d=1
@@ -332,6 +332,7 @@ def handling_the_client(client):
                  checkAvailable(client,int(message[6:]))
              elif message=="QUIT":
                 if len(groupinfo[clientinfo[client][2]][3])==1:
+                    group_name=clientinfo[client][2]
                     leavingGroup(client)
                     # groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
                     # groupinfo[clientinfo[client][2]][4].remove(client)

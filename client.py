@@ -49,15 +49,20 @@ def receive():
                 memberslist=listobj["0"]
                 publickeys=listobj["1"]
                 generateSenderKeys(False)
-                #print("membersList: 1"+memberslist)
+                #print("membersList: 1"+publickeys)
                except Exception as e:
                    print('inside memembers list' + str(e))
             elif m=="groupdead":
                 print('GroupDead received')
                 groupdead=True
             elif m[0:12]=="memeberskeys":
+                #print("memberkeys")
                 rawbytesobj=client.recv(int(m[12:]))
                 pickledobj=pickle.loads(rawbytesobj)
+                for x,y in pickledobj.items():
+                     otherpkey=publickeys[x]
+                     secretkey=generate_secret_key(privatekey,otherpkey)
+                     pickledobj[x]=decryption(secretkey,y,False)
                 decSenderKeys=pickledobj
                 print(decSenderKeys)
                 print("EVERYTHING RECEIVED !!!!!")
@@ -66,14 +71,19 @@ def receive():
             elif m[0:9]=="memberadd":
                try:
                 addobj=pickle.loads(client.recv(int(m[9:])))
+               
                 memberslist.append(addobj['name'])
                 clientmessageList.append({
                      'colour':"#223344",
                      'name':"ChatBot",
                      'message': addobj['message']
                 })
+                print("adddinggggggggggg")
                 publickeys[addobj['name']]=addobj['publickey']
-                decSenderKeys[addobj['name']]=addobj['encSkey']
+                secretkey=generate_secret_key(privatekey,addobj['publickey'])
+                print("secretkey: "+str(secretkey))
+                print("saddobj: "+str(addobj['encSkey']))
+                decSenderKeys[addobj['name']]=decryption(secretkey,addobj['encSkey'],False)
                 check=1
                 generateSenderKey(addobj['name'])
                 check=0
@@ -92,14 +102,18 @@ def receive():
                  member=recvobj["person"]
                  memberslist.remove(member)
                  publickeys.pop(recvobj["person"]) #removing the public key of the person!!!
+                 encSenderKeys.pop(recvobj["person"])
                  clientmessageList.append({
                      "name":"ChatBot",
                      "colour":"#223344",
                      "message":recvobj["message"],
                  })
                  clientsenderkey=generate_AES_key() #changing the sender key!!!
+                 #check=1
+                 print("before"+str(encSenderKeys))
                  generateSenderKeys(True)
-
+                 print("after"+str(encSenderKeys))
+                 #check=0
                  """
                 check=1
                 func() generate new sender keys and enc sender keys for every memeber!
@@ -126,7 +140,11 @@ def receive():
                 newmessage={}
                 gotnew= client.recv(int(m[10:]))
                 newmessage=pickle.loads(gotnew)
-                print(newmessage)
+                othername=newmessage["name"]
+                key=decSenderKeys[othername]
+                print("key:"+str(key))
+                newmessage["message"]=decryption(key,newmessage["message"],True)
+                print("newmessage: "+str(newmessage))
                 clientmessageList.append(copy.deepcopy(newmessage))   #{"colour":value , "name": value, "message": value }
                except Exception as e:
                    print('inside new message' + str(e))
@@ -200,9 +218,10 @@ def generateSenderKeys(check):
     #print("came")
     global publickeys,encSenderKeys,privatekey,clientsenderkey,name
     global client
+    #print("generatesenderkeys:"+str(publickeys))
     for x,y in publickeys.items():
       if x!=name:
-        print("public keys:"+str(y))
+        #print("public keys:"+str(x))
         secretkey = generate_secret_key(privatekey,y) #y-publickkey of the user with which the secret key is generated
         encsenderkey = encryption(secretkey,clientsenderkey)
         encSenderKeys[x]=encsenderkey # {otheruser : encsenderkey}
@@ -217,8 +236,8 @@ def generateSenderKeys(check):
     client.sendall(header+message)
     client.sendall(messsageobj)
 
-    print("generate out !!!")
-    print(encSenderKeys)
+    #print("generate out !!!")
+    #print(encSenderKeys)
   except Exception as e:
       print(e)
 
@@ -314,6 +333,7 @@ def sendGroups():
 def sendMembersList():
     print("ntg left to do")
 
+
 def sendCreate(s):
   try:
     print('sendCreate')
@@ -349,17 +369,20 @@ def sendJoin(s):
       print("Exception occured in sendJoin: "+str(e))
 
 def sendMessage(mess,colour):
+  global clientsenderkey
   try:
     print('sendMessage')
     global client,name
     message="message"
+    print("key::::::::"+str(clientsenderkey))
+    mess=encryption(clientsenderkey,mess)
     messagedict={
         "colour":colour,
         "message":mess,
         "name":name
     }
     messageobj=pickle.dumps(messagedict)
-    print(messageobj)
+    #print(messageobj)
     message=message+str(len(messageobj))
     message=message.encode('UTF-8')
     header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
@@ -380,8 +403,8 @@ def sendLogout(*args):
     publickeys.clear()
     encSenderKeys.clear()
     decSenderKeys.clear()
-    clientsenderkey=generate_AES_key  #regenerating sender key !!! as he is leaving the group!
-    encSenderKeys
+    clientsenderkey=generate_AES_key()  #regenerating sender key !!! as he is leaving the group!
+    #encSenderKeys
     m="QUIT".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
