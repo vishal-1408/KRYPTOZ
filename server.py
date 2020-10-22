@@ -164,6 +164,8 @@ def join(c):
                     sendAllmemberslist(name,c)
 
                     sendAllMessages(name,c)
+
+
                    
                     broadcasteveryone(name,c,clientinfo[c][1])
                     
