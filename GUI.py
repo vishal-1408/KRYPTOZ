@@ -350,7 +350,7 @@ class MemberLabels(RecycleDataViewBehavior, BoxLayout):
 	text=StringProperty()
 	owner = ObjectProperty()
 	index = NumericProperty(0)
-
+	color = StringProperty()
 	def give_username(self):
 		print('give username')
 		design = Username_display_pop()
@@ -379,19 +379,18 @@ class MemberLabels(RecycleDataViewBehavior, BoxLayout):
 		return super(MemberLabels, self).refresh_view_attrs(rv, index, data)
 
 class Message(RecycleDataViewBehavior, BoxLayout):
-    owner = ObjectProperty()
-    index = NumericProperty(0)
-
-    def update_height(self, *_):
-        self.height = self.ids.userLabel.texture_size[1] + self.ids.messageLabel.texture_size[1] + 20
-
-    def refresh_view_attrs(self, rv, index, data):
-        Clock.schedule_once(self.update_height, -1)
-        self.index = index
-        return super().refresh_view_attrs(rv, index, data)
+	owner = ObjectProperty()
+	index = NumericProperty(0)
+	username_color = StringProperty()
+	def update_height(self, *_):
+		self.height = self.ids.userLabel.texture_size[1] + self.ids.messageLabel.texture_size[1] + 20
+	
+	def refresh_view_attrs(self, rv, index, data):
+		Clock.schedule_once(self.update_height, -1)
+		self.index = index
+		return super().refresh_view_attrs(rv, index, data)
 
 class ChatWindow(Screen):
-
 	messages = ListProperty()
 	members_online = ListProperty()
 	user_color = hex_gen()
@@ -409,8 +408,14 @@ class ChatWindow(Screen):
 		#print(self.member_list)
 		self.members_online = []
 		for member in self.member_list:
+			global username
+			if username == member[:-4]:
+				color =  '#ba4a00'
+			else:
+				color = '#117a65'  
 			self.members_online.append({
 				'text': member[:-4]+'[color=#abb2b9] @'+member[-4:]+'[/color]',
+				'color': color,
 				'owner': self
 			})
 	
@@ -423,10 +428,22 @@ class ChatWindow(Screen):
 		self.ids.info_label.text = "[color=#E0744C]" + chamber_name_and_code[:-6] + "[/color] " + chamber_name_and_code[-6:]
 	
 	def add_message(self, text, color, name):
+		global username
+		'''if name == username:
+			u_col = (0,1,0,1)
+		else:
+			u_col = (1,0,0,1)'''
+		if name == username:
+			u_col = '#e67e22'
+		elif name == 'ChatBot':
+			u_col = '#a93226'
+		else:
+			u_col = '#aeb6bf'
 		self.messages.append({
 			'message_id': len(self.messages),
 			'bg_color': color,
 			'username': name,
+			'username_color': u_col,
 			'text': text
 		})
 		print(username)

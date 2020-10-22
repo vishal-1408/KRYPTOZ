@@ -390,7 +390,7 @@ Screen_Manager:
     LabelButton:
         canvas.before:
             Color:
-                rgba: (11/255,80/255,66/255,1)
+                rgba: RGBA(root.color)
             RoundedRectangle:
                 size: self.size
                 pos: self.pos
@@ -422,6 +422,7 @@ Screen_Manager:
     H3:
         id: userLabel
         text: root.username
+        color: RGBA(root.username_color)
         size_hint: 1, None
         text_size: self.width, None
         size: self.texture_size
