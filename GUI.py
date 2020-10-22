@@ -18,8 +18,6 @@ from kivy.clock import Clock
 import pyperclip
 import os
 #------Imports from the modules---------------------
-from EncryptionHashing import *
-from FileManage import *
 from client import *
 from kivy.animation import Animation
 from functools import partial
@@ -36,6 +34,7 @@ chamber_name_and_code = ''
 username = ''
 ECC_Key = None
 Sender_Key = generate_AES_key()
+print(Sender_Key)
 
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
@@ -109,11 +108,11 @@ class Login(Screen):
 			return False
 		else:
 			try:
-				global ECC_Key
+				global ECC_Key, Sender_Key
 				print('called')
 				client_initialize()
 				print(self.ids.username.text)
-				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y] )
+				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y], ECC_Key.d, Sender_Key)
 				self.ids.username.text=''
 				self.ids.password.text=''
 				return True

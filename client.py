@@ -4,7 +4,7 @@ import copy
 import socket
 import pickle
 import random
-
+from EncryptionHashing import *
 
 HEADER_SIZE=10
 
@@ -175,8 +175,10 @@ def addRandom(text):
     return text
 
 
-def sendName(username,pkey):
+def sendName(username,pkey, *args):
+    
   try:
+    print(generate_AES_key())
     global client,name,publickeys
     publickeys[username]=pkey
     name=username
