@@ -100,6 +100,7 @@ def create(c):
         clientinfo[c].append(list1[0]+list1[3])
         eventslist[list1[0]+list1[3]]=[]
         groupencSenderkeys[list1[0]+list1[3]]={}
+        groupencSenderkeys[list1[0]+list1[3]][clientinfo[c][0]]={}
         #print(clientinfo)
         #print(groupinfo)
         Thread(target=handling_the_client,args=(c,)).start()
@@ -171,7 +172,6 @@ def join(c):
                     message=c.recv(int(length123)).decode('UTF-8')
 
                     rawobj=c.recv(int(message[4:]))
-
                     eSKeys=pickle.loads(rawobj)
 
                     groupencSenderkeys[name][clientinfo[c][0]]=eSKeys
@@ -193,10 +193,12 @@ def join(c):
                                 l=1
                             else:
                                 keysobject[x]=groupencSenderkeys[name][x][clientinfo[c][0]]
+                                #print("in loop:"+str(keysobject))
 
                         d=l
                     except Exception as e:
                       print(e)
+                    #print(keysobject)
                     pickledobj=pickle.dumps(keysobject)
                     m=("memeberskeys"+str(len(pickledobj))).encode('UTF-8')
                     header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
@@ -326,29 +328,82 @@ def handling_the_client(client):
                  groupencSenderkeys[clientinfo[client][2]][clientinfo[client][0]]={}
                  groupencSenderkeys[clientinfo[client][2]][clientinfo[client][0]][array[0]]=array[1]
                 # print(groupencSenderkeys)
+             elif message[0:6]=="redone":
+                 checkAvailable(client,int(message[6:]))
              elif message=="QUIT":
                 if len(groupinfo[clientinfo[client][2]][3])==1:
-                    groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
-                    groupinfo[clientinfo[client][2]][4].remove(client)
-                    groupinfo[clientinfo[client][2]][5].pop(clientinfo[client][0])
-                    group_name = clientinfo[client].pop()
+                    leavingGroup(client)
+                    # groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
+                    # groupinfo[clientinfo[client][2]][4].remove(client)
+                    # groupinfo[clientinfo[client][2]][5].pop(clientinfo[client][0])
+                    # group_name = clientinfo[client].pop()
+                    # groupencSenderkeys[group_name].pop(clientinfo[client[0]])
                     #print("group details:"+str(groupinfo[group_name]))
                     Thread(target=scheduling,args=(group_name,)).start()
                     Thread(target=initialize,args=(client,False)).start()
                     break
                 else:
                     broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][2]][4],"",False)
-                    groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
-                    groupinfo[clientinfo[client][2]][4].remove(client)
-                    groupinfo[clientinfo[client][2]][5].pop(clientinfo[client][0])
-                    clientinfo[client].pop()
+                    leavingGroup(client)
+                    # groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
+                    # groupinfo[clientinfo[client][2]][4].remove(client)
+                    # groupinfo[clientinfo[client][2]][5].pop(clientinfo[client][0])
+                    # groupencSenderkeys[clientinfo[client][2]].pop(clientinfo[client[0]]
                     Thread(target=initialize,args=(client,False)).start()
                     break
     except Exception as e:
         print("Exception occured in handling client: "+str(e))
         return
 
+def leavingGroup(client):
+   try:
+     global clientinfo,groupinfo,groupencSenderkeys
+     groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
+     groupinfo[clientinfo[client][2]][4].remove(client)
+     groupinfo[clientinfo[client][2]][5].pop(clientinfo[client][0])
+     groupencSenderkeys[clientinfo[client][2]].pop(clientinfo[client][0])
+     group_name=clientinfo[client].pop()
+     for x in groupinfo[group_name][3]:
+          groupencSenderkeys[group_name][x].clear() # clearing out the dictionary of every single person!!!!
+   except Exception as e:
+       print("Exception occured in leaving group: "+str(e))
+     
 
+def checkAvailable(c,length):
+  global groupencSenderkeys,clientinfo
+  try:  
+    dumpedobj=c.recv(length)
+    pickledobj=pickle.loads(dumpedobj)
+    gname=clientinfo[c][2]
+    clientname=clientinfo[c][0]
+    groupencSenderkeys[gname][clientname]=pickledobj
+    d=1
+    keysobject={}
+    try:
+      while(d):
+        dictkeys=groupencSenderkeys[gname].keys()
+        l=0
+        for x in dictkeys:
+            #print("loop:"+str(x))
+            if x!=clientname:
+                #print("loop2 :"+str(groupencSenderkeys[name][x].keys()))
+                if clientname not in groupencSenderkeys[gname][x].keys():
+                    l=1
+                else:
+                    keysobject[x]=groupencSenderkeys[gname][x][clientname]
+                    #print("in loop:"+str(keysobject))
+        d=l
+    except Exception as e:
+        print("exception inside checkavail while:"+str(e))
+    print(keysobject)
+    pickledobj=pickle.dumps(keysobject)
+    m=("memeberskeys"+str(len(pickledobj))).encode('UTF-8')
+    header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
+    c.sendall(header+m)
+    c.sendall(pickledobj) 
+  except Exception as e:
+       print("HEY exception in checkavail"+str(e))
+    
 
 
 
@@ -382,17 +437,12 @@ def broadcast(name,client,memberslist,length,check):
         if x!=client:
             x.sendall(header+message)
             x.sendall(messageobj)
-    #print("member broadcast done!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("member broadcast done!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   except Exception as e:
      print("Exception occured in broadcast: "+str(e))
      return
 
-# def catchPublicky(client,groups,length):
-#     objbytes=client.recv(length)
-#     publicky=pickle.loads(objbytes)
-#     groups[clientinfo[client][1]][5].append({
-#         clientinfo[client][0]:publicky
-#     })
+
 
 def scheduling(group_name):
  try:
@@ -416,7 +466,6 @@ def checkgroup(group_name):
     if len(groupinfo[group_name][3])==0:
         groupinfo.pop(group_name)
         groupMessages.pop(group_name)
-    #print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
   except Exception as e:
     print("Exception occured in checkgroup: "+str(e))
     return
