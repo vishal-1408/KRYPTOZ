@@ -221,7 +221,7 @@ class SelectGroup(Screen):
 			if search_text in group_name.lower(): #substring searching
 				group_found = {'group_name': group_name[0:value[1]], 'limit': value[0],
 								'group_code': group_name[value[1]:], 'members_online':return_members()[group_name],
-								'owner': self} #if substring match is successful the group is added to the rv
+								'owner': self, 'password_allowed': value[3]} #if substring match is successful the group is added to the rv
 				self.activegroups.append(group_found)
 
 	def unschedule(self):
@@ -236,6 +236,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 	limit = NumericProperty()
 	members_online = NumericProperty()
 	password = StringProperty()
+	password_allowed = BooleanProperty()
 	index = NumericProperty()
 	auth = None
 	full = None
@@ -249,27 +250,36 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		except:
 			self.design.ids.members.text = "Members Online: " + "[color=#E0744C]0[color=#E0744C]"
 	def AuthenticateAndJoin(self):
-		self.design = GroupVerifyAndJoin()
-		self.design.chambername = self.group_name+self.group_code
-		self.design.ids.title.text = "Enter the password of: "
-		self.design.ids.name.text = "[color=#E0744C]" +  str(self.design.chambername) + "[color=#E0744C]"
-		self.update_online_members()
-		self.refresh_members = Clock.schedule_interval(self.update_online_members, 1)
-		self.authwin = CustomPopup(
-								title='', 
-								background="img/authentication.png",
-								title_align="center", 
-								separator_height=0,
-								separator_color=(22/255,160/255,133/255,1), 
-								content=self.design, 
-								size_hint=(None, None), 
-								size=(400,400),
-								auto_dismiss=False
-							)
-		self.authwin.open()
-		self.authwin.bind(on_dismiss = self.cancel)
-		self.design.ids.back.bind(on_release=self.authwin.dismiss)
-		self.design.ids.submit.bind(on_release=self.join_result)
+		if self.password_allowed:
+			self.design = GroupVerifyAndJoin()
+			self.design.chambername = self.group_name+self.group_code
+			self.design.ids.title.text = "Enter the password of: "
+			self.design.ids.name.text = "[color=#E0744C]" +  str(self.design.chambername) + "[color=#E0744C]"
+			self.update_online_members()
+			self.refresh_members = Clock.schedule_interval(self.update_online_members, 1)
+			self.authwin = CustomPopup(
+									title='', 
+									background="img/authentication.png",
+									title_align="center", 
+									separator_height=0,
+									separator_color=(22/255,160/255,133/255,1), 
+									content=self.design, 
+									size_hint=(None, None), 
+									size=(400,400),
+									auto_dismiss=False
+								)
+			self.authwin.open()
+			self.authwin.bind(on_dismiss = self.cancel)
+			self.design.ids.back.bind(on_release=self.authwin.dismiss)
+			self.design.ids.submit.bind(on_release=self.join_result)
+		else:
+			set_group_dead()
+			self.group_dead = None
+			while(self.group_dead is not None):
+				self.group_dead = return_groupdead()
+			if not self.group_dead:
+				self.transition()
+				
 	def cancel(self, dt):
 		self.refresh_members.cancel()
 
