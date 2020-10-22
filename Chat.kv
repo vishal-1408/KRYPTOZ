@@ -291,6 +291,8 @@ Screen_Manager:
                     state: 'normal' if root.allow_password else 'down'
                     on_state: root.allow_password = not root.allow_password
                     size_hint_x: 0.45
+                    on_release:
+                        root.clear_passwords()
             CustomTextInput:
                 id: c_password
                 text: "arjun" #REMOVEE THIS SHIT

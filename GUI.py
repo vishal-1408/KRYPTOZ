@@ -134,27 +134,42 @@ class JoinOrCreate(Screen):
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
 	def requirements(self):
-		if self.ids.members.text.isnumeric():
-			if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=15:
-				if len(self.ids.password.text)>=5:
-					if self.ids.password.text==self.ids.c_password.text:
-						if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=100:
-							return True
+		if self.allow_password:
+			if self.ids.members.text.isnumeric():
+				if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=15:
+					if len(self.ids.password.text)>=5:
+						if self.ids.password.text==self.ids.c_password.text:
+							if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=60:
+								return True
+							else:
+								quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+								return False
 						else:
-							quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+							quick_message("Meh! don't you wanna be secure", True, "Passwords so not match!")
 							return False
 					else:
-						quick_message("Meh! don't you wanna be secure", True, "Passwords so not match!")
-						return False
+							quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
+							return False
 				else:
-						quick_message("Meh! don't you wanna be secure", True, "Passwords should be of 5 characters minimum.")
-						return False
+					quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
+					return False
 			else:
-				quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
+				quick_message("Oh darn!", True, "Member limit should be a number.")
 				return False
 		else:
-			quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
-			return False
+			if self.ids.members.text.isnumeric():
+				if len(self.ids.name.text)>=3 and len(self.ids.name.text)<=15:
+					if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=60:
+						return True
+					else:
+						quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+						return False
+				else:
+					quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
+					return False
+			else:
+				quick_message("Oh darn!", True, "Member limit should be a number.")
+				return False
 
 	def submit(self, *args):
 		if self.requirements():
@@ -165,7 +180,10 @@ class CreateGroup(Screen):
 			group_code=''
 			for i in range (6):
 				group_code+=randlist[randint(0,randomlen-1)]
-			group_string = self.ids.name.text.strip() + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text.strip() + sep + group_code
+			if self.ids.password.text == '':
+				group_string = self.ids.name.text.strip() + sep +''+ sep + self.ids.members.text.strip() + sep + group_code
+			else:
+				group_string = self.ids.name.text.strip() + sep + str(hash_str(self.ids.password.text)) + sep + self.ids.members.text.strip() + sep + group_code
 			#print(group_string)
 			sendCreate(group_string)
 			global chamber_name_and_code
@@ -179,6 +197,9 @@ class CreateGroup(Screen):
 			self.ids.c_password.text=''
 			self.ids.members.text=''
 			#self.manager.transition=SlideTransition(direction="right")
+	def clear_passwords(self):
+		self.ids.password.text = ''
+		self.ids.c_password.text = ''
 
 class SelectGroup(Screen):
 	activegroups = ListProperty()
