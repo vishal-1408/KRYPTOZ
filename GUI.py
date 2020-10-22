@@ -476,6 +476,7 @@ class ChatWindow(Screen):
 		sendLogout()
 		self.messages={}
 		self.unschedule_on_exit()
+
 	def copytoclipboard(self):
 		global chamber_name_and_code
 		pyperclip.copy(chamber_name_and_code)
