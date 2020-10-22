@@ -82,8 +82,8 @@ def initialize(c,check):
             print("exception in initialize: "+str(e))
         else:
             print("exception after logging out: "+str(e))
-            
-        c.close()
+            cl=clientinfo.pop(c)
+            cl.close()
 
 
 
@@ -95,7 +95,7 @@ def create(c):
         string=c.recv(int(length)).decode('UTF-8')
         list1=string.split("*****seperator*****")
         print(list1)
-        groupinfo[list1[0]+list1[3]]=[list1[1],int(list1[2]),len(list1[0]),[clientinfo[c][0]],[c],[{clientinfo[c][0]:clientinfo[c][1]}]]            #groupinfo=[password,limit,groupcode,[],[]]
+        groupinfo[list1[0]+list1[3]]=[list1[1],int(list1[2]),len(list1[0]),[clientinfo[c][0]],[c],{clientinfo[c][0]:clientinfo[c][1]}]            #groupinfo=[password,limit,groupcode,[],[]]
         groupMessages[list1[0]+list1[3]]=[]
         clientinfo[c].append(list1[0]+list1[3])
         eventslist[list1[0]+list1[3]]=[]
@@ -150,9 +150,8 @@ def join(c):
                    # print(clientinfo)
                     groupinfo[name][3].append(clientinfo[c][0])
                     groupinfo[name][4].append(c)
-                    groupinfo[name][5].append({
-                        clientinfo[c][0]:clientinfo[c][1]
-                    })
+                    groupinfo[name][5][clientinfo[c][0]]=clientinfo[c][1]
+                   
                     print("joined:"+str(groupinfo))
                     clientinfo[c].append(name)
                     
@@ -204,7 +203,7 @@ def sendAllmemberslist(name,c):
         obj={}
         obj["0"]=groupinfo[name][3]
         obj["1"]=groupinfo[name][5]
-        print("memberslist"+str(obj["0"]))
+        #print("memberslist"+str(obj["0"]))
         messageobj=pickle.dumps(obj)
         message=message+str(len(messageobj))
         message=message.encode('UTF-8')
@@ -271,9 +270,7 @@ def handling_the_client(client):
                 if len(groupinfo[clientinfo[client][2]][3])==1:
                     groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
                     groupinfo[clientinfo[client][2]][4].remove(client)
-                    groupinfo[clientinfo[client][2]][5].remove({
-                        clientinfo[client][0]:clientinfo[client][1]
-                    })
+                    groupinfo[clientinfo[client][2]][5].pop(clientinfo[client][0])
                     group_name = clientinfo[client].pop()
                     print("group details:"+str(groupinfo[group_name]))
                     Thread(target=scheduling,args=(group_name,)).start()
@@ -283,9 +280,7 @@ def handling_the_client(client):
                     broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][2]][4],"",False)
                     groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
                     groupinfo[clientinfo[client][2]][4].remove(client)
-                    groupinfo[clientinfo[client][2]][5].remove({
-                        clientinfo[client][0]:clientinfo[client][1]
-                    })
+                    groupinfo[clientinfo[client][2]][5].pop(clientinfo[client][0])
                     clientinfo[client].pop()
                     Thread(target=initialize,args=(client,False)).start()
                     break

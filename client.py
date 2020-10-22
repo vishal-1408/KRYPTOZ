@@ -64,9 +64,7 @@ def receive():
                      'name':"ChatBot",
                      'message': addobj['message']
                 })
-                publickeys.append({
-                    addobj['name']:addobj['publickey']
-                })
+                publickeys[addobj['name']]=addobj['publickey']
                except Exception as e:
                    print('inside member add' + str(e))
             elif m[0:10]=="membergone":
@@ -74,10 +72,7 @@ def receive():
                  recvobj=pickle.loads(client.recv(int(m[10:])))
                  member=recvobj["person"]
                  memberslist.remove(member)
-                 key=publickeys[member]
-                 publickeys.remove({
-                     member:key
-                 })
+                 publickeys.pop(recvobj["person"])
                  clientmessageList.append({
                      "name":"ChatBot",
                      "colour":"#223344",
@@ -183,9 +178,8 @@ def addRandom(text):
 
 def sendName(username,pkey):
   try:
-    global client,name
-    #username=addRandom(username)
-    print(username)
+    global client,name,publickeys
+    publickeys[username]=pkey
     name=username
     obj={
         'name':name,
@@ -276,7 +270,9 @@ def sendMessage(mess,colour):
       print("Exception occured in sendMessage: "+str(e))
 
 def sendLogout(*args):
+  global name
   try:
+   if name is not None :
     print('sendlogout')
     global client,sentList,clientmessageList,sentList,publickeys
     clientmessageList.clear()
@@ -308,10 +304,11 @@ members={}
 memberslist=[]
 clientmessageList=[]
 sentList=[]
-name=""
+name=None
 groupname=None
 groupdead=None
-publickeys=[]
+publickeys={}
+encSenderKeys={}
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
