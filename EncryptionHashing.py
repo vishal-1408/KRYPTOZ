@@ -55,6 +55,8 @@ def encryption(key, plaintext):
             data = bytes(plaintext, 'utf-8')
         else:
             data = plaintext
+        print("key: "+str(key))
+        print("plaintext: "+str(plaintext))
         cipher = AES.new(key, AES.MODE_GCM)
         ciphertext, tag = cipher.encrypt_and_digest(data)
         encrypted_data = {'ciphertext': ciphertext, 'tag': tag, 'nonce': cipher.nonce}

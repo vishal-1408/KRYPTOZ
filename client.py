@@ -13,7 +13,7 @@ def receive():
     global client
     global details, result,groupfull
     global members,memberslist,clientmessageList,name,groupdead,check
-    global publickeys,decSenderKeys
+    global publickeys,decSenderKeys,clientsenderkey
     i=1
     #print('Function Started!!!!')
     while 1:
@@ -49,7 +49,7 @@ def receive():
                 listobj=pickle.loads(receive)
                 memberslist=listobj["0"]
                 publickeys=listobj["1"]
-                generateSenderKeys()
+                generateSenderKeys(False)
                 #print("membersList: 1"+memberslist)
                except Exception as e:
                    print('inside memembers list' + str(e))
@@ -62,6 +62,7 @@ def receive():
                 decSenderKeys=pickledobj
                 print(decSenderKeys)
                 print("EVERYTHING RECEIVED !!!!!")
+                print(encSenderKeys)
 
             elif m[0:9]=="memberadd":
                try:
@@ -91,12 +92,15 @@ def receive():
                  recvobj=pickle.loads(client.recv(int(m[10:])))
                  member=recvobj["person"]
                  memberslist.remove(member)
-                 publickeys.pop(recvobj["person"])
+                 publickeys.pop(recvobj["person"]) #removing the public key of the person!!!
                  clientmessageList.append({
                      "name":"ChatBot",
                      "colour":"#223344",
                      "message":recvobj["message"],
                  })
+                 clientsenderkey=generate_AES_key() #changing the sender key!!!
+                 generateSenderKeys(True)
+
                  """
                 check=1
                 func() generate new sender keys and enc sender keys for every memeber!
@@ -192,25 +196,30 @@ def return_message():
   except Exception as e:
       print("Exception in return_message: "+str(e))
 
-def generateSenderKeys():
+def generateSenderKeys(check):
   try:
     #print("came")
     global publickeys,encSenderKeys,privatekey,clientsenderkey,name
     global client
     for x,y in publickeys.items():
       if x!=name:
+        print("public keys:"+str(y))
         secretkey = generate_secret_key(privatekey,y) #y-publickkey of the user with which the secret key is generated
         encsenderkey = encryption(secretkey,clientsenderkey)
         encSenderKeys[x]=encsenderkey # {otheruser : encsenderkey}
     #print("encrypted dict: "+str(encSenderKeys))
     messsageobj=pickle.dumps(encSenderKeys)
-    message=("blah"+str(len(messsageobj))).encode('UTF-8')
+    if check==False:
+      message=("blah"+str(len(messsageobj))).encode('UTF-8')
+    else:
+      message=("redone"+str(len(messsageobj))).encode('UTF-8')
     #print("message: "+str(message))
     header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
     client.sendall(header+message)
     client.sendall(messsageobj)
 
-    #print("generate out !!!")
+    print("generate out !!!")
+    print(encSenderKeys)
   except Exception as e:
       print(e)
 
@@ -361,29 +370,34 @@ def sendMessage(mess,colour):
       print("Exception occured in sendMessage: "+str(e))
 
 def sendLogout(*args):
-  global name
+  global name,clientsenderkey
   try:
    if name is not '' :
     print('sendlogout')
-    global client,sentList,clientmessageList,sentList,publickeys
+    global client,sentList,clientmessageList,sentList,publickeys,encSenderKeys,decSenderKeys
     clientmessageList.clear()
     sentList.clear()
     memberslist.clear()
     publickeys.clear()
+    encSenderKeys.clear()
+    decSenderKeys.clear()
+    clientsenderkey=generate_AES_key  #regenerating sender key !!! as he is leaving the group!
+    encSenderKeys
     m="QUIT".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
+    print("sent ")
   except Exception as e:
       print("Exception occured in sendLogout: "+str(e))
 
 def close():
    global client
-   try: 
+   try:
     m="QUIT".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
-    client.sendall(header+m)         
+    client.sendall(header+m)
    except Exception as e:
-      print("Exception occured in sendLogout: "+str(e)) 
+      print("Exception occured in sendLogout: "+str(e))
 
 
 
