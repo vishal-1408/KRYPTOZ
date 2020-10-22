@@ -176,7 +176,7 @@ def join(c):
 
                     groupencSenderkeys[name][clientinfo[c][0]]=eSKeys
 
-                    sendAllMessages(name,c)
+                    #sendAllMessages(name,c)
                     broadcasteveryone(name,c,clientinfo[c][1])
                     #print("broadcast done")
                     d=1

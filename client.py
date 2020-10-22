@@ -59,6 +59,10 @@ def receive():
                 #print("memberkeys")
                 rawbytesobj=client.recv(int(m[12:]))
                 pickledobj=pickle.loads(rawbytesobj)
+                for x,y in pickledobj.items():
+                     otherpkey=publickeys[x]
+                     secretkey=generate_secret_key(privatekey,otherpkey)
+                     pickledobj[x]=decryption(secretkey,y,False)
                 decSenderKeys=pickledobj
                 print(decSenderKeys)
                 print("EVERYTHING RECEIVED !!!!!")
@@ -67,15 +71,19 @@ def receive():
             elif m[0:9]=="memberadd":
                try:
                 addobj=pickle.loads(client.recv(int(m[9:])))
+               
                 memberslist.append(addobj['name'])
                 clientmessageList.append({
                      'colour':"#223344",
                      'name':"ChatBot",
                      'message': addobj['message']
                 })
-                #print("adddinggggggggggg")
+                print("adddinggggggggggg")
                 publickeys[addobj['name']]=addobj['publickey']
-                decSenderKeys[addobj['name']]=addobj['encSkey']
+                secretkey=generate_secret_key(privatekey,addobj['publickey'])
+                print("secretkey: "+str(secretkey))
+                print("saddobj: "+str(addobj['encSkey']))
+                decSenderKeys[addobj['name']]=decryption(secretkey,addobj['encSkey'],False)
                 check=1
                 generateSenderKey(addobj['name'])
                 check=0
@@ -132,7 +140,11 @@ def receive():
                 newmessage={}
                 gotnew= client.recv(int(m[10:]))
                 newmessage=pickle.loads(gotnew)
-                #print(newmessage)
+                othername=newmessage["name"]
+                key=decSenderKeys[othername]
+                print("key:"+str(key))
+                newmessage["message"]=decryption(key,newmessage["message"],True)
+                print("newmessage: "+str(newmessage))
                 clientmessageList.append(copy.deepcopy(newmessage))   #{"colour":value , "name": value, "message": value }
                except Exception as e:
                    print('inside new message' + str(e))
@@ -357,10 +369,13 @@ def sendJoin(s):
       print("Exception occured in sendJoin: "+str(e))
 
 def sendMessage(mess,colour):
+  global clientsenderkey
   try:
     print('sendMessage')
     global client,name
     message="message"
+    print("key::::::::"+str(clientsenderkey))
+    mess=encryption(clientsenderkey,mess)
     messagedict={
         "colour":colour,
         "message":mess,
