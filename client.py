@@ -5,10 +5,6 @@ import socket
 import pickle
 import random
 from EncryptionHashing import *
-<<<<<<< HEAD
-=======
-
->>>>>>> 6ef4d171795278623ae9ad170ce3b179a295dd2e
 
 HEADER_SIZE=10
 
@@ -245,13 +241,6 @@ def generateSenderKey(name):
  "B":"key"
 }
 
-<<<<<<< HEAD
-def sendName(username,pkey, *args):
-    
-  try:
-    print(generate_AES_key())
-    global client,name,publickeys
-=======
 
 
 groupinfo[name][6][clientinfo[c][0]]=
@@ -279,7 +268,6 @@ def sendName(username,pkey,prkey,senderkey):
     global client,name,publickeys,privatekey,clientsenderkey
     privatekey=prkey
     clientsenderkey=senderkey
->>>>>>> 6ef4d171795278623ae9ad170ce3b179a295dd2e
     publickeys[username]=pkey
     name=username
     obj={

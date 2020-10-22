@@ -108,19 +108,11 @@ class Login(Screen):
 			return False
 		else:
 			try:
-<<<<<<< HEAD
-				global ECC_Key, Sender_Key
-				print('called')
-				client_initialize()
-				print(self.ids.username.text)
-				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y], ECC_Key.d, Sender_Key)
-=======
 				global ECC_Key,Sender_Key
 				print('called')
 				client_initialize()
 				print(self.ids.username.text)
 				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y], ECC_Key.d,Sender_Key)
->>>>>>> 6ef4d171795278623ae9ad170ce3b179a295dd2e
 				self.ids.username.text=''
 				self.ids.password.text=''
 				return True
