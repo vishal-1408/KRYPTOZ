@@ -92,4 +92,12 @@ def hex_gen():
     file = open('color.txt', 'r')
     color_list=ReadFile(file)
     return color_list[random.randint(0,len(color_list)-1)]
-print(hex_gen())
+#print(hex_gen())
+
+def addRandom(text):
+    randlist=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
+    'S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0']
+    for i in range(4):
+       index=random.randint(0,len(randlist)-1)
+       text+=randlist[index]
+    return text

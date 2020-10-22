@@ -16,7 +16,7 @@ def accept():
 
 def details(c):
     try:
-        print("details")
+        #print("details")
         global groupinfo
         groupobject={}
         for x,y in groupinfo.items():
@@ -88,17 +88,18 @@ def initialize(c,check):
 
 
 def create(c):
-    global clientinfo, groupinfo,eventslist,groupMessages
+    global clientinfo, groupinfo,eventslist,groupMessages,groupencSenderkeys
     try:
         print("create")
         length=c.recv(HEADER_SIZE).decode("UTF-8")
         string=c.recv(int(length)).decode('UTF-8')
         list1=string.split("*****seperator*****")
-        print(list1)
+        #print(list1)
         groupinfo[list1[0]+list1[3]]=[list1[1],int(list1[2]),len(list1[0]),[clientinfo[c][0]],[c],{clientinfo[c][0]:clientinfo[c][1]}]            #groupinfo=[password,limit,groupcode,[],[]]
         groupMessages[list1[0]+list1[3]]=[]
         clientinfo[c].append(list1[0]+list1[3])
         eventslist[list1[0]+list1[3]]=[]
+        groupencSenderkeys[list1[0]+list1[3]]={}
         #print(clientinfo)
         #print(groupinfo)
         Thread(target=handling_the_client,args=(c,)).start()
@@ -114,23 +115,23 @@ def join(c):
     e=1
     print("join")
     sep='*****seperator*****'
-    global clientinfo, groupinfo,eventslist,scheduler,groupMessages
+    global clientinfo, groupinfo,eventslist,scheduler,groupMessages,groupencSenderkeys
     try:
         while e:
             #print(groupinfo)
           length=c.recv(HEADER_SIZE).decode('UTF-8')
           string=c.recv(int(length)).decode('UTF-8')
           name=string.split(sep)[0]   #name of the group should be sent concat with code!!
-          print(name)
+          #print("name: "+name)
           password=string.split(sep)[1]
-          print(password)
+          #print("password:"+password)
           grouppassword=groupinfo[name][0]
-          print(grouppassword + "\t" + password)
-          obj={}    
+          #print(grouppassword + "\t" + password)
+          obj={}
           message="auth"
           if name in groupinfo.keys():
              if len(groupinfo[name][3])<(groupinfo[name][1]):
-                print("insdie")
+                #print("inside")
                 if grouppassword==password:
                     obj['result']=True
                     obj['groupfull']=False
@@ -140,7 +141,7 @@ def join(c):
                     header=f'{len(message):<{HEADER_SIZE}}'.encode('UTF-8')
                     c.sendall(header+message)
                     c.sendall(messageobj)
-                    print("Sent succesylly")
+                    #print("Sent succeslly")
                     for x in eventslist[name]:
                         if x:
                              scheduler.cancel(x)
@@ -151,8 +152,8 @@ def join(c):
                     groupinfo[name][3].append(clientinfo[c][0])
                     groupinfo[name][4].append(c)
                     groupinfo[name][5][clientinfo[c][0]]=clientinfo[c][1]
-                   
-                    print("joined:"+str(groupinfo))
+
+                    #print("joined:"+str(groupinfo))
                     clientinfo[c].append(name)
                     
                     groupMessages[name].append({
@@ -162,15 +163,46 @@ def join(c):
                     })
 
                     sendAllmemberslist(name,c)
+                    length=c.recv(HEADER_SIZE).decode('UTF-8')
+                    string=c.recv(int(length)).decode('UTF-8')
+
+                    length123=c.recv(HEADER_SIZE).decode('UTF-8')
+
+                    message=c.recv(int(length123)).decode('UTF-8')
+
+                    rawobj=c.recv(int(message[4:]))
+
+                    eSKeys=pickle.loads(rawobj)
+
+                    groupencSenderkeys[name][clientinfo[c][0]]=eSKeys
 
                     sendAllMessages(name,c)
-
-
-                   
                     broadcasteveryone(name,c,clientinfo[c][1])
-                    
-                    
+                    #print("broadcast done")
+                    d=1
+                    keysobject={}
+                    try:
+                     while(d):
+                        dictkeys=groupencSenderkeys[name].keys()
+                        l=0
+                        for x in dictkeys:
+                          #print("loop:"+str(x))
+                          if x!=clientinfo[c][0]:
+                            #print("loop2 :"+str(groupencSenderkeys[name][x].keys()))
+                            if clientinfo[c][0] not in groupencSenderkeys[name][x].keys():
+                                l=1
+                            else:
+                                keysobject[x]=groupencSenderkeys[name][x][clientinfo[c][0]]
 
+                        d=l
+                    except Exception as e:
+                      print(e)
+                    pickledobj=pickle.dumps(keysobject)
+                    m=("memeberskeys"+str(len(pickledobj))).encode('UTF-8')
+                    header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
+                    c.sendall(header+m)
+                    c.sendall(pickledobj)
+                    #he can go to handling client!!!!!
                     Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
                     return 0
                 elif password!=grouppassword:
@@ -219,17 +251,25 @@ def sendAllmemberslist(name,c):
 
 def broadcasteveryone(gname,client,pkey):
     try:
-        global clientinfo,groupinfo
-        message="memberadd"
-        addobj={'name':clientinfo[client][0], 'message': '{} has joined the chamber!'.format(clientinfo[client][0]),'publickey':pkey}
-        messageobj=pickle.dumps(addobj)
-        message=message+str(len(messageobj))
-        message=message.encode('UTF-8')
-        header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+        global clientinfo,groupinfo,groupencSenderkeys
+        i=0
         for x in groupinfo[gname][4]:
+           #print("sending!!!")
            if x!=client:
+            message="memberadd"
+
+            addobj={'name':clientinfo[client][0],
+            'message': '{} has joined the chamber!'.format(clientinfo[client][0]),
+            'publickey':pkey,'encSkey':groupencSenderkeys[gname][clientinfo[client][0]][groupinfo[gname][3][i]]
+            }
+
+            messageobj=pickle.dumps(addobj)
+            message=message+str(len(messageobj))
+            message=message.encode('UTF-8')
+            header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
             x.sendall(header+message)
             x.sendall(messageobj)
+            i+=1
     except Exception as e:
         print("Exception occured in broadcast everyone: "+str(e))
         return
@@ -241,7 +281,7 @@ def sendAllMessages(groupname,c):
     try:
         global groupMessages
         oldmessages={'0':groupMessages[groupname]}
-        print("oldmessages: "+str(oldmessages))
+        #print("oldmessages: "+str(oldmessages))
         messageobj=pickle.dumps(oldmessages)
         message="oldmessages"
         message=message+str(len(messageobj))
@@ -253,28 +293,46 @@ def sendAllMessages(groupname,c):
         print("Exception occured in sendAllMessages: "+str(e))
         return
 
+"""
+{
+ 'A':{
+     'B':'senderkey',
+     'C':'senderkey',
+ }
+}
+
+***** group keys length==groupmemebrslength****
 
 
+
+
+"""
 def handling_the_client(client):
     try:
         print("handling client")
-        global clientinfo, groupinfo,groupMessages
+        global clientinfo, groupinfo,groupMessages,groupencSenderkeys
         while 1:
              length=client.recv(HEADER_SIZE).decode('UTF-8')
              #print(length)
              message=client.recv(int(length)).decode('UTF-8')
-             #print(message)
+             #print("received in handling client:"+message)
             # if message[0:9]=="publickey":
              #    catchPublicky(client,groupinfo,int(message[9:]))
              if message[0:7]=="message":
                 broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][2]][4],int(message[7:]),True)
+             elif message[0:6]=="append":
+                 rawarray=client.recv(int(message[6:]))
+                 array=pickle.loads(rawarray)
+                 groupencSenderkeys[clientinfo[client][2]][clientinfo[client][0]]={}
+                 groupencSenderkeys[clientinfo[client][2]][clientinfo[client][0]][array[0]]=array[1]
+                # print(groupencSenderkeys)
              elif message=="QUIT":
                 if len(groupinfo[clientinfo[client][2]][3])==1:
                     groupinfo[clientinfo[client][2]][3].remove(clientinfo[client][0])
                     groupinfo[clientinfo[client][2]][4].remove(client)
                     groupinfo[clientinfo[client][2]][5].pop(clientinfo[client][0])
                     group_name = clientinfo[client].pop()
-                    print("group details:"+str(groupinfo[group_name]))
+                    #print("group details:"+str(groupinfo[group_name]))
                     Thread(target=scheduling,args=(group_name,)).start()
                     Thread(target=initialize,args=(client,False)).start()
                     break
@@ -319,12 +377,12 @@ def broadcast(name,client,memberslist,length,check):
     message=message+str(len(messageobj))
     message=message.encode('UTF-8')
     header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
-    print("memberlist:"+str(memberslist))
+    #print("memberlist:"+str(memberslist))
     for x in memberslist:
         if x!=client:
             x.sendall(header+message)
             x.sendall(messageobj)
-    print("member broadcast done!")
+    #print("member broadcast done!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   except Exception as e:
      print("Exception occured in broadcast: "+str(e))
      return
@@ -369,6 +427,7 @@ clientinfo={}
 groupinfo={}
 eventslist={}
 groupMessages={}
+groupencSenderkeys={}
 scheduler = None
 
 Host=""

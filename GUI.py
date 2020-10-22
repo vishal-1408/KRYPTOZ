@@ -108,11 +108,19 @@ class Login(Screen):
 			return False
 		else:
 			try:
+<<<<<<< HEAD
 				global ECC_Key, Sender_Key
 				print('called')
 				client_initialize()
 				print(self.ids.username.text)
 				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y], ECC_Key.d, Sender_Key)
+=======
+				global ECC_Key,Sender_Key
+				print('called')
+				client_initialize()
+				print(self.ids.username.text)
+				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y], ECC_Key.d,Sender_Key)
+>>>>>>> 6ef4d171795278623ae9ad170ce3b179a295dd2e
 				self.ids.username.text=''
 				self.ids.password.text=''
 				return True
@@ -264,7 +272,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 
 	def conditions(self, *args):
 		group_deleted = False		
-		print(str(self.auth)+'\t'+str(self.full)+' 2')
+		#print(str(self.auth)+'\t'+str(self.full)+' 2')
 		return_details_list = return_details()
 		if len(return_details_list) == 0:
 			group_deleted= True
@@ -316,11 +324,11 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		set_group_dead()
 		makeNone()
 		while (self.auth==None or self.full==None) and (self.group_dead!= True) :
-			print("loop")
+			#print("loop")
 			self.group_dead = return_groupdead()
 			self.auth = return_authenticate()
 			self.full = return_groupfull()
-			print(str(self.auth)+'\t'+str(self.full)+' 1')
+			#print(str(self.auth)+'\t'+str(self.full)+' 1')
 		print(self.group_dead)
 	def transition(self, instance):
 		self.success_auth.dismiss()
@@ -405,7 +413,7 @@ class ChatWindow(Screen):
 		#sendMembersList()
 		self.member_list=return_memeberslist()
 		self.public_keys = return_publickeys()
-		print(self.public_keys)
+		#print(self.public_keys)
 		#print(self.member_list)
 		self.members_online = []
 		for member in self.member_list:
