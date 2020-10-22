@@ -28,7 +28,8 @@ def receive():
             elif m[0:7]=="details":
                 #print("details")
                 message=client.recv(int(m[7:]))
-                details=pickle.loads(message)        #details={'groupname':'[limit,code,length]'}
+                details=pickle.loads(message)        #details={'groupname':'[limit,code,length,check]'}
+                print("details:"+str(details))
             elif m[0:4]=="auth":
                 length=int(m[4:])
                 obj=pickle.loads(client.recv(length))
