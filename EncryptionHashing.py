@@ -12,7 +12,7 @@ import pbkdf2
 def gen_key_export(username, password):
     key = ECC.generate(curve = 'P-256')
     filename = username+"key"
-    f = open(Return_App_Path(filename), 'wb')
+    f = open(ECC_key_dir(filename), 'wb')
     f.write(key.export_key(format = 'DER', passphrase = password, use_pkcs8 = True, protection = 'PBKDF2WithHMAC-SHA1AndAES128-CBC'))
     f.close()
 #gen_key_export('arjun', 'arjun2000')
@@ -20,7 +20,7 @@ def gen_key_export(username, password):
 def get_key(username, password):
     filename = username+'key'
     try:
-        f  = open(Return_App_Path(filename), 'rb')
+        f  = open(ECC_key_dir(filename), 'rb')
         key = ECC.import_key(f.read(), password)
     except:
         gen_key_export(username, password)

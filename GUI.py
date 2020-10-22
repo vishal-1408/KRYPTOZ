@@ -5,6 +5,8 @@ Config.set('graphics', 'resizable', False)
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.modalview import ModalView
 from kivy.uix.textinput import TextInput
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FadeTransition
 from kivy.core.window import Window
@@ -14,8 +16,9 @@ from kivy.properties import ObjectProperty, StringProperty, ListProperty, Boolea
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.clock import Clock 
 import pyperclip
+import os
 #------Imports from the modules---------------------
-from EncryptionHashing import hash_str
+from EncryptionHashing import *
 from FileManage import *
 from client import *
 from kivy.animation import Animation
@@ -31,6 +34,8 @@ separator="*****seperator*****"
 refresh_group_list = None
 chamber_name_and_code = ''
 username = ''
+ECC_Key = None
+Sender_Key = generate_AES_key()
 
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
@@ -82,28 +87,38 @@ class Login(Screen):
 	def login(self):
 		hashed_username=str(hash_str(self.ids.username.text))
 		hashed_password=str(hash_str(self.ids.password.text))
-		Credential_List=return_credentials()
-		for i in range(0,len(Credential_List),2):
-			if Credential_List[i] == hashed_username and Credential_List[i+1]==hashed_password:
-				global username
-				username = self.ids.username.text
-				return True
-		return False
+		try:
+			Credential_List=return_credentials()
+		except:
+			print('a')
+			return False
+		else:
+			for i in range(0,len(Credential_List),2):
+				if Credential_List[i] == hashed_username and Credential_List[i+1]==hashed_password:
+					global username, ECC_Key
+					username = self.ids.username.text
+					ECC_Key = get_key(self.ids.username.text, self.ids.password.text)
+					print(ECC_Key)
+					return True
 
 	def login_error(self):
-		if not self.login():
+		if not self.login() and not os.path.isfile(Return_App_Path('UserCredentials.txt')) :
+			quick_message("Login Error", True, "You need to sign-up first")
+		elif not self.login():
 			quick_message("Login Error", True, "You have entered the wrong credentials. Try again!")
 			return False
 		else:
 			try:
+				global ECC_Key
 				print('called')
 				client_initialize()
 				print(self.ids.username.text)
-				sendName(self.ids.username.text)
+				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y] )
 				self.ids.username.text=''
 				self.ids.password.text=''
 				return True
-			except:
+			except Exception as e:
+				print(e)
 				quick_message("Login Error", True, "The connection was not established with the server. Try again!")
 				return False
 	
@@ -328,11 +343,38 @@ class GroupVerifyAndJoin(BoxLayout):
 		#print(join_string)
 		sendJoin(join_string)
 
+class Username_display_pop(BoxLayout):
+	def copy(self):
+		pyperclip.copy(self.ids.label.text[:-29]+self.ids.label.text[-13:-8])
+
 class MemberLabels(RecycleDataViewBehavior, BoxLayout):
 	text=StringProperty()
 	owner = ObjectProperty()
 	index = NumericProperty(0)
+
+	def give_username(self):
+		print('give username')
+		design = Username_display_pop()
+		design.ids.label.text = self.text
+		self.pop = ModalView(
+					size_hint= (None, None),
+					size = (400,80),
+					pos_hint = {'x': 0, 'top':1},
+					background = 'img/username_pop.png'
+				   )
+		self.pop.add_widget(design)
+		self.pop.open()
+		self.pop.bind(on_open=self.dismiss_pop)
+		self.pop.bind(on_dismiss=self.cancel_trigger)
+
+	def dismiss_pop(self, instance):
+		print('open')
+		self.dismiss_trigger = Clock.schedule_once(lambda dt: self.pop.dismiss(), 5)
 	
+	def cancel_trigger(self, instance):
+		print('cancel')
+		self.dismiss_trigger.cancel()
+
 	def refresh_view_attrs(self, rv, index, data):
 		self.index = index
 		return super(MemberLabels, self).refresh_view_attrs(rv, index, data)
@@ -354,6 +396,7 @@ class ChatWindow(Screen):
 	messages = ListProperty()
 	members_online = ListProperty()
 	user_color = hex_gen()
+
 	def members_online_rv_assignment(self):
 		sendMembersList()
 		Clock.schedule_once(self.schedule_members_online)
@@ -362,11 +405,13 @@ class ChatWindow(Screen):
 	def schedule_members_online(self, *_):
 		#sendMembersList()
 		self.member_list=return_memeberslist()
+		self.public_keys = return_publickeys()
+		print(self.public_keys)
 		#print(self.member_list)
 		self.members_online = []
 		for member in self.member_list:
 			self.members_online.append({
-				'text': member,
+				'text': member[:-4]+'[color=#abb2b9] @'+member[-4:]+'[/color]',
 				'owner': self
 			})
 	
@@ -443,12 +488,13 @@ class SignUp_pop(BoxLayout):
 		self.username = self.ids.username.text
 		self.password = self.ids.password.text
 		self.c_password = self.ids.c_password.text
-		if len(self.password)>=8 and len(self.username)>0:  
+		if len(self.password)>=8 and len(self.username)>0 and len(self.username)<=26:  
 			if self.c_password==self.password:
 				cred_file= None
 				user_exists=False
 				username_hash = hash_str(self.username)
 				password_hash = hash_str(self.password)
+				code_export_file(self.username)
 				if  not os.path.isfile(Return_App_Path("UserCredentials.txt")): #ON FIRST SIGNUP
 					cred_file = open(Return_App_Path("UserCredentials.txt"), "w")
 				else:#IF not first SIGN UP
@@ -458,6 +504,7 @@ class SignUp_pop(BoxLayout):
 					WriteLine(cred_file, str(username_hash))
 					WriteLine(cred_file, str(password_hash))
 					cred_file.close()
+					gen_key_export(self.username, self.password) # To generate ECC key
 					color_fix(self.ids.username)
 					color_fix(self.ids.password)
 					color_fix(self.ids.c_password)
@@ -475,7 +522,7 @@ class SignUp_pop(BoxLayout):
 				error_color(self.ids.c_password)
 		else:
 			if len(self.username)==0 and len(self.password)<8:
-				quick_message("Warning", True, "\u2022The username must be given\n\u2022The password must be 8 characters long.")
+				quick_message("Warning", True, "\u2022The username must be in the range of 0 to 26 characters\n\u2022The password must be 8 characters long.")
 				error_color(self.ids.username)
 				error_color(self.ids.password)
 			elif len(self.ids.password.text)<8:

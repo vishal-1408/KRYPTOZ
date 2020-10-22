@@ -4,14 +4,13 @@ import copy
 import socket
 import pickle
 import random
-#sep1='!!!!!separator!!!!!'
-#sep2='*****seperator*****'
+
 
 HEADER_SIZE=10
 
 def receive():
     global client
-    global details, sep1, sep2,result,groupfull
+    global details, result,groupfull
     global members,memberslist,clientmessageList,name,groupdead
     global publickeys
     i=1
@@ -171,7 +170,7 @@ def addRandom(text):
     randlist=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R',
     'S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0']
     for i in range(4):
-       index=random.randint(0,len(randlist))
+       index=random.randint(0,len(randlist)-1)
        text+=randlist[index]
     return text
 
@@ -272,7 +271,7 @@ def sendMessage(mess,colour):
 def sendLogout(*args):
   global name
   try:
-   if name is not None :
+   if name is not '' :
     print('sendlogout')
     global client,sentList,clientmessageList,sentList,publickeys
     clientmessageList.clear()
@@ -304,7 +303,7 @@ members={}
 memberslist=[]
 clientmessageList=[]
 sentList=[]
-name=None
+name=''
 groupname=None
 groupdead=None
 publickeys={}
@@ -315,10 +314,10 @@ encSenderKeys={}
 def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    #Host="127.0.0.1"
-    #Port=8000
-    Host="52.204.124.224"
+    Host="127.0.0.1"
     Port=8000
+    #Host="52.204.124.224"
+   # Port=8000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()

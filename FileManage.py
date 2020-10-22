@@ -1,5 +1,5 @@
 import os, random
-
+from client import addRandom
 homedir=os.path.expanduser('~') + '/AppData/Roaming/ChatApp/' 
 
 def Return_App_Path(filename): #This returns app directory 
@@ -9,6 +9,25 @@ def Return_App_Path(filename): #This returns app directory
     else:
         os.makedirs(homedir)
         return homedir + filename
+
+def User_Code_Directory(filename):
+    global homedir
+    code_dir = homedir + '/UserCodes/'
+    if os.path.isdir(code_dir):
+        return code_dir+filename
+    else:
+        os.makedirs(code_dir)
+        return code_dir + filename
+
+def ECC_key_dir(filename):
+    global homedir
+    keys_dir = homedir + '/ECCkeys/'
+    if os.path.isdir(keys_dir):
+        return keys_dir+filename
+    else:
+        os.makedirs(keys_dir)
+        return keys_dir + filename
+    
 def return_credentials():
     file = open(Return_App_Path("UserCredentials.txt"), 'r')
     Credential_List = ReadFile(file)
@@ -47,10 +66,24 @@ def ReadSeperator(file, sep): #Reads file and seperates string using sep, return
 def WriteLine(file, info): #Writes line with \n included
 	file.writelines(info + '\n')
 
+def code_export_file(username):
+    username_and_code=addRandom(username)
+    file = open(User_Code_Directory(username+'code.txt'), 'w')
+    file.writelines(username_and_code)
+
+def read_code_from_file(username):
+    try:
+        file = open(User_Code_Directory(username+'code.txt'), 'r')
+    except:
+        code_export_file(username)
+        read_code_from_file(username)
+    else:
+        username_and_code = ReadFileLine(file)
+        return username_and_code
+
+
 def hex_gen():
-    hexdigits = ['0','1','2','3','4','5','6']
-    red = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
-    blue = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
-    green = hexdigits[random.randint(0,6)] + hexdigits[random.randint(0,6)]
-    return '#'+red+green+blue
+    file = open('color.txt', 'r')
+    color_list=ReadFile(file)
+    return color_list[random.randint(0,len(color_list)-1)]
 print(hex_gen())
