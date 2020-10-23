@@ -471,6 +471,8 @@ Screen_Manager:
                     id: copy_group
                     text: 'Copy'
                     size_hint_x: 0.2
+                    on_release:
+                        root.copytoclipboard()
         BoxLayout:
             BoxLayout:
                 size_hint_x: 0.25

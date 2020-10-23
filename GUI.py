@@ -254,7 +254,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			self.design = GroupVerifyAndJoin()
 			self.design.chambername = self.group_name+self.group_code
 			self.design.ids.title.text = "Enter the password of: "
-			self.design.ids.name.text = "[color=#E0744C]" +  str(self.design.chambername) + "[color=#E0744C]"
+			self.design.ids.name.text = "[color=#E0744C]" +  str(self.design.chambername[:-6]) + "[color=#E0744C]" + ' [color=#884ea0]' + str(self.design.chambername[-6:]) + '[/color]' 
 			self.update_online_members()
 			self.refresh_members = Clock.schedule_interval(self.update_online_members, 1)
 			self.authwin = CustomPopup(
@@ -463,23 +463,25 @@ class ChatWindow(Screen):
 	
 	def add_message(self, text, color, name):
 		global username
-		'''if name == username:
-			u_col = (0,1,0,1)
-		else:
-			u_col = (1,0,0,1)'''
-		if name == username:
+		code_col = '#f7dc6f'
+		if name[:-4] == username:
 			u_col = '#e67e22'
 		elif name == 'ChatBot':
 			u_col = '#a93226'
 		else:
 			u_col = '#aeb6bf'
+		if name is not 'ChatBot':
+			user = name[:-4] + " [color=#f7dc6f]@" + name[-4:] + '[/color]'
+		else:
+			user = name
 		self.messages.append({
 			'message_id': len(self.messages),
 			'bg_color': color,
-			'username': name,
+			'username': user,
 			'username_color': u_col,
 			'text': text
 		})
+		self.scroll_bottom()
 		print(username)
 
 	def refresh_messages_scheduler(self):
@@ -494,7 +496,6 @@ class ChatWindow(Screen):
 	def send_message(self, *args):
 		global username
 		if self.ids.message_input.text is not '':
-			self.add_message(self.ids.message_input.text, self.user_color, username)
 			sendMessage(self.ids.message_input.text, self.user_color)
 			self.scroll_bottom()
 		Clock.schedule_once(self.clear_message_box)
