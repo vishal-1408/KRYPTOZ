@@ -183,7 +183,7 @@ def join(c):
 
                     
                       broadcasteveryone(name,c,clientinfo[c][1])
-                      #print("broadcast done")
+                      print("broadcast done")
                       d=1
                       keysobject={}
                       try:
@@ -193,17 +193,17 @@ def join(c):
                         for x in dictkeys:
                           #print("loop:"+str(x))
                           if x!=clientinfo[c][0]:
-                            #print("loop2 :"+str(groupencSenderkeys[name][x].keys()))
+                            print("loop2 :"+str(groupencSenderkeys[name][x].keys()))
                             if clientinfo[c][0] not in groupencSenderkeys[name][x].keys():
                                 l=1
                             else:
                                 keysobject[x]=groupencSenderkeys[name][x][clientinfo[c][0]]
-                                #print("in loop:"+str(keysobject))
+                                print("in loop:"+str(keysobject))
 
                         d=l
                       except Exception as e:
                        print(e)
-                    #print(keysobject)
+                      print("got the senderkeys encrypted of all other users:"+str(keysobject))
                       pickledobj=pickle.dumps(keysobject)
                       m=("memeberskeys"+str(len(pickledobj))).encode('UTF-8')
                       header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
@@ -222,7 +222,8 @@ def join(c):
                       c.sendall(pickledmessagearray)
                       print("sent!!! :"+str(messagearray))
                       groupMessages[name]=[]
-                    #
+                    else:
+                      groupencSenderkeys[name][clientinfo[c][0]]={}
                     #he can go to handling client!!!!!
                     Thread(target=handling_the_client,args=(c,)).start()           #//un comment it , when the chatting window is done!
                     return 0

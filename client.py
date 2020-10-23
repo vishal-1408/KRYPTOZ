@@ -90,6 +90,7 @@ def receive():
                 #print("saddobj: "+str(addobj['encSkey']))
                 decSenderKeys[addobj['name']]=decryption(secretkey,addobj['encSkey'],False) #False if key is being decrypted!
                 check=1
+                print("called!!")
                 generateSenderKey(addobj['name'])
                 check=0
                 """
@@ -111,7 +112,7 @@ def receive():
                     print("old messages sent!!")
 
                except Exception as e:
-                   print('inside member add' + str(e))
+                   print('inside member add error:' + str(e))
             elif m[0:10]=="membergone":
                 try:
                  recvobj=pickle.loads(client.recv(int(m[10:])))
@@ -142,7 +143,7 @@ def receive():
                 
                 """
                 except Exception as e:
-                    print('inside membergone '+str(e))
+                    print('inside membergone error:'+str(e))
             elif m[0:11]=="oldmessages":
                try:
                 #print(m[11:])
@@ -152,13 +153,14 @@ def receive():
                 oldmessages=pickle.loads(gotit)
                 print(oldmessages)
                 name2=oldmessages[0]
+                print("decrypted senderkeys: "+str(decSenderKeys))
                 for x in oldmessages[1:]:
                     key=decSenderKeys[name2]
                     x['message']=decryption(key,x['message'],True) #True if messages are being decrypted!
 
                 clientmessageList=copy.deepcopy(oldmessages[1:])
                except Exception as e:
-                   print('inside old messages' + str(e))
+                   print('inside old messages error:' + str(e))
             
             elif m[0:10]=="newmessage":
                try:
@@ -174,7 +176,7 @@ def receive():
                 print("newmessage: "+str(newmessage))
                 clientmessageList.append(copy.deepcopy(newmessage))   #{"colour":value , "name": value, "message": value }
                except Exception as e:
-                   print('inside new message' + str(e))
+                   print('inside new message error occured:' + str(e))
         except Exception as e:
            print("Exception occured in receive:(client socket disc....) "+str(e))
            break
@@ -381,7 +383,7 @@ def sendCreate(s):
   except Exception as e:
       print("Exception occured in sendCreate: "+str(e))
 
-def sendJoin(s):
+def sendJoin(s,membersonline):
   try:
     print('sent-join-request')
     m="join".encode('UTF-8')
@@ -391,6 +393,12 @@ def sendJoin(s):
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.send(header+m)
     client.send(header+m)
+    if membersonline==0:
+        clientmessageList.append({
+        'colour':"#223344",
+        'name':"ChatBot",
+        'message':"Welcome Back to your Crypto Chamber! Share Chamber Name and Code with your friends and have fun sharing secrets on crypto chamber!!"
+    })
     #print("sent!!!")
   except Exception as e:
       print("Exception occured in sendJoin: "+str(e))
