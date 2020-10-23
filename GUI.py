@@ -278,8 +278,10 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			while(self.group_dead is not None):
 				self.group_dead = return_groupdead()
 			if not self.group_dead:
+				global separator
+				sendJoin(self.group_name+self.group_code+separator+'')
 				self.transition()
-				
+
 	def cancel(self, dt):
 		self.refresh_members.cancel()
 
@@ -353,8 +355,9 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			self.full = return_groupfull()
 			#print(str(self.auth)+'\t'+str(self.full)+' 1')
 		print(self.group_dead)
-	def transition(self, instance):
-		self.success_auth.dismiss()
+	def transition(self, *args):
+		if self.password_allowed:
+			self.success_auth.dismiss()
 		app=App.get_running_app()
 		app.root.transition = SlideTransition(direction='left')
 		app.root.current = 'chatwin'
