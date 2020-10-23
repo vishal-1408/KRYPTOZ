@@ -481,14 +481,13 @@ class ChatWindow(Screen):
 	
 	def add_message(self, text, color, name):
 		global user_name_and_code
-		code_col = '#f7dc6f'
 		if name == user_name_and_code:
 			u_col = '#e67e22'
 		elif name == 'ChatBot':
 			u_col = '#a93226'
 		else:
 			u_col = '#aeb6bf'
-		if name is not 'ChatBot':
+		if name != 'ChatBot':
 			user = name[:-4] + " [color=#f7dc6f]@" + name[-4:] + '[/color]'
 		else:
 			user = name
@@ -499,11 +498,11 @@ class ChatWindow(Screen):
 			'username_color': u_col,
 			'text': text
 		})
-		self.scroll_bottom()
 		print(username)
 
 	def refresh_messages_scheduler(self):
 		self.message_refresh = Clock.schedule_interval(self.refresh_messsages, 0.5)
+		self.scroll_bottom()
 
 	def refresh_messsages(self, dt):
 		new_messages = return_message()
