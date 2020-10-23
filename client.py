@@ -383,8 +383,9 @@ def sendCreate(s):
   except Exception as e:
       print("Exception occured in sendCreate: "+str(e))
 
-def sendJoin(s,membersonline):
+def sendJoin(s):
   try:
+    membersonline=return_members()
     print('sent-join-request')
     m="join".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
@@ -440,6 +441,9 @@ def sendLogout(*args):
    if name is not '' :
     print('sendlogout')
     global client,sentList,clientmessageList,sentList,publickeys,encSenderKeys,decSenderKeys
+    global members,details
+    details.clear()
+    members.clear()
     clientmessageList.clear()
     sentList.clear()
     memberslist.clear()
