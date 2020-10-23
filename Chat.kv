@@ -162,6 +162,8 @@ Screen_Manager:
                 size_hint_x: 0.5
                 pos_hint:{"x":0.5}
 <JoinOrCreate>:
+    on_pre_enter:
+        root.preload()
     name: "join_or_create"
     BoxLayout:
         orientation: "vertical"
@@ -174,6 +176,7 @@ Screen_Manager:
                 background_normal: "img/join_normal.png"
                 background_down: "img/join_down.png"
                 on_release:
+                    root.pre_join()
                     app.root.transition = SlideTransition(direction="down")
                     app.root.current= 'join'
             Button:
@@ -340,8 +343,6 @@ Screen_Manager:
 
 <SelectGroup>:
     name: "join"
-    on_pre_enter:
-        root.on_search()
     BoxLayout:
         orientation: "vertical"
         padding: 0

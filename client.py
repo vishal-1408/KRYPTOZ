@@ -497,7 +497,7 @@ def client_initialize():
     Host="127.0.0.1"
     Port=8000
     #Host="52.204.124.224"
-   # Port=8000
+    #Port=8000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()

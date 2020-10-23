@@ -32,6 +32,7 @@ separator="*****seperator*****"
 refresh_group_list = None
 chamber_name_and_code = ''
 username = ''
+user_name_and_code = read_code_from_file()
 ECC_Key = None
 Sender_Key = generate_AES_key()
 print(Sender_Key)
@@ -131,6 +132,17 @@ class JoinOrCreate(Screen):
 	def client_close(self):
 		sendLogout()
 
+	def preload(self):
+		app = App.get_running_app()
+		join_screen = app.root.get_screen('join')
+		join_screen.preload_groups()
+
+	def pre_join(self):
+		print('pre-join')
+		app = App.get_running_app()
+		join_screen = app.root.get_screen('join')
+		join_screen.on_search()
+
 class CreateGroup(Screen):
 	allow_password = BooleanProperty(True)
 	def requirements(self):
@@ -204,10 +216,15 @@ class CreateGroup(Screen):
 class SelectGroup(Screen):
 	activegroups = ListProperty()
 
+	def preload_groups(self):
+		sendGroups()
+		self.search_refresh()
+
 	def on_search(self):
+		print('on_search')
 		sendGroups() #Test this and remove 
 		#sendMembers() #Test this and remove
-		Clock.schedule_once(self.search_refresh)
+		self.search_refresh()
 		global refresh_group_list
 		refresh_group_list =  Clock.schedule_interval(self.search_refresh, 1)
 
@@ -442,8 +459,8 @@ class ChatWindow(Screen):
 		#print(self.member_list)
 		self.members_online = []
 		for member in self.member_list:
-			global username
-			if username == member[:-4]:
+			global user_name_and_code
+			if user_name_and_code == member:
 				color =  '#ba4a00'
 			else:
 				color = '#117a65'  
@@ -462,9 +479,9 @@ class ChatWindow(Screen):
 		self.ids.info_label.text = "[color=#E0744C]" + chamber_name_and_code[:-6] + "[/color] " + chamber_name_and_code[-6:]
 	
 	def add_message(self, text, color, name):
-		global username
+		global user_name_and_code
 		code_col = '#f7dc6f'
-		if name[:-4] == username:
+		if name == user_name_and_code:
 			u_col = '#e67e22'
 		elif name == 'ChatBot':
 			u_col = '#a93226'

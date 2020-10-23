@@ -1,6 +1,6 @@
 import os, random
 
-homedir=os.path.expanduser('~') + '/AppData/Roaming/ChatApp/' 
+homedir=os.path.expanduser('~') + '/AppData/Roaming/Kryptoz/' 
 
 def Return_App_Path(filename): #This returns app directory 
     global homedir
