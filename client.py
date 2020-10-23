@@ -18,9 +18,9 @@ def receive():
     while 1:
         try:
             length=client.recv(HEADER_SIZE).decode('UTF-8')
-            #print("legnth: "+str(length))
+            print("legnth: "+str(length))
             m=client.recv(int(length)).decode('UTF-8')
-            #print("message:"+str(m))
+            print("message:"+str(m))
             if m=="BYE":
                 client.close()
                 print("Connection got disconnected.............")
@@ -29,7 +29,7 @@ def receive():
                 #print("details")
                 message=client.recv(int(m[7:]))
                 details=pickle.loads(message)        #details={'groupname':'[limit,code,length,check]'}
-                print("details:"+str(details))
+                #print("details:"+str(details))
             elif m[0:4]=="auth":
                 length=int(m[4:])
                 obj=pickle.loads(client.recv(length))
@@ -49,7 +49,9 @@ def receive():
                 listobj=pickle.loads(receive)
                 memberslist=listobj["0"]
                 publickeys=listobj["1"]
-                generateSenderKeys(False)
+                print("called!!! senderkeys!!!")
+                if len(memberslist)!=1:
+                 generateSenderKeys(False)
                 #print("membersList: 1"+publickeys)
                except Exception as e:
                    print('inside memembers list' + str(e))
@@ -57,7 +59,7 @@ def receive():
                 print('GroupDead received')
                 groupdead=True
             elif m[0:12]=="memeberskeys":
-                #print("memberkeys")
+               try: #print("memberkeys")
                 rawbytesobj=client.recv(int(m[12:]))
                 pickledobj=pickle.loads(rawbytesobj)
                 for x,y in pickledobj.items():
@@ -68,6 +70,8 @@ def receive():
                 print(decSenderKeys)
                 print("EVERYTHING RECEIVED !!!!!")
                 print(encSenderKeys)
+               except Exception as e:
+                  print("Exception in memeberskeys:"+str(e))
 
             elif m[0:9]=="memberadd":
                try:
@@ -79,12 +83,12 @@ def receive():
                      'name':"ChatBot",
                      'message': addobj['message']
                 })
-                print("adddinggggggggggg")
+                print("addding:"+str(addobj))
                 publickeys[addobj['name']]=addobj['publickey']
                 secretkey=generate_secret_key(privatekey,addobj['publickey'])
-                print("secretkey: "+str(secretkey))
-                print("saddobj: "+str(addobj['encSkey']))
-                decSenderKeys[addobj['name']]=decryption(secretkey,addobj['encSkey'],False)
+                #print("secretkey: "+str(secretkey))
+                #print("saddobj: "+str(addobj['encSkey']))
+                decSenderKeys[addobj['name']]=decryption(secretkey,addobj['encSkey'],False) #False if key is being decrypted!
                 check=1
                 generateSenderKey(addobj['name'])
                 check=0
@@ -93,8 +97,19 @@ def receive():
                 func(pkey,name)
                 func()--send the whole enckey{} to server!
                 check=0
-
                 """
+                if addobj['check']==True:
+                    rawobj=copy.deepcopy(clientmessageList) #fucking great error!!!
+                    print("oldmessages"+str(rawobj))
+                    for x in rawobj:
+                        x['message']=encryption(clientsenderkey,x['message'])
+                    pickledobj2=pickle.dumps(rawobj)
+                    m=("oldmessages"+str(len(pickledobj2))).encode('UTF-8')
+                    header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
+                    client.sendall(header+m)
+                    client.sendall(pickledobj2)   #sends all the old messages!!!
+                    print("old messages sent!!")
+
                except Exception as e:
                    print('inside member add' + str(e))
             elif m[0:10]=="membergone":
@@ -104,6 +119,7 @@ def receive():
                  memberslist.remove(member)
                  publickeys.pop(recvobj["person"]) #removing the public key of the person!!!
                  encSenderKeys.pop(recvobj["person"])
+                 decSenderKeys.pop(recvobj["person"])
                  clientmessageList.append({
                      "name":"ChatBot",
                      "colour":"#223344",
@@ -112,8 +128,11 @@ def receive():
                  clientsenderkey=generate_AES_key() #changing the sender key!!!
                  #check=1
                  print("before"+str(encSenderKeys))
-                 generateSenderKeys(True)
+                 if len(publickeys)!=1:
+                     print("called!!! senderkeys!!!")
+                     generateSenderKeys(True)
                  print("after"+str(encSenderKeys))
+                 print(decSenderKeys)
                  #check=0
                  """
                 check=1
@@ -127,21 +146,28 @@ def receive():
             elif m[0:11]=="oldmessages":
                try:
                 #print(m[11:])
+                print("Old messages Recevied")
                 gotit = client.recv(int(m[11:]))
                 #print(gotit)
-                oldmessages={}
                 oldmessages=pickle.loads(gotit)
-                #print(oldmessages)
-                clientmessageList=copy.deepcopy(oldmessages["0"])
+                print(oldmessages)
+                name2=oldmessages[0]
+                for x in oldmessages[1:]:
+                    key=decSenderKeys[name2]
+                    x['message']=decryption(key,x['message'],True) #True if messages are being decrypted!
+
+                clientmessageList=copy.deepcopy(oldmessages[1:])
                except Exception as e:
                    print('inside old messages' + str(e))
             
             elif m[0:10]=="newmessage":
                try:
-                newmessage={}
                 gotnew= client.recv(int(m[10:]))
+                print("got nw!!!"+str(gotnew))
                 newmessage=pickle.loads(gotnew)
+                print("newmessage:"+str(newmessage))
                 othername=newmessage["name"]
+                print("decSenderkeys:"+str(decSenderKeys))
                 key=decSenderKeys[othername]
                 print("key:"+str(key))
                 newmessage["message"]=decryption(key,newmessage["message"],True)
@@ -216,7 +242,7 @@ def return_message():
 
 def generateSenderKeys(check):
   try:
-    #print("came")
+    print("came hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"+str(check))
     global publickeys,encSenderKeys,privatekey,clientsenderkey,name
     global client
     #print("generatesenderkeys:"+str(publickeys))
@@ -370,18 +396,26 @@ def sendJoin(s):
       print("Exception occured in sendJoin: "+str(e))
 
 def sendMessage(mess,colour):
-  global clientsenderkey
+  global clientsenderkey,clientmessageList
   try:
     print('sendMessage')
     global client,name
     message="message"
     print("key::::::::"+str(clientsenderkey))
+    clientmessageList.append({
+        "colour":colour,
+        "message":mess,
+        "name":name
+    })
     mess=encryption(clientsenderkey,mess)
     messagedict={
         "colour":colour,
         "message":mess,
         "name":name
     }
+    
+    print("name:"+name)
+    print("messageobject:"+str(messagedict))
     messageobj=pickle.dumps(messagedict)
     #print(messageobj)
     message=message+str(len(messageobj))
