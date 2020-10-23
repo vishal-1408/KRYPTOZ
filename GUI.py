@@ -32,7 +32,7 @@ separator="*****seperator*****"
 refresh_group_list = None
 chamber_name_and_code = ''
 username = ''
-user_name_and_code = read_code_from_file()
+user_name_and_code = ''
 ECC_Key = None
 Sender_Key = generate_AES_key()
 print(Sender_Key)
@@ -95,8 +95,9 @@ class Login(Screen):
 		else:
 			for i in range(0,len(Credential_List),2):
 				if Credential_List[i] == hashed_username and Credential_List[i+1]==hashed_password:
-					global username, ECC_Key
+					global username, ECC_Key, user_name_and_code
 					username = self.ids.username.text
+					user_name_and_code = read_code_from_file(username)
 					ECC_Key = get_key(self.ids.username.text, self.ids.password.text)
 					print(ECC_Key)
 					return True
