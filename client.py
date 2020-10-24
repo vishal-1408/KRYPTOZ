@@ -25,6 +25,24 @@ def receive():
                 client.close()
                 print("Connection got disconnected.............")
                 break
+            elif m[0:11]=="returnagain":
+                dumpedobject=client.recv(int(m[11:]))
+                realobject=pickle.loads(dumpedobject)
+                try:
+                 while check!=1:
+                     pass
+                except Exception as e:
+                    print("Message couldn't be delivered due to technical reasons"+str(e))
+                    continue
+                realobject['message']=encryption(clientsenderkey,realobject['message'])
+                message3="message"
+                messageobj3=pickle.dumps(realobject)
+                message3=message3+str(len(messageobj3))
+                message3=message3.encode('UTF-8')
+                header3=f"{len(message3):<{HEADER_SIZE}}".encode('UTF-8')
+                client.sendall(header3+message3)
+                client.sendall(messageobj3)
+
             elif m[0:7]=="details":
                 #print("details")
                 message=client.recv(int(m[7:]))
@@ -69,6 +87,7 @@ def receive():
                 decSenderKeys=pickledobj
                 print(decSenderKeys)
                 print("EVERYTHING RECEIVED !!!!!")
+                check=0
                 print(encSenderKeys)
                except Exception as e:
                   print("Exception in memeberskeys:"+str(e))
@@ -89,10 +108,10 @@ def receive():
                 #print("secretkey: "+str(secretkey))
                 #print("saddobj: "+str(addobj['encSkey']))
                 decSenderKeys[addobj['name']]=decryption(secretkey,addobj['encSkey'],False) #False if key is being decrypted!
-                check=1
+                # check=1
                 print("called!!")
                 generateSenderKey(addobj['name'])
-                check=0
+                # check=0
                 """
                 check=1
                 func(pkey,name)
@@ -115,6 +134,7 @@ def receive():
                    print('inside member add error:' + str(e))
             elif m[0:10]=="membergone":
                 try:
+                 check=1
                  recvobj=pickle.loads(client.recv(int(m[10:])))
                  member=recvobj["person"]
                  memberslist.remove(member)
@@ -126,15 +146,14 @@ def receive():
                      "colour":"#223344",
                      "message":recvobj["message"],
                  })
-                 clientsenderkey=generate_AES_key() #changing the sender key!!!
-                 #check=1
+                 clientsenderkey=generate_AES_key() #changing the sender key!!
                  print("before"+str(encSenderKeys))
                  if len(publickeys)!=1:
                      print("called!!! senderkeys!!!")
                      generateSenderKeys(True)
                  print("after"+str(encSenderKeys))
                  print(decSenderKeys)
-                 #check=0
+                #  check=0
                  """
                 check=1
                 func() generate new sender keys and enc sender keys for every memeber!
@@ -155,8 +174,12 @@ def receive():
                 name2=oldmessages[0]
                 print("decrypted senderkeys: "+str(decSenderKeys))
                 for x in oldmessages[1:]:
+                  try:
                     key=decSenderKeys[name2]
-                    x['message']=decryption(key,x['message'],True) #True if messages are being decrypted!
+                  except Exception as e:
+                      print("Key not found!!"+str(e))
+                      continue
+                  x['message']=decryption(key,x['message'],True) #True if messages are being decrypted!
 
                 clientmessageList=copy.deepcopy(oldmessages[1:])
                except Exception as e:
@@ -170,7 +193,11 @@ def receive():
                 print("newmessage:"+str(newmessage))
                 othername=newmessage["name"]
                 print("decSenderkeys:"+str(decSenderKeys))
-                key=decSenderKeys[othername]
+                try:
+                  key=decSenderKeys[othername]
+                except Exception as e:
+                     print("key not found!!"+str(e))
+                     continue
                 print("key:"+str(key))
                 newmessage["message"]=decryption(key,newmessage["message"],True)
                 print("newmessage: "+str(newmessage))
