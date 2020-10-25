@@ -210,7 +210,7 @@ def receive():
 
 def return_details():
     global details
-    #print("details: "+str(details))
+    print("details: "+str(details))
     return details
 
 def makeNone():
