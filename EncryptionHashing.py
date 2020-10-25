@@ -1,5 +1,4 @@
 import hashlib
-import json
 from random import randint, randrange  
 from math import sqrt
 from Crypto.PublicKey import ECC
@@ -76,7 +75,6 @@ print(e_d)
 
 def decryption(key, encrypted_data,check):
     try:
-        header: encrypted_data['header']
         data = encrypted_data['ciphertext']
         cipher = AES.new(key, AES.MODE_GCM, encrypted_data['nonce'])
         plaintext = cipher.decrypt_and_verify(data, encrypted_data['tag'])

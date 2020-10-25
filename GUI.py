@@ -2,6 +2,7 @@ from kivy.config import Config
 Config.set('graphics', 'width',  800)
 Config.set('graphics', 'height', 600)
 Config.set('graphics', 'resizable', False)
+Config.set('kivy', 'window_icon', 'img/lock.png')
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout

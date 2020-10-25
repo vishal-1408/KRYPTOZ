@@ -1,2 +1,16 @@
-arjun:
-1. server should be able to handle errors that are being thrown due to code modification on client side.
+#bug1
+if you send big message at same time with anyother user sending a message exception occurs at server
+
+#bug2
+if people are chatting with alot of messages 
+and someone leaves then an error occurs, 
+what I got is that the gui script had failed we can check logs.
+The person spamming got gui script failed, the person leaving faces no old messages
+when he joins back, and after the spammer who caused this closses his script the message shows up
+for the person who left and joined
+
+Tasks:
+1. Change the window names to the app name
+2. Add some gui on login screen and change the buttons on join or create
+3. Add print statements for the presentation
+4. Make a ppt (probably)
