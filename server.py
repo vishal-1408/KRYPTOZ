@@ -17,16 +17,19 @@ def accept():
 
 def details(c):
     try:
-        #print("details")
+        print("details")
         global groupinfo
         groupobject={}
         for x,y in groupinfo.items():
             groupobject[x]=list([y[1],y[2],len(y[3]),y[6]])
+        print(groupobject)
         messageobj=pickle.dumps(groupobject)
+
         message="details"+str(len(messageobj))
         message=message.encode('UTF-8')
         c.sendall(f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')+message)
         c.sendall(messageobj)
+        
         return 1
     except Exception as e:
         print("Exception occured in ddetails: "+str(e))
@@ -213,6 +216,8 @@ def join(c):
                       header2=f"{len(message1):{HEADER_SIZE}}".encode('UTF-8')
                       c.sendall(header2+message1)
                       c.sendall(pickledmessagearray)
+                      print(len(pickledmessagearray))
+                      print(pickledmessagearray)
                       print("OLD MESSAGES SENT!!")
                       #print("sent!!! :"+str(messagearray))
                       groupMessages[name]=[]
@@ -301,15 +306,17 @@ def broadcasteveryone(gname,client,pkey):
 def sendAllMessages(groupname,c):
     try:
         global groupMessages
-        oldmessages={'0':groupMessages[groupname]}
+        for i in range(6,len(groupMessages[groupname])-1,6):
+             oldmessages={'0':groupMessages[groupname][0:i]}
         #print("oldmessages: "+str(oldmessages))
-        messageobj=pickle.dumps(oldmessages)
-        message="oldmessages"
-        message=message+str(len(messageobj))
-        message=message.encode('UTF-8')
-        header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
-        c.sendall(header+message)
-        c.sendall(messageobj)
+             messageobj=pickle.dumps(oldmessages)
+             message="oldmessages"
+             message=message+str(len(messageobj))
+             message=message.encode('UTF-8')
+             header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
+             c.sendall(header+message)
+             c.sendall(messageobj)
+       
     except Exception as e:
         print("Exception occured in sendAllMessages: "+str(e))
         return
@@ -370,6 +377,7 @@ def handling_the_client(client):
                     break
                 else:
                     while 1 in groupcheck[clientinfo[client][2]].values():
+                        print("skdljdlasj")
                         pass
                     groupcheck[clientinfo[client][2]][clientinfo[client][0]]=-1
                     memberssockets=groupinfo[clientinfo[client][2]][4]
@@ -390,8 +398,20 @@ def handling_the_client(client):
 
 def populateOldMessages(c,length):
     global groupMessages,clientinfo
-    bytesarr=c.recv(length)
-    loadedarr=pickle.loads(bytesarr)
+    completearrray=b""
+    d=1
+    while d:
+        if length>4096:
+            rbytes=4096
+            d=1
+        elif length<=4096:
+            rbytes=length
+        bytesarr2=c.recv(rbytes)
+        completearrray+=bytesarr2
+        length=length-len(bytesarr2)
+        if length==0:
+            d=0
+    loadedarr=pickle.loads(completearrray)
     loadedarr.insert(0,clientinfo[c][0])
     groupMessages[clientinfo[c][2]]=copy.deepcopy(loadedarr) #1st index is the anme of client sending it!!
 

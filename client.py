@@ -47,7 +47,7 @@ def receive():
                 #print("details")
                 message=client.recv(int(m[7:]))
                 details=pickle.loads(message)        #details={'groupname':'[limit,code,length,check]'}
-                #print("details:"+str(details))
+                print("details:"+str(details))
             elif m[0:4]=="auth":
                 length=int(m[4:])
                 obj=pickle.loads(client.recv(length))
@@ -127,7 +127,7 @@ def receive():
                     m=("oldmessages"+str(len(pickledobj2))).encode('UTF-8')
                     header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
                     client.sendall(header+m)
-                    client.sendall(pickledobj2)   #sends all the old messages!!!
+                    client.sendall(pickledobj2)                                        #sends all the old messages!!!
                     print("old messages sent!!")
 
                except Exception as e:
@@ -166,11 +166,33 @@ def receive():
             elif m[0:11]=="oldmessages":
                try:
                 #print(m[11:])
+                length123=int(m[11:])
+                completearrray=b""
+                d=1
+                while d:
+                   if length123>4096:
+                      rbytes=4096
+                      d=1
+                   elif length123<=4096:
+                       rbytes=length123
+                   print("length*********"+str(length123))
+                   print("dddddddd:"+str(d))
+                   bytesarr2=client.recv(rbytes)
+                   length123=length123-len(bytesarr2)
+                   if length123==0:
+                       d=0
+                   print(len(bytesarr2))
+                   print(bytesarr2)
+                   completearrray+=bytesarr2
+                print("outside!!!")
+                #bytesarr2=client.recv(length123)
+                #completearrray+=bytesarr2
+                print(len(bytesarr2))
                 print("Old messages Recevied")
-                gotit = client.recv(int(m[11:]))
-                #print(gotit)
-                oldmessages=pickle.loads(gotit)
-                print(oldmessages)
+                print(completearrray)
+                print("length:"+str(len(completearrray)))
+                oldmessages=pickle.loads(completearrray)
+                print("oldmessages:  "+str(oldmessages))
                 name2=oldmessages[0]
                 print("decrypted senderkeys: "+str(decSenderKeys))
                 for x in oldmessages[1:]:
