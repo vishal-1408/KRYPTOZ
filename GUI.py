@@ -36,7 +36,7 @@ username = ''
 user_name_and_code = ''
 ECC_Key = None
 Sender_Key = generate_AES_key()
-print(Sender_Key)
+print("Sender Key:"+str(Sender_Key))
 
 def error_color(textinput):
 	textinput.background_color=(1,120/255,120/255,1)
@@ -60,11 +60,11 @@ def quick_message(title, multiple_allow, message ):
 class CustomTextInput(TextInput):
 	def keyboard_on_key_down(self, window, keycode, text, modifiers):
 		if keycode[0] == 13:
-			print('ENTER WAS PRESSED ENTER WAS PRESSED ENTER WAS PRESSED 1')
+			#print('ENTER WAS PRESSED ENTER WAS PRESSED ENTER WAS PRESSED 1')
 			self.press_enter(self, self.text)
 		super().keyboard_on_key_down(window, keycode, text, modifiers)
 	def press_enter(self, instance, text):
-		print('ENTER WAS PRESSED ENTER WAS PRESSED ENTER WAS PRESSED 2')
+		#print('ENTER WAS PRESSED ENTER WAS PRESSED ENTER WAS PRESSED 2')
 		pass
 #------------------------------------------------#
 
@@ -100,7 +100,7 @@ class Login(Screen):
 					username = self.ids.username.text
 					user_name_and_code = read_code_from_file(username)
 					ECC_Key = get_key(self.ids.username.text, self.ids.password.text)
-					print(ECC_Key)
+					print("ECC KEY:"+str(ECC_Key))
 					return True
 
 	def login_error(self):
@@ -112,7 +112,7 @@ class Login(Screen):
 		else:
 			try:
 				global ECC_Key,Sender_Key
-				print('called')
+				#print('called')
 				client_initialize()
 				print(self.ids.username.text)
 				sendName(read_code_from_file(self.ids.username.text),[ECC_Key.pointQ.x,ECC_Key.pointQ.y], ECC_Key.d,Sender_Key)
@@ -140,7 +140,7 @@ class JoinOrCreate(Screen):
 		join_screen.preload_groups()
 
 	def pre_join(self):
-		print('pre-join')
+		#print('pre-join')
 		app = App.get_running_app()
 		join_screen = app.root.get_screen('join')
 		join_screen.on_search()
@@ -202,7 +202,7 @@ class CreateGroup(Screen):
 			sendCreate(group_string)
 			global chamber_name_and_code
 			chamber_name_and_code  = self.ids.name.text + group_code #Assigning the group name to global variable so that we can access it in chatwin
-			print(chamber_name_and_code+ 'FROM GUI CHAMBER INFO')
+			#print(chamber_name_and_code+ 'FROM GUI CHAMBER INFO')
 			self.manager.transition=SlideTransition(direction="down")
 			self.manager.current = 'chatwin'
 			#clearing textinputs
@@ -223,7 +223,7 @@ class SelectGroup(Screen):
 		self.search_refresh()
 
 	def on_search(self):
-		print('on_search')
+		#print('on_search')
 		sendGroups() #Test this and remove 
 		#sendMembers() #Test this and remove
 		self.search_refresh()
@@ -324,13 +324,13 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 		else:
 			for group in return_details_list:
 				if self.group_name+self.group_code!= group:
-					print('\ngroup deleted entered here ' + str(group))
+					#print('\ngroup deleted entered here ' + str(group))
 					group_deleted = True
 				else:
 					group_deleted = False
-					print('\ngroup deleted entered here asdfsdf ' + str(group))
+					#print('\ngroup deleted entered here asdfsdf ' + str(group))
 					break
-		print('group deleted: '+ str(group_deleted))
+		#print('group deleted: '+ str(group_deleted))
 		if not group_deleted:
 			if self.auth and not self.full:
 				auth_design = QuickMessage_pop()
@@ -373,7 +373,7 @@ class RecycleGroups(RecycleDataViewBehavior,BoxLayout):
 			self.auth = return_authenticate()
 			self.full = return_groupfull()
 			#print(str(self.auth)+'\t'+str(self.full)+' 1')
-		print(self.group_dead)
+		#print(self.group_dead)
 	def transition(self, *args):
 		if self.password_allowed:
 			self.success_auth.dismiss()
@@ -420,11 +420,11 @@ class MemberLabels(RecycleDataViewBehavior, BoxLayout):
 		self.pop.bind(on_dismiss=self.cancel_trigger)
 
 	def dismiss_pop(self, instance):
-		print('open')
+		#print('open')
 		self.dismiss_trigger = Clock.schedule_once(lambda dt: self.pop.dismiss(), 5)
 	
 	def cancel_trigger(self, instance):
-		print('cancel')
+		#print('cancel')
 		self.dismiss_trigger.cancel()
 
 	def refresh_view_attrs(self, rv, index, data):
@@ -508,7 +508,7 @@ class ChatWindow(Screen):
 	def refresh_messsages(self, dt):
 		new_messages = return_message()
 		for messages in new_messages:
-			print (messages)
+			#print (messages)
 			self.add_message(messages['message'], messages['colour'], messages['name'])
 	
 	def send_message(self, *args):

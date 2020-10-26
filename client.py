@@ -11,16 +11,16 @@ HEADER_SIZE=10
 def receive():
     global client
     global details, result,groupfull
-    global members,memberslist,clientmessageList,name,groupdead,check
+    global members,memberslist,clientmessageList,name,groupdead,check,sendagain
     global publickeys,decSenderKeys,clientsenderkey
     i=1
     #print('Function Started!!!!')
     while 1:
         try:
             length=client.recv(HEADER_SIZE).decode('UTF-8')
-            print("legnth: "+str(length))
+            #print("legnth: "+str(length))
             m=client.recv(int(length)).decode('UTF-8')
-            print("message:"+str(m))
+            #print("message:"+str(m))
             if m=="BYE":
                 client.close()
                 print("Connection got disconnected.............")
@@ -28,26 +28,30 @@ def receive():
             elif m[0:11]=="returnagain":
                 dumpedobject=client.recv(int(m[11:]))
                 realobject=pickle.loads(dumpedobject)
-                try:
-                 while check!=1:
-                     pass
-                except Exception as e:
-                    print("Message couldn't be delivered due to technical reasons"+str(e))
-                    continue
-                realobject['message']=encryption(clientsenderkey,realobject['message'])
-                message3="message"
-                messageobj3=pickle.dumps(realobject)
-                message3=message3+str(len(messageobj3))
-                message3=message3.encode('UTF-8')
-                header3=f"{len(message3):<{HEADER_SIZE}}".encode('UTF-8')
-                client.sendall(header3+message3)
-                client.sendall(messageobj3)
+                # if check==1:
+                sendagain.append(realobject)
+                # else:
+                # try:
+                #  while check==1:
+                #      pass
+                # except Exception as e:
+                #     print("Message couldn't be delivered due to technical reasons"+str(e))
+                #     continue
+                #  for x in sendagain:
+                #   x['message']=encryption(clientsenderkey,x['message'])
+                #   message3="message"
+                #   messageobj3=pickle.dumps(x)
+                #   message3=message3+str(len(messageobj3))
+                #   message3=message3.encode('UTF-8')
+                #   header3=f"{len(message3):<{HEADER_SIZE}}".encode('UTF-8')
+                #   client.sendall(header3+message3)
+                #   client.sendall(messageobj3)
 
             elif m[0:7]=="details":
                 #print("details")
                 message=client.recv(int(m[7:]))
                 details=pickle.loads(message)        #details={'groupname':'[limit,code,length,check]'}
-                print("details:"+str(details))
+                #print("details:"+str(details))
             elif m[0:4]=="auth":
                 length=int(m[4:])
                 obj=pickle.loads(client.recv(length))
@@ -67,7 +71,7 @@ def receive():
                 listobj=pickle.loads(receive)
                 memberslist=listobj["0"]
                 publickeys=listobj["1"]
-                print("called!!! senderkeys!!!")
+                #print("called!!! senderkeys!!!")
                 if len(memberslist)!=1:
                  generateSenderKeys(False)
                 #print("membersList: 1"+publickeys)
@@ -85,10 +89,9 @@ def receive():
                      secretkey=generate_secret_key(privatekey,otherpkey)
                      pickledobj[x]=decryption(secretkey,y,False)
                 decSenderKeys=pickledobj
-                print(decSenderKeys)
-                print("EVERYTHING RECEIVED !!!!!")
+                print("***recieved the sender keys of all the members:"+str(decSenderKeys)+"***")
+                #print("EVERYTHING RECEIVED !!!!!")
                 check=0
-                print(encSenderKeys)
                except Exception as e:
                   print("Exception in memeberskeys:"+str(e))
 
@@ -102,14 +105,14 @@ def receive():
                      'name':"ChatBot",
                      'message': addobj['message']
                 })
-                print("addding:"+str(addobj))
+                #print("addding:"+str(addobj))
                 publickeys[addobj['name']]=addobj['publickey']
                 secretkey=generate_secret_key(privatekey,addobj['publickey'])
                 #print("secretkey: "+str(secretkey))
                 #print("saddobj: "+str(addobj['encSkey']))
                 decSenderKeys[addobj['name']]=decryption(secretkey,addobj['encSkey'],False) #False if key is being decrypted!
                 # check=1
-                print("called!!")
+                #print("called!!")
                 generateSenderKey(addobj['name'])
                 # check=0
                 """
@@ -120,7 +123,7 @@ def receive():
                 """
                 if addobj['check']==True:
                     rawobj=copy.deepcopy(clientmessageList) #fucking great error!!!
-                    print("oldmessages"+str(rawobj))
+                    print("***oldmessages before encryption:"+str(rawobj)+"***")
                     for x in rawobj:
                         x['message']=encryption(clientsenderkey,x['message'])
                     pickledobj2=pickle.dumps(rawobj)
@@ -128,7 +131,7 @@ def receive():
                     header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
                     client.sendall(header+m)
                     client.sendall(pickledobj2)                                        #sends all the old messages!!!
-                    print("old messages sent!!")
+                    #print("old messages sent!!")
 
                except Exception as e:
                    print('inside member add error:' + str(e))
@@ -147,13 +150,22 @@ def receive():
                      "message":recvobj["message"],
                  })
                  clientsenderkey=generate_AES_key() #changing the sender key!!
-                 print("before"+str(encSenderKeys))
+                 print("***old encryptedSendekEYS"+str(encSenderKeys)+"***")
                  if len(publickeys)!=1:
-                     print("called!!! senderkeys!!!")
+                     #print("called!!! senderkeys!!!")
                      generateSenderKeys(True)
-                 print("after"+str(encSenderKeys))
-                 print(decSenderKeys)
-                #  check=0
+                 print("***new encryptedSendekEYS"+str(encSenderKeys)+"***")
+                 #print(decSenderKeys)
+                 check=0
+                 for x in sendagain:
+                  x['message']=encryption(clientsenderkey,x['message'])
+                  message3="sentagainmessage"
+                  messageobj3=pickle.dumps(x)
+                  message3=message3+str(len(messageobj3))
+                  message3=message3.encode('UTF-8')
+                  header3=f"{len(message3):<{HEADER_SIZE}}".encode('UTF-8')
+                  client.sendall(header3+message3)
+                  client.sendall(messageobj3)
                  """
                 check=1
                 func() generate new sender keys and enc sender keys for every memeber!
@@ -175,26 +187,26 @@ def receive():
                       d=1
                    elif length123<=4096:
                        rbytes=length123
-                   print("length*********"+str(length123))
-                   print("dddddddd:"+str(d))
+                   #print("length*********"+str(length123))
+                   #print("dddddddd:"+str(d))
                    bytesarr2=client.recv(rbytes)
                    length123=length123-len(bytesarr2)
                    if length123==0:
                        d=0
-                   print(len(bytesarr2))
-                   print(bytesarr2)
+                   #print(len(bytesarr2))
+                   #print(bytesarr2)
                    completearrray+=bytesarr2
-                print("outside!!!")
+                #print("outside!!!")
                 #bytesarr2=client.recv(length123)
                 #completearrray+=bytesarr2
-                print(len(bytesarr2))
-                print("Old messages Recevied")
-                print(completearrray)
-                print("length:"+str(len(completearrray)))
+                #print(len(bytesarr2))
+                #print("Old messages Recevied")
+                #print(completearrray)
+                #print("length:"+str(len(completearrray)))
                 oldmessages=pickle.loads(completearrray)
-                print("oldmessages:  "+str(oldmessages))
+                print("***oldmessages (before decryption):  "+str(oldmessages)+"***")
                 name2=oldmessages[0]
-                print("decrypted senderkeys: "+str(decSenderKeys))
+                #print("decrypted senderkeys: "+str(decSenderKeys))
                 for x in oldmessages[1:]:
                   try:
                     key=decSenderKeys[name2]
@@ -202,7 +214,7 @@ def receive():
                       print("Key not found!!"+str(e))
                       continue
                   x['message']=decryption(key,x['message'],True) #True if messages are being decrypted!
-
+                print("***oldmessages (after decryption):  "+str(oldmessages)+"***")
                 clientmessageList=copy.deepcopy(oldmessages[1:])
                except Exception as e:
                    print('inside old messages error:' + str(e))
@@ -210,19 +222,21 @@ def receive():
             elif m[0:10]=="newmessage":
                try:
                 gotnew= client.recv(int(m[10:]))
-                print("got nw!!!"+str(gotnew))
+                #print("got nw!!!"+str(gotnew))
                 newmessage=pickle.loads(gotnew)
-                print("newmessage:"+str(newmessage))
+                #print("newmessage:"+str(newmessage))
+                print("newmessage (before decryption)"+str(newmessage)+"***")
                 othername=newmessage["name"]
-                print("decSenderkeys:"+str(decSenderKeys))
+                #print("decSenderkeys:"+str(decSenderKeys))
                 try:
                   key=decSenderKeys[othername]
                 except Exception as e:
                      print("key not found!!"+str(e))
                      continue
-                print("key:"+str(key))
+                #print("key:"+str(key))
                 newmessage["message"]=decryption(key,newmessage["message"],True)
-                print("newmessage: "+str(newmessage))
+                print("newmessage (after decryption)"+str(newmessage)+"***")
+                #print("newmessage: "+str(newmessage))
                 clientmessageList.append(copy.deepcopy(newmessage))   #{"colour":value , "name": value, "message": value }
                except Exception as e:
                    print('inside new message error occured:' + str(e))
@@ -232,7 +246,7 @@ def receive():
 
 def return_details():
     global details
-    print("details: "+str(details))
+    #print("details: "+str(details))
     return details
 
 def makeNone():
@@ -293,7 +307,7 @@ def return_message():
 
 def generateSenderKeys(check):
   try:
-    print("came hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"+str(check))
+    #print("came hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"+str(check))
     global publickeys,encSenderKeys,privatekey,clientsenderkey,name
     global client
     #print("generatesenderkeys:"+str(publickeys))
@@ -390,7 +404,7 @@ def sendName(username,pkey,prkey,senderkey):
 
 def sendGroups():
   try:
-    print('sendGroups')
+    #print('sendGroups')
     global client
     m="groups".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
@@ -409,12 +423,12 @@ def sendGroups():
 #       print("Exception occured in sendMembers: "+str(e))
 
 def sendMembersList():
-    print("ntg left to do")
+   print("")
 
 
 def sendCreate(s):
   try:
-    print('sendCreate')
+    #print('sendCreate')
     global client,memberslist,name
     m="create".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
@@ -422,7 +436,7 @@ def sendCreate(s):
     m=s.encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
-    print('sent-create-request')
+    #print('sent-create-request')
     memberslist.append(name)
     clientmessageList.append({
         'colour':"#223344",
@@ -435,7 +449,7 @@ def sendCreate(s):
 def sendJoin(s):
   try:
     membersonline=return_members()
-    print('sent-join-request')
+    #print('sent-join-request')
     m="join".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
@@ -456,24 +470,29 @@ def sendJoin(s):
 def sendMessage(mess,colour):
   global clientsenderkey,clientmessageList
   try:
-    print('sendMessage')
+    #print('sendMessage')
     global client,name
     message="message"
-    print("key::::::::"+str(clientsenderkey))
+
     clientmessageList.append({
         "colour":colour,
         "message":mess,
         "name":name
     })
+    print("sending message(before encryption): "+str({
+        "colour":colour,
+        "message":mess,
+        "name":name
+    }))
     mess=encryption(clientsenderkey,mess)
     messagedict={
         "colour":colour,
         "message":mess,
         "name":name
     }
-    
-    print("name:"+name)
-    print("messageobject:"+str(messagedict))
+    print("sending message(after encryption): "+str(messagedict))
+    #print("name:"+name)
+    #print("messageobject:"+str(messagedict))
     messageobj=pickle.dumps(messagedict)
     #print(messageobj)
     message=message+str(len(messageobj))
@@ -488,7 +507,7 @@ def sendLogout(*args):
   global name,clientsenderkey
   try:
    if name is not '' :
-    print('sendlogout')
+    #print('sendlogout')
     global client,sentList,clientmessageList,sentList,publickeys,encSenderKeys,decSenderKeys
     global members,details
     details.clear()
@@ -504,7 +523,7 @@ def sendLogout(*args):
     m="QUIT".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
-    print("sent ")
+    #print("sent ")
   except Exception as e:
       print("Exception occured in sendLogout: "+str(e))
 
@@ -536,7 +555,7 @@ decSenderKeys={} #keys of other ppl!! used for decrypting!
 privatekey=None
 clientsenderkey=None
 check=0
-
+sendagain=[]
 #Host=input("Enter the host name: ")
 #Port=int(input("Enter the port number: "))
 #Host="34.227.91.249"
@@ -545,8 +564,8 @@ def client_initialize():
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     Host="127.0.0.1"
     Port=8000
-    Host="52.204.124.224"
-    Port=8000
+    #Host="52.204.124.224"
+    #Port=8000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()
