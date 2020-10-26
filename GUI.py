@@ -156,7 +156,7 @@ class CreateGroup(Screen):
 							if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=60:
 								return True
 							else:
-								quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+								quick_message("Add your friends!", True, "Add more than 2 and less than 60 members in the chamber.")
 								return False
 						else:
 							quick_message("Meh! don't you wanna be secure", True, "Passwords so not match!")
@@ -176,7 +176,7 @@ class CreateGroup(Screen):
 					if int(self.ids.members.text)>=2 and int(self.ids.members.text)<=60:
 						return True
 					else:
-						quick_message("Add your friends!", True, "Add more than 2 and less than 100 members in the chamber.")
+						quick_message("Add your friends!", True, "Add more than 2 and less than 60 members in the chamber.")
 						return False
 				else:
 					quick_message("Oh darn!", True, "The Chamber Name should be atleast 3 characters and maximum 15.")
@@ -614,7 +614,7 @@ class QuickMessage_pop(BoxLayout):
 #------------------------------------------------#
 
 #-------------main app loop---------#
-class ChatApp(App):
+class KryptozApp(App):
 	popups = []
 	def close_popup(self, *args):
 		if self.popups:
@@ -651,4 +651,4 @@ class ChatApp(App):
 		popup.open()
 		self.popups.append(popup)
 if __name__ == '__main__':
-    ChatApp().run()
+    KryptozApp().run()

@@ -10,7 +10,7 @@ when he joins back, and after the spammer who caused this closses his script the
 for the person who left and joined
 
 Tasks:
-1. Change the window names to the app name
-2. Add some gui on login screen and change the buttons on join or create
+
+
 3. Add print statements for the presentation
 4. Make a ppt (probably)

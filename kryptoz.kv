@@ -58,10 +58,29 @@ Screen_Manager:
 
 <Login>:
     name: 'login'
+    FloatLayout:
+        size: root.size
+        pos: root.pos
+        Image:
+            source: 'img/login_screen_top.png'
+            size_hint: None,None
+            allow_stretch: False
+            keep_ratio: True
+            size: 140,140
+            pos_hint:{'center_x': 0.5, 'top':0.99}
+        Label:
+            font_name: 'Fonts/Montserrat-Light.ttf'
+            text: 'K R Y P T O Z'
+            color: RGBA('#2A7C69')
+            font_size: 40
+            size_hint: None, None
+            size: self.texture_size
+            pos_hint:{'center_y': 0.7, 'center_x': 0.5}
     BoxLayout:
         orientation: "vertical"
         spacing:30
         padding:(100,200)
+        pos_hint: {'top':0.95}
         CustomTextInput:
             id: username
             #text:"arjun" #REMOVEE THIS SHIT
