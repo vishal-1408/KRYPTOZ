@@ -150,6 +150,7 @@ def receive():
                      "message":recvobj["message"],
                  })
                  clientsenderkey=generate_AES_key() #changing the sender key!!
+                 print("***new Sender key : "+str(clientsenderkey)+"***")
                  print("***old encryptedSendekEYS"+str(encSenderKeys)+"***")
                  if len(publickeys)!=1:
                      #print("called!!! senderkeys!!!")
@@ -564,8 +565,8 @@ def client_initialize():
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     Host="127.0.0.1"
     Port=8000
-    #Host="52.204.124.224"
-    #Port=8000
+    Host="52.204.124.224"
+    Port=8000
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()

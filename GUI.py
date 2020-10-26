@@ -405,7 +405,7 @@ class MemberLabels(RecycleDataViewBehavior, BoxLayout):
 	index = NumericProperty(0)
 	color = StringProperty()
 	def give_username(self):
-		print('give username')
+		#print('give username')
 		design = Username_display_pop()
 		design.ids.label.text = self.text
 		self.pop = ModalView(
@@ -499,7 +499,7 @@ class ChatWindow(Screen):
 			'username_color': u_col,
 			'text': text
 		})
-		print(username)
+		#print(username)
 
 	def refresh_messages_scheduler(self):
 		self.message_refresh = Clock.schedule_interval(self.refresh_messsages, 0.5)
