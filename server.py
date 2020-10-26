@@ -17,12 +17,12 @@ def accept():
 
 def details(c):
     try:
-        print("details")
+        #print("details")
         global groupinfo
         groupobject={}
         for x,y in groupinfo.items():
             groupobject[x]=list([y[1],y[2],len(y[3]),y[6]])
-        print(groupobject)
+        #print(groupobject)
         messageobj=pickle.dumps(groupobject)
 
         message="details"+str(len(messageobj))
@@ -198,7 +198,7 @@ def join(c):
                         d=l
                       except Exception as e:
                        print(e)
-                       print("got the senderkeys encrypted of all other users")
+                      print("got the encrypted senderkeys of all other users")
                       #print("got the senderkeys encrypted of all other users:"+str(keysobject))
                       pickledobj=pickle.dumps(keysobject)
                       m=("memeberskeys"+str(len(pickledobj))).encode('UTF-8')
@@ -209,15 +209,15 @@ def join(c):
                       while(len(groupMessages[name])==0):
                         #print("waiting!!!!")
                         pass
-                      print("old messages are being sent!!!")
+                      #print("old messages are being sent!!!")
                       messagearray=copy.deepcopy(groupMessages[name])
                       pickledmessagearray=pickle.dumps(messagearray)
                       message1=("oldmessages"+str(len(pickledmessagearray))).encode('UTF-8')
                       header2=f"{len(message1):{HEADER_SIZE}}".encode('UTF-8')
                       c.sendall(header2+message1)
                       c.sendall(pickledmessagearray)
-                      print(len(pickledmessagearray))
-                      print(pickledmessagearray)
+                      #print(len(pickledmessagearray))
+                      #print(pickledmessagearray)
                       print("OLD MESSAGES SENT!!")
                       #print("sent!!! :"+str(messagearray))
                       groupMessages[name]=[]
@@ -252,7 +252,7 @@ def join(c):
 
 
 def sendAllmemberslist(name,c):
-    print("send all members list")
+    #print("send all members list")
     try:
         message="membersList"
         obj={}
@@ -265,6 +265,7 @@ def sendAllmemberslist(name,c):
         header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
         c.sendall(header+message)
         c.sendall(messageobj)
+        print("Members list sent!!!")
     except Exception as e:
         print("Exception occured in sendAllmembersList: "+str(e))
         return
@@ -347,6 +348,9 @@ def handling_the_client(client):
             # if message[0:9]=="publickey":
              #    catchPublicky(client,groupinfo,int(message[9:]))
              if message[0:7]=="message":
+
+                 broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][2]][4],int(message[7:]),True)
+             elif message[0:16]=="sentagainmessage":
                  groupcheck[clientinfo[client][2]][clientinfo[client][0]]=1
                  broadcast(clientinfo[client][0],client,groupinfo[clientinfo[client][2]][4],int(message[7:]),True)
                  groupcheck[clientinfo[client][2]][clientinfo[client][0]]=0
@@ -377,7 +381,7 @@ def handling_the_client(client):
                     break
                 else:
                     while 1 in groupcheck[clientinfo[client][2]].values():
-                        print("skdljdlasj")
+                        #print("skdljdlasj")
                         pass
                     groupcheck[clientinfo[client][2]][clientinfo[client][0]]=-1
                     memberssockets=groupinfo[clientinfo[client][2]][4]
@@ -474,11 +478,13 @@ def broadcast(name,client,memberslist,length,check):
     global clientinfo,groupMessages,groupcheck
     if check==True:
         messageobj=client.recv(length)
+        print("received message on server:"+str(pickle.loads(messageobj)))
         if -1 in groupcheck[clientinfo[client][2]].values():
             m=("returnagain"+str(len(messageobj))).encode('UTF-8')
             header=f"{len(m):<{HEADER_SIZE}}".encode('UTF-8')
             client.sendall(header+m)
             client.sendall(messageobj)
+            return
         message="newmessage"
     else:
         messageobj=pickle.dumps({

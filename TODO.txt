@@ -14,3 +14,8 @@ Tasks:
 
 3. Add print statements for the presentation
 4. Make a ppt (probably)
+
+
+
+doubt:
+r=in recv , it is executed in synchronous manner onyl right! then is check statement required?
