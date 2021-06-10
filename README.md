@@ -3,7 +3,7 @@
 <hr>
 
 # What is it?
-Chat rooms application with end-to-end encryption. This project uses the methodology suggested in WhatsApp technical paper for implementing the end-to-end encryption functionality.
+A Chat room service that provides end-to-end encryption and puts user privacy above all. This project uses a similar protocol as the signal protocol to provide end-to-end encryption to it's end users.
 
 # Sneak Peak
 
