@@ -16,7 +16,6 @@ def accept():
 
 def details(c):
     try:
-        print("details")
         global groupinfo
         groupobject={}
         for x,y in groupinfo.items():
@@ -49,7 +48,6 @@ def initialize(c,check):
     try:
         if check==True:
            mess_len=c.recv(HEADER_SIZE).decode('UTF-8')
-          # print("messagelength"+mess_len)
            name=c.recv(int(mess_len)).decode('UTF-8')
            print("initialize: "+name)
            clientinfo[c]=[name]
@@ -59,11 +57,11 @@ def initialize(c,check):
         while(d):
             header=c.recv(HEADER_SIZE).decode('UTF-8')
             m=c.recv(int(header)).decode('UTF-8')
-            #print("MESSAGE AT INITIALIZE:"+m)
+
             if(m=="groups"): #Gui part should send a message,
-                #print("groups2")
+   
                 d=details(c)
-                #print("groups3")
+      
             elif(m=="create"):
                 d=create(c)
             elif(m=="join"):
@@ -96,8 +94,6 @@ def create(c):
         groupMessages[list1[0]+list1[3]]=[]
         clientinfo[c].append(list1[0]+list1[3])
         eventslist[list1[0]+list1[3]]=[]
-        #print(clientinfo)
-        #print(groupinfo)
         Thread(target=handling_the_client,args=(c,)).start()
         return 0      #return 0 once handling clients is done!
     except Exception as e:
@@ -114,7 +110,6 @@ def join(c):
     global clientinfo, groupinfo,eventslist,scheduler,groupMessages
     try:
         while e:
-            #print(groupinfo)
           length=c.recv(HEADER_SIZE).decode("UTF-8")
           string=c.recv(int(length)).decode('UTF-8')
           name=string.split(sep)[0]   #name of the group should be sent concat with code!!
@@ -142,9 +137,6 @@ def join(c):
                         if x:
                              scheduler.cancel(x)
                              eventslist[name].remove(x)
-
-                    #print(groupinfo)
-                   # print(clientinfo)
                     groupinfo[name][3].append(clientinfo[c][0])
                     groupinfo[name][4].append(c)
                     print("joined:"+str(groupinfo))
@@ -338,54 +330,27 @@ def broadcast(name,client,memberslist,length,check):
 def scheduling(group_name):
  try:
     global eventslist,scheduler
-    #print('clock')
-    #print(groupinfo)
+
     scheduler = sched.scheduler(time. time, time.sleep)
     e1 = scheduler.enter(7, 1, checkgroup,(group_name,))
     eventslist[group_name].append(e1)
-    #print(eventslist)
+
     scheduler.run()
-    #print('after clock')
+
  except Exception as e:
     print("Exception occured in scheduling: "+str(e))
     return
 
 def checkgroup(group_name):
   try:
-    #print('called')
     global clientinfo, groupinfo
     if len(groupinfo[group_name][3])==0:
         groupinfo.pop(group_name)
         groupMessages.pop(group_name)
-    #print(str(groupinfo)+'from check_groupasdfasdfasdfasdffasdfasdfasdfasdfasdfasdfasdfasdf!!!!!!!!!!!@@@@@@@@@###')
   except Exception as e:
     print("Exception occured in checkgroup: "+str(e))
     return
 
-# def joinorcreate(c):
-#     global clientinfo, groupinfo, scheduler
-#     try:
-#         d=1
-#         while(d):
-#             m=c.recv(1024).decode('ASCII')
-#             #print(m)
-#             if(m=="groups"): #Gui part should send a message,
-#                 d=details(c)
-#             elif(m=="members"):
-#                 d=members(c)
-#             elif(m=="create"):
-#                 d=create(c)
-#             elif(m=="join"):
-#                 d=join(c)
-#             elif(m=="QUIT"):
-#                 c.send("Bye".encode("ASCII"))
-#             # print("test")
-#                 c.close()
-#                 break
-#     except Exception as e:
-#         print("client socket closed")
-#         print(e)
-#         c.close()
 
 
 
