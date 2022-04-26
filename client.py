@@ -2,7 +2,10 @@
 from threading import Thread
 import copy
 import socket
+import os
 import pickle
+from dotenv import load_dotenv
+load_dotenv()
 sep1='!!!!!separator!!!!!'
 sep2='*****seperator*****'
 
@@ -12,7 +15,6 @@ def receive():
     global client
     global details, sep1, sep2,result,groupfull,members,memberslist,clientmessageList,name,groupdead
     i=1
-    #print('Function Started!!!!')
     while 1:
         try:
             length=client.recv(HEADER_SIZE).decode('UTF-8')
@@ -30,7 +32,7 @@ def receive():
             elif m[0:4]=="auth":
                 length=int(m[4:])
                 obj=pickle.loads(client.recv(length))
-                print("object received:::::::::::::::::::::::::::::::::::::::::"+str(obj))
+                print("object received:::::::::: "+str(obj))
                 result=obj["result"]
                 groupfull=obj["groupfull"]
                 # if result==True and groupfull==True:
@@ -49,7 +51,7 @@ def receive():
                except Exception as e:
                    print('inside memembers list' + str(e))
             elif m=="groupdead":
-                print('GroupDead received')
+                # print('GroupDead received')
                 groupdead=True
             elif m[0:9]=="memberadd":
                try:
@@ -76,9 +78,9 @@ def receive():
                     print('inside membergone '+str(e))
             elif m[0:11]=="oldmessages":
                try:
-                print(m[11:])
+                # print(m[11:])
                 gotit = client.recv(int(m[11:]))
-                print(gotit)
+                # print(gotit)
                 oldmessages={}
                 oldmessages=pickle.loads(gotit)
                 #print(oldmessages)
@@ -91,7 +93,7 @@ def receive():
                 newmessage={}
                 gotnew= client.recv(int(m[10:]))
                 newmessage=pickle.loads(gotnew)
-                print(newmessage)
+                # print(newmessage)
                 clientmessageList.append(copy.deepcopy(newmessage))   #{"colour":value , "name": value, "message": value }
                except Exception as e:
                    print('inside new message' + str(e))
@@ -101,7 +103,6 @@ def receive():
 
 def return_details():
     global details
-    print("details: "+str(details))
     return details
 
 def makeNone():
@@ -119,12 +120,10 @@ def set_group_dead():
 
 def return_authenticate():
     global result
-    print('from client side:' + str(result))
     return result
 
 def return_groupfull():
     global groupfull
-    print('from client side:' + str(groupfull))
     return groupfull
 
 def return_members():
@@ -142,7 +141,6 @@ def return_message():
     global clientmessageList,sentList
     if len(sentList)==0:
         sentList=copy.deepcopy(clientmessageList)
-        print('a'+str(sentList))
         return sentList
     elif len(sentList)==len(clientmessageList):
         return []
@@ -150,7 +148,6 @@ def return_message():
         newMessages=clientmessageList[len(sentList):]
         for i in newMessages:
             sentList.append(i)
-        print('c'+str(newMessages))
         return newMessages
   except Exception as e:
       print("Exception in return_message: "+str(e))
@@ -169,7 +166,7 @@ def sendName(username):
 
 def sendGroups():
   try:
-    #print('sendGroups')
+    print('sendGroups')
     global client
     m="groups".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
@@ -200,7 +197,6 @@ def sendCreate(s):
     m=s.encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
     client.sendall(header+m)
-    print('sent-create-request')
     memberslist.append(name)
     clientmessageList.append({
         'colour':"#223344",
@@ -212,10 +208,6 @@ def sendCreate(s):
 
 def sendJoin(s):
   try:
-    #print('sendJoin')
-    #global client
-    #client.send("join".encode('ASCII'))
-    #client.send(s.encode('ASCII'))
     print('sent-join-request')
     m="join".encode('UTF-8')
     header=f"{len(m):<{HEADER_SIZE}}".encode("UTF-8")
@@ -237,7 +229,7 @@ def sendMessage(mess,colour):
         "name":name
     }
     messageobj=pickle.dumps(messagedict)
-    print(messageobj)
+    # print(messageobj)
     message=message+str(len(messageobj))
     message=message.encode('UTF-8')
     header=f"{len(message):<{HEADER_SIZE}}".encode('UTF-8')
@@ -281,16 +273,13 @@ sentList=[]
 name=""
 groupname=None
 groupdead=None
-#Host=input("Enter the host name: ")
-#Port=int(input("Enter the port number: "))
-#Host="34.227.91.249"
 def client_initialize():
     global client
     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     #Host="127.0.0.1"
     #Port=8000
-    Host="52.204.124.224"
-    Port=8000
+    Host=os.environ.get("SERVER_HOST")
+    Port=int(os.environ.get("SERVER_PORT"))
     client.connect((Host,Port))
     rthread=Thread(target=receive)
     rthread.start()
